@@ -13,9 +13,16 @@ namespace ae::profiler {
 	};
 	class Profiler {
 	public:
+		static void Init() {
+			_instance = new Profiler();
+		}
+		static void Destroy() {
+			delete _instance;
+			_instance = nullptr;
+		}
+
 		static Profiler& Get() {
-			static Profiler instance;
-			return instance;
+			return *_instance;
 		}
 
 		void AddEvent(const ProfileEvent& event) {
@@ -29,6 +36,7 @@ namespace ae::profiler {
 			_events.clear();
 		}
 	private:
+		inline static Profiler* _instance = nullptr;
 		std::vector<ProfileEvent> _events;
 		std::mutex _mutex;
 	};

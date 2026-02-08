@@ -1,6 +1,7 @@
 #pragma once
 #include "Window.h"
 #include "Memory.h"
+#include "ArchEngine/Grapichs/Renderer.h"
 #include "ArchEngine/Utilities/Logger.h"
 
 namespace ae {
@@ -14,11 +15,13 @@ namespace ae {
 	class Application {
 	public:
 		Application();
+		virtual ~Application();
 
 		void Run();
-		static Application* Get() { return _instance; }
-
 		virtual void ApplicationUpdate() = 0;
+
+		static Application* Get() { return _instance; }
+		Window& GetWindow() { return *_window; }
 	private:
 		Scope<Window> _window = nullptr;
 

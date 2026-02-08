@@ -16,11 +16,15 @@ namespace ae {
 		_handle = glfwCreateWindow(_specs.Width, _specs.Height, _specs.Title.c_str(), nullptr, nullptr);
 		glfwMakeContextCurrent(_handle);
 
-		_renderContext = new grapichs::RenderContext();
+		_renderContext = new grapichs::RenderContext(this);
+		_swapchain = new grapichs::Swapchain(*_renderContext);
 	}
 
 	Window::~Window()
 	{
+		delete _swapchain;
+		_swapchain = nullptr;
+
 		delete _renderContext;
 		_renderContext = nullptr;
 

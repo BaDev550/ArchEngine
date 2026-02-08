@@ -3,6 +3,7 @@
 #include <string>
 
 #include "ArchEngine/Grapichs/RenderContext.h"
+#include "ArchEngine/Grapichs/Swapchain.h"
 
 namespace ae {
 	struct WindowSpecifications {
@@ -13,6 +14,7 @@ namespace ae {
 		WindowSpecifications(uint32_t width = 800, uint32_t height = 800, const std::string& title = "Game Window")
 			: Width(width), Height(height), Title(title) {}
 	};
+
 	class Window {
 	public:
 		Window(WindowSpecifications windowSpecs);
@@ -25,6 +27,7 @@ namespace ae {
 	private:
 		GLFWwindow* _handle;
 		grapichs::RenderContext* _renderContext;
+		grapichs::Swapchain* _swapchain;
 		WindowSpecifications _specs;
 	};
 }

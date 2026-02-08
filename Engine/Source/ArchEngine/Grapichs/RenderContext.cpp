@@ -1,28 +1,35 @@
 #include "ArchPch.h"
 #include "RenderContext.h"
 
-#include <set>
+#include "ArchEngine/Core/Window.h"
+
 #include <GLFW/glfw3.h>
 #define GLFW_EXPOSE_NATIVE_WIN32
+#define NOMINMAX
 #include <GLFW/glfw3native.h>
+#include <set>
+
+VULKAN_HPP_DEFAULT_DISPATCH_LOADER_DYNAMIC_STORAGE
 
 namespace ae::grapichs {
-	//static VKAPI_ATTR vk::Bool32 VKAPI_CALL debugCallback(
-	//	vk::DebugUtilsMessageSeverityFlagBitsEXT severity, 
-	//	vk::DebugUtilsMessageTypeFlagsEXT type, 
-	//	const vk::DebugUtilsMessengerCallbackDataEXT* pCallbackData, void*
-	//) {
-	//	if (severity >= vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning)
-	//		Logger_renderer::error("Validation layer: {}", pCallbackData->pMessage);
-	//	return vk::False;
-	//}
+	static VKAPI_ATTR vk::Bool32 VKAPI_CALL debugCallback(
+		vk::DebugUtilsMessageSeverityFlagBitsEXT severity, 
+		vk::DebugUtilsMessageTypeFlagsEXT type, 
+		const vk::DebugUtilsMessengerCallbackDataEXT* pCallbackData, void*
+	) {
+		if (severity >= vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning)
+			Logger_renderer::error("Validation layer: {}", pCallbackData->pMessage);
+		return vk::False;
+	}
 
-	RenderContext::RenderContext()
+	RenderContext::RenderContext(Window* window)
+		: _window(*window)
 	{
 		PROFILE_SCOPE("Render Context");
 		try {
 			CreateInstance();
-			//CreateDebugMessenger();
+			CreateDebugMessenger();
+			CreateSurface();
 			PickPhysicalDevice();
 			CreateLogicalDevice();
 		}
@@ -35,17 +42,22 @@ namespace ae::grapichs {
 
 	RenderContext::~RenderContext()
 	{
+		if (_enableValidationLayer) _instance.destroyDebugUtilsMessengerEXT(_debugMessanger);
+
 		_logicalDevice.destroy();
+		_instance.destroySurfaceKHR(_surface);
 		_instance.destroy();
 	}
 
 	void RenderContext::WaitDeviceIdle()
 	{
-		vkDeviceWaitIdle(_logicalDevice);
+		if (_logicalDevice)
+			_logicalDevice.waitIdle();
 	}
 
 	void RenderContext::CreateInstance()
 	{
+		VULKAN_HPP_DEFAULT_DISPATCHER.init(vkGetInstanceProcAddr);
 		if (_enableValidationLayer && !CheckValidationLayerSupport()) {
 			throw std::runtime_error("Validation layers are requested but not available!!!");
 		}
@@ -68,11 +80,27 @@ namespace ae::grapichs {
 
 		_instance = vk::createInstance(createInfo);
 		CHECKF(_instance != VK_NULL_HANDLE, "Failed to create vulkan instance");
+		VULKAN_HPP_DEFAULT_DISPATCHER.init(_instance);
 	}
 
 	void RenderContext::CreateDebugMessenger()
 	{
 		if (!_enableValidationLayer) return;
+		vk::DebugUtilsMessageSeverityFlagsEXT severityFlags(vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose | vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning | vk::DebugUtilsMessageSeverityFlagBitsEXT::eError);
+		vk::DebugUtilsMessageTypeFlagsEXT    messageTypeFlags(vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral | vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance | vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation);
+		vk::DebugUtilsMessengerCreateInfoEXT debugUtilsMessengerCreateInfoEXT{
+			.messageSeverity = severityFlags,
+			.messageType = messageTypeFlags,
+			.pfnUserCallback = &debugCallback
+		};
+		_debugMessanger = _instance.createDebugUtilsMessengerEXT(debugUtilsMessengerCreateInfoEXT);
+	}
+
+	void RenderContext::CreateSurface() {
+		VkSurfaceKHR surface;
+		if (glfwCreateWindowSurface(_instance, _window.GetHandle(), nullptr, &surface) != 0)
+			throw std::runtime_error("Failed to create window surface");
+		_surface = vk::SurfaceKHR(surface);
 	}
 
 	void RenderContext::PickPhysicalDevice()
@@ -98,12 +126,17 @@ namespace ae::grapichs {
 	void RenderContext::CreateLogicalDevice()
 	{
 		QueueFamilyIndices indices = FindQueueFamilies(_physicalDevice);
-		float queuePriority = 1.0f;
 
-		const vk::DeviceQueueCreateInfo queueCreateInfo{
-			.queueFamilyIndex = indices.graphicsFamily.value(),
-			.queueCount = 1,
-			.pQueuePriorities = &queuePriority
+		float queuePriority = 1.0f;
+		std::vector<vk::DeviceQueueCreateInfo> queueCreateInfos;
+		std::set<uint32_t> uniqeQueueFamilies = { indices.graphicsFamily.value(), indices.presentFamily.value() };
+		for (uint32_t queueFamily : uniqeQueueFamilies) {
+			vk::DeviceQueueCreateInfo queueCreateInfo{
+				.queueFamilyIndex = indices.graphicsFamily.value(),
+				.queueCount = 1,
+				.pQueuePriorities = &queuePriority
+			};
+			queueCreateInfos.push_back(queueCreateInfo);
 		};
 
 		const vk::PhysicalDeviceDynamicRenderingFeatures dynamicRenderingFeatures{
@@ -112,8 +145,8 @@ namespace ae::grapichs {
 		
 		const vk::DeviceCreateInfo createInfo{
 			.pNext = &dynamicRenderingFeatures,
-			.queueCreateInfoCount = 1,
-			.pQueueCreateInfos = &queueCreateInfo,
+			.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size()),
+			.pQueueCreateInfos = queueCreateInfos.data(),
 			.enabledLayerCount = static_cast<uint32_t>(_layers.size()),
 			.ppEnabledLayerNames = _layers.data(),
 			.enabledExtensionCount = static_cast<uint32_t>(_extensions.size()),
@@ -121,7 +154,10 @@ namespace ae::grapichs {
 		};
 		
 		_logicalDevice = _physicalDevice.createDevice(createInfo);
+		VULKAN_HPP_DEFAULT_DISPATCHER.init(_logicalDevice);
+
 		_grapichsQueue = _logicalDevice.getQueue(indices.graphicsFamily.value(), 0);
+		_presentQueue = _logicalDevice.getQueue(indices.presentFamily.value(), 0);
 	}
 
 	bool RenderContext::IsPhysicalDeviceSuitable(vk::PhysicalDevice device)
@@ -134,9 +170,10 @@ namespace ae::grapichs {
 	bool RenderContext::HasRequiredDeviceExtensions(vk::PhysicalDevice device)
 	{
 		uint32_t exensionCount;
-		vkEnumerateDeviceExtensionProperties(device, nullptr, &exensionCount, nullptr);
-		std::vector<VkExtensionProperties> availableExtensions(exensionCount);
-		vkEnumerateDeviceExtensionProperties(device, nullptr, &exensionCount, availableExtensions.data());
+		device.enumerateDeviceExtensionProperties(nullptr, &exensionCount, nullptr);
+		std::vector<vk::ExtensionProperties> availableExtensions(exensionCount);
+		device.enumerateDeviceExtensionProperties(nullptr, &exensionCount, availableExtensions.data());
+
 		std::set<std::string> requiredExtensions(_extensions.begin(), _extensions.end());
 		for (const auto& extension : availableExtensions)
 			requiredExtensions.erase(extension.extensionName);
@@ -146,9 +183,9 @@ namespace ae::grapichs {
 	bool RenderContext::CheckValidationLayerSupport()
 	{
 		uint32_t layerCount;
-		vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
-		std::vector<VkLayerProperties> availableLayers(layerCount);
-		vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
+		vk::enumerateInstanceLayerProperties(&layerCount, nullptr);
+		std::vector<vk::LayerProperties> availableLayers(layerCount);
+		vk::enumerateInstanceLayerProperties(&layerCount, availableLayers.data());
 
 		for (const char* layerName : _layers) {
 			bool layerFound = false;
@@ -181,17 +218,21 @@ namespace ae::grapichs {
 		QueueFamilyIndices indices;
 
 		uint32_t queueFamilyCount = 0;
-		vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
-		std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
-		vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
-		
+		device.getQueueFamilyProperties(&queueFamilyCount, nullptr);
+		std::vector<vk::QueueFamilyProperties> queueFamilies(queueFamilyCount);
+		device.getQueueFamilyProperties(&queueFamilyCount, queueFamilies.data());
+			
 		for (int i = 0; i < queueFamilyCount; i++) {
+			const auto& queueFamily = queueFamilies[i];
+			if (queueFamily.queueFlags & vk::QueueFlagBits::eGraphics)
+				indices.graphicsFamily = i;
+
+			bool presentSupport = device.getSurfaceSupportKHR(i, _surface);
+			if (presentSupport)
+				indices.presentFamily = i;
+
 			if (indices.IsComplete())
 				break;
-
-			const auto& queueFamily = queueFamilies[i];
-			if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT)
-				indices.graphicsFamily = i;
 		}
 		return indices;
 	}

@@ -10,10 +10,16 @@ namespace ae {
 		if (_instance)
 			return;
 		_instance = this;
+		profiler::Profiler::Init();
 		Logger_app::info("Application Created!");
-
+		
 		PROFILE_SCOPE("WindowCreate");
 		_window = MakeScope<Window>(WindowSpecifications());
+	}
+
+	Application::~Application() {
+		profiler::Profiler::Get().Clear();
+		profiler::Profiler::Destroy();
 	}
 
 	void Application::Run()
