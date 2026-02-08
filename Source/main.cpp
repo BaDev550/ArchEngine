@@ -1,7 +1,17 @@
 #include <iostream>
-#include "ArchEngine.h"
+#include <memory>
+#include "Core/Window.h"
 
+using namespace ae;
 int main() {
-	std::cout << "Hello World" << std::endl;
+	{
+		memory::Scope<Window> window = memory::MakeScope<Window>(WindowSpecifications(800, 800, "Server"));
+
+		while (!window->ShoudClose()) {
+			window->PoolEvents();
+		}
+	}
+
+	_CrtDumpMemoryLeaks();
 	return 0;
 }
