@@ -6,6 +6,7 @@ if (POLICY CMP0141)
 endif()
 
 project(ArchEngine LANGUAGES CXX)
+find_package(Vulkan REQUIRED)
 
 include(FetchContent)
 # GLFW

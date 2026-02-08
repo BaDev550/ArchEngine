@@ -1,3 +1,4 @@
+#include "ArchPch.h"
 #include "Window.h"
 #include <assert.h>
 
@@ -14,10 +15,15 @@ namespace ae {
 		}
 		_handle = glfwCreateWindow(_specs.Width, _specs.Height, _specs.Title.c_str(), nullptr, nullptr);
 		glfwMakeContextCurrent(_handle);
+
+		_renderContext = new grapichs::RenderContext();
 	}
 
 	Window::~Window()
 	{
+		delete _renderContext;
+		_renderContext = nullptr;
+
 		glfwDestroyWindow(_handle);
 		glfwTerminate();
 	}

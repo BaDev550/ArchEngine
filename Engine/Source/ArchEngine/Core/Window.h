@@ -1,7 +1,8 @@
 #pragma once
 #include <glfw/glfw3.h>
-#include "Memory.h"
 #include <string>
+
+#include "ArchEngine/Grapichs/RenderContext.h"
 
 namespace ae {
 	struct WindowSpecifications {
@@ -17,11 +18,13 @@ namespace ae {
 		Window(WindowSpecifications windowSpecs);
 		~Window();
 
+		grapichs::RenderContext& GetRenderContext() { return *_renderContext; }
 		GLFWwindow* GetHandle() const;
 		void PoolEvents() const;
 		bool ShoudClose() const;
 	private:
 		GLFWwindow* _handle;
+		grapichs::RenderContext* _renderContext;
 		WindowSpecifications _specs;
 	};
 }

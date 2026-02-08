@@ -1,6 +1,7 @@
 #pragma once
 #include "Window.h"
 #include "Memory.h"
+#include "ArchEngine/Utilities/Logger.h"
 
 namespace ae {
 	using namespace memory;
@@ -9,6 +10,7 @@ namespace ae {
 		uint32_t Height;
 		std::string Title;
 	};
+
 	class Application {
 	public:
 		Application();

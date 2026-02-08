@@ -1,4 +1,6 @@
+#include "ArchPch.h"
 #include "Application.h"
+#include "ArchEngine/Utilities/Profiler.h"
 #include <iostream>
 
 namespace ae {
@@ -8,8 +10,9 @@ namespace ae {
 		if (_instance)
 			return;
 		_instance = this;
-		std::cout << "Application Created! \n";
+		Logger_app::info("Application Created!");
 
+		PROFILE_SCOPE("WindowCreate");
 		_window = MakeScope<Window>(WindowSpecifications());
 	}
 
@@ -20,5 +23,7 @@ namespace ae {
 
 			ApplicationUpdate();
 		}
+		_window->GetRenderContext().WaitDeviceIdle();
+		profiler::utils::WriteProfileToFile("ArchEngineApplicationProfile.json");
 	}
 }

@@ -7,6 +7,7 @@
 #include <mutex>
 #include <type_traits>
 #include <iostream>
+#include "ArchEngine/Utilities/Logger.h"
 
 #define AE_MEMORY_DEBUG_ALLOCATION false
 #define AE_MEMORY_DEBUG_GARBAGECOLLECTOR false
@@ -30,7 +31,7 @@ namespace ae::memory {
 	static void Free(void* memory, size_t size) {
 		if (memory == nullptr) {
 #if AE_MEMORY_DEBUG_ALLOCATION
-			std::cout << "Memory block is already destroyed." << std::endl;
+			Logger_app::warn("Memory block is already destroyed.");
 #endif
 			return;
 		}
@@ -41,7 +42,7 @@ namespace ae::memory {
 
 	static void PrintMemoryUsage() {
 #if AE_MEMORY_DEBUG_ALLOCATION
-		std::cout << "Current emory usage: " << s_AllocationMetrics.CurrentUsage() << " Bytes." << std::endl;
+		Logger_app::trace("Current emory usage: {} bytes", s_AllocationMetrics.CurrentUsage());
 #endif
 	}
 
@@ -77,7 +78,7 @@ namespace ae::memory {
 			if (s_deathQueue.empty()) return;
 
 #if AE_MEMORY_DEBUG_GARBAGECOLLECTOR
-			std::cout << "Garbage collector collecting " << s_deathQueue.size() << " objects..." << std::endl;
+			Logger_app::trace("Garbage collector collecting: {} objects...", s_deathQueue.size());
 #endif
 			for (auto* obj : s_deathQueue)
 				delete obj;
