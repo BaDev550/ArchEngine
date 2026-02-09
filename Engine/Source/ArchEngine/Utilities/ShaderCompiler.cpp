@@ -12,13 +12,15 @@
 
 namespace ae {
     using namespace grapichs;
-    static std::filesystem::path s_ShaderDirectory;
 
     // Forked from https://github.com/beaumanvienna/vulkan/blob/617f70e1a311c6f498ec69507dcc9d4aadb86612/engine/platform/Vulkan/VKshader.cpp
     class ShaderIncluder : public shaderc::CompileOptions::IncluderInterface {
+    public:
+        ShaderIncluder(std::filesystem::path shaderDir) : _ShaderDirectory(shaderDir) {}
         shaderc_include_result* GetInclude(const char* requestedSource, shaderc_include_type type, const char* requestingSource, size_t includeDepth) override;
         void ReleaseInclude(shaderc_include_result* data) override;
-        static std::string ReadFile(const std::string& filepath);
+        std::string ReadFile(const std::string& filepath);
+        std::filesystem::path _ShaderDirectory;
     };
 
     namespace utils {
@@ -90,12 +92,10 @@ namespace ae {
 
     std::vector<char> ShaderCompiler::CompileShaderFileToSpirv(const std::filesystem::path& path, CompiledShaderInfo& shaderInfo, bool optimize)
     {
-        s_ShaderDirectory = path.parent_path();
         if (path.extension() == ".spv") {
             std::ifstream in(path, std::ios::binary);
             CHECKF(in, "Failed to open .spv file: " + path.string());
-            std::vector<char> data((std::istreambuf_iterator<char>(in)),
-                std::istreambuf_iterator<char>());
+            std::vector<char> data((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
             CollectReflectionData(shaderInfo, data.data(), data.size());
             return data;
         }
@@ -107,7 +107,7 @@ namespace ae {
         shaderc::CompileOptions options;
         
         options.SetGenerateDebugInfo();
-        options.SetIncluder(memory::MakeScope<ShaderIncluder>());
+        options.SetIncluder(memory::MakeScope<ShaderIncluder>(path.parent_path()));
         options.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_1);
         if (optimize) {
             options.SetOptimizationLevel(shaderc_optimization_level_performance);
@@ -140,7 +140,7 @@ namespace ae {
         if (word_count > 0) {
             std::memcpy(bytes.data(), reinterpret_cast<const char*>(begin), bytes.size());
         }
-
+        
         CollectReflectionData(shaderInfo, bytes.data(), bytes.size());
         return bytes;
     }
@@ -241,7 +241,7 @@ namespace ae {
     std::string ShaderIncluder::ReadFile(const std::string& filepath)
     {
         std::string sourceCode;
-        std::ifstream in(s_ShaderDirectory / filepath, std::ios::in | std::ios::binary);
+        std::ifstream in(_ShaderDirectory / filepath, std::ios::in | std::ios::binary);
         if (in)
         {
             in.seekg(0, std::ios::end);

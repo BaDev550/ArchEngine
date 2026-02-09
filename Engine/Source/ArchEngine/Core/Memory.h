@@ -9,7 +9,7 @@
 #include <iostream>
 #include "ArchEngine/Utilities/Logger.h"
 
-#define AE_MEMORY_DEBUG_ALLOCATION false
+#define AE_MEMORY_DEBUG_ALLOCATION true
 #define AE_MEMORY_DEBUG_GARBAGECOLLECTOR false
 #define AE_MEMORY_USE_GARBACE_COLLECTOR false
 #define AE_MEMORY_USE_CUSTOM_ALLOCATOR false
