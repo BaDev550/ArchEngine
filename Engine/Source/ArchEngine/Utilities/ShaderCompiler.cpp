@@ -6,6 +6,8 @@
 #include <stdexcept>
 #include <iostream>
 #include <shaderc/shaderc.hpp>
+
+#define SPIRV_REFLECT_USE_SYSTEM_SPIRV_H
 #include "spirv_reflect.h"
 
 namespace ae {
@@ -94,12 +96,13 @@ namespace ae {
             CHECKF(in, "Failed to open .spv file: " + path.string());
             std::vector<char> data((std::istreambuf_iterator<char>(in)),
                 std::istreambuf_iterator<char>());
+            CollectReflectionData(shaderInfo, data.data(), data.size());
             return data;
         }
 
         const std::string source = utils::ReadFileToString(path);
         shaderc::Compiler compiler;
-        CHECKF(!compiler.IsValid(), "shaderc::Compiler failed to initialize");
+        CHECKF(compiler.IsValid(), "shaderc::Compiler failed to initialize");
         shaderc_shader_kind kind = utils::InferShaderKind(path);
         shaderc::CompileOptions options;
         
@@ -139,7 +142,6 @@ namespace ae {
         }
 
         CollectReflectionData(shaderInfo, bytes.data(), bytes.size());
-
         return bytes;
     }
 
@@ -152,8 +154,8 @@ namespace ae {
         uint32_t var_count = 0;
         result = spvReflectEnumerateInputVariables(&module, &var_count, NULL);
         assert(result == SPV_REFLECT_RESULT_SUCCESS);
-        SpvReflectInterfaceVariable** input_vars = (SpvReflectInterfaceVariable**)malloc(var_count * sizeof(SpvReflectInterfaceVariable*));
-        result = spvReflectEnumerateInputVariables(&module, &var_count, input_vars);
+        std::vector<SpvReflectInterfaceVariable*> input_vars(var_count);
+        result = spvReflectEnumerateInputVariables(&module, &var_count, input_vars.data());
 
         assert(result == SPV_REFLECT_RESULT_SUCCESS);
 
@@ -164,6 +166,7 @@ namespace ae {
 
         for (const auto& ds : bindings) {
             shaderInfo.ReflectData[ds->set][ds->binding] = { ds->name, utils::GetResourceType(ds), ds->count };
+            Logger_renderer::info("Found input n:{}, b:{}", ds->name, ds->binding);
         }
 
         if (module.shader_stage & SPV_REFLECT_SHADER_STAGE_VERTEX_BIT) {
@@ -200,7 +203,6 @@ namespace ae {
                 shaderInfo.BindingDescription.inputRate = vk::VertexInputRate::eVertex;
             }
         }
-
         spvReflectDestroyShaderModule(&module);
     }
 

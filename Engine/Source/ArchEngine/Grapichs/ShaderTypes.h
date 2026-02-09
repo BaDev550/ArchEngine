@@ -33,7 +33,7 @@ namespace ae::grapichs {
 		vk::VertexInputBindingDescription BindingDescription;
 	};
 
-	[nodiscard] static constexpr std::string ShaderReflectionDataTypeToString(ShaderReflectionDataType& type) {
+	static constexpr std::string ShaderReflectionDataTypeToString(ShaderReflectionDataType& type) {
 		switch (type)
 		{
 		case ShaderReflectionDataType::None: return "None";
@@ -43,7 +43,7 @@ namespace ae::grapichs {
 		}
 	}
 
-	[nodiscard] static constexpr vk::DescriptorType ShaderReflectionTypeToVulkanType(const grapichs::ShaderReflectionDataType& type) {
+	static constexpr vk::DescriptorType ShaderReflectionTypeToVulkanType(const grapichs::ShaderReflectionDataType& type) {
 		switch (type)
 		{
 		case ShaderReflectionDataType::UniformBuffer: return vk::DescriptorType::eUniformBuffer;
@@ -52,7 +52,7 @@ namespace ae::grapichs {
 		}
 	}
 
-	[nodiscard] static constexpr uint32_t GetFormatSize(vk::Format format) {
+	static constexpr uint32_t GetFormatSize(vk::Format format) {
 		switch (format)
 		{
 		case vk::Format::eUndefined: return 0;

@@ -31,6 +31,7 @@ VERSION HISTORY
 #ifndef SPIRV_REFLECT_H
 #define SPIRV_REFLECT_H
 
+#define SPIRV_REFLECT_USE_SYSTEM_SPIRV_H
 #if defined(SPIRV_REFLECT_USE_SYSTEM_SPIRV_H)
 #include <spirv_cross/spirv.h>
 #else

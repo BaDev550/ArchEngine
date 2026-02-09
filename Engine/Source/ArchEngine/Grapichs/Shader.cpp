@@ -6,10 +6,11 @@ namespace ae::grapichs {
 	Shader::Shader(const std::string& vertexPath, const std::string& fragmentPath)
 		: _Context(Application::Get()->GetWindow().GetRenderContext())
 	{
+		PROFILE_SCOPE("Compiling shader " + vertexPath);
 		std::vector<char> vertShaderCode = ShaderCompiler::CompileShaderFileToSpirv(vertexPath, _CompiledData);
 		std::vector<char> fragShaderCode = ShaderCompiler::CompileShaderFileToSpirv(fragmentPath, _CompiledData);
-		CreateShaderModule(vertShaderCode, &_VertexShaderModule);
-		CreateShaderModule(fragShaderCode, &_FragmentShaderModule);
+		CreateShaderModule(vertShaderCode, _VertexShaderModule);
+		CreateShaderModule(fragShaderCode, _FragmentShaderModule);
 
 		for (auto const& [set, bindings] : _CompiledData.ReflectData)
 		{
@@ -34,17 +35,20 @@ namespace ae::grapichs {
 
 	Shader::~Shader()
 	{
+		for (auto& [set, layout] : _DescriptorLayouts)
+			_Context.GetDevice().destroyDescriptorSetLayout(layout);
+
 		_DescriptorLayouts.clear();
 		_Context.GetDevice().destroyShaderModule(_VertexShaderModule);
 		_Context.GetDevice().destroyShaderModule(_FragmentShaderModule);
 	}
 
-	void Shader::CreateShaderModule(const std::vector<char>& code, vk::ShaderModule* shaderModule)
+	void Shader::CreateShaderModule(const std::vector<char>& code, vk::ShaderModule& shaderModule)
 	{
 		vk::ShaderModuleCreateInfo createInfo{
 			.codeSize = code.size(),
 			.pCode = reinterpret_cast<const uint32_t*>(code.data())
 		};
-		shaderModule = &_Context.GetDevice().createShaderModule(createInfo);
+		shaderModule = _Context.GetDevice().createShaderModule(createInfo);
 	}
 }

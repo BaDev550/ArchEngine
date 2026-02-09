@@ -17,14 +17,14 @@ namespace ae::grapichs {
 		Shader(const Shader&) = delete;
 		Shader& operator=(const Shader&) = delete;
 
-		vk::ShaderModule GetFragmentModule() const { return _VertexShaderModule; }
-		vk::ShaderModule GetVertexModule() const { return _FragmentShaderModule; }
+		vk::ShaderModule GetFragmentModule() const { return _FragmentShaderModule; }
+		vk::ShaderModule GetVertexModule() const { return _VertexShaderModule; }
 
 		const CompiledShaderInfo& GetCompiledShaderData() const { return _CompiledData; }
 		const std::map<uint32_t, vk::DescriptorSetLayout>& GetDesciptorLayouts() const { return _DescriptorLayouts; }
 		const std::map<uint32_t, std::map<uint32_t, DescriptorInfo>>& GetReflectData() const { return _CompiledData.ReflectData; }
 	private:
-		void CreateShaderModule(const std::vector<char>& code, vk::ShaderModule* shaderModule);
+		void CreateShaderModule(const std::vector<char>& code, vk::ShaderModule& shaderModule);
 
 		CompiledShaderInfo _CompiledData;
 		vk::ShaderModule _VertexShaderModule;

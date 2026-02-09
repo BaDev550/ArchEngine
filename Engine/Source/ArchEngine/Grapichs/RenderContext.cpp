@@ -35,7 +35,7 @@ namespace ae::grapichs {
 
 		config.MultisampleStateCreateInfo = {};
 		config.MultisampleStateCreateInfo.sampleShadingEnable = VK_FALSE;
-		config.MultisampleStateCreateInfo.rasterizationSamples = vk::SampleCountFlagBits::1;
+		config.MultisampleStateCreateInfo.rasterizationSamples = vk::SampleCountFlagBits::e1;
 		config.MultisampleStateCreateInfo.minSampleShading = 1.0f;
 		config.MultisampleStateCreateInfo.pSampleMask = nullptr;
 		config.MultisampleStateCreateInfo.alphaToCoverageEnable = VK_FALSE;

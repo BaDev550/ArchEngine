@@ -6,7 +6,7 @@ set_target_properties(ArchEngine PROPERTIES
 
 file(GLOB_RECURSE ENGINE_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/Source/*.cpp ${CMAKE_CURRENT_SOURCE_DIR}/Source/*.h)
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${ENGINE_SOURCES})
-target_sources(ArchEngine PRIVATE ${ENGINE_SOURCES})
+target_sources(ArchEngine PRIVATE ${ENGINE_SOURCES} ${SPIRV_REFLECT_SOURCE})
 target_precompile_headers(ArchEngine PRIVATE "$<$<COMPILE_LANGUAGE:CXX>:${CMAKE_CURRENT_SOURCE_DIR}/Source/ArchPch.h>")
 target_include_directories(ArchEngine
     PUBLIC
@@ -17,4 +17,6 @@ target_include_directories(ArchEngine
 target_link_libraries(ArchEngine PUBLIC
     glfw
     Vulkan::Vulkan
+    ${Vulkan_SHADERC}
+    ${Vulkan_SHADERC_UTILS}
 )

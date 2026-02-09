@@ -5,8 +5,10 @@ if (POLICY CMP0141)
   "$<IF:$<AND:$<C_COMPILER_ID:MSVC>,$<CXX_COMPILER_ID:MSVC>>,$<$<CONFIG:Debug,RelWithDebInfo>:EditAndContinue>,$<$<CONFIG:Debug,RelWithDebInfo>:ProgramDatabase>>")
 endif()
 
-project(ArchEngine LANGUAGES CXX)
+project(ArchEngine LANGUAGES C CXX)
 find_package(Vulkan REQUIRED)
+find_library(Vulkan_SHADERC NAMES shaderc_shared HINTS "$ENV{VULKAN_SDK}/Lib")
+find_library(Vulkan_SHADERC_UTILS NAMES shaderc_util HINTS "$ENV{VULKAN_SDK}/Lib")
 
 include(FetchContent)
 # GLFW
@@ -21,6 +23,7 @@ FetchContent_Declare(
     SOURCE_DIR ${CMAKE_SOURCE_DIR}/vendor/glfw
 )
 FetchContent_MakeAvailable(glfw)
+set(SPIRV_REFLECT_SOURCE "${CMAKE_SOURCE_DIR}/vendor/SPIRV-Reflect/spirv_reflect.c")
 
 add_subdirectory(Engine)
 add_subdirectory(Sandbox)

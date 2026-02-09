@@ -14,6 +14,11 @@ namespace ae {
 		Logger_app::info("Application Created!");
 		
 		_window = MakeScope<Window>(WindowSpecifications());
+
+		_shader = Ref<Shader>::Create("Shaders/forward.vert", "Shaders/forward.frag");
+		PipelineData pipelineData{};
+		pipelineData.Shader = _shader;
+		_pipeline = Ref<Pipeline>::Create(pipelineData);
 	}
 
 	Application::~Application() {

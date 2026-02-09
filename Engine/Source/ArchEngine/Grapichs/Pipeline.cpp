@@ -4,7 +4,7 @@
 
 namespace ae::grapichs {
 	Pipeline::Pipeline(const PipelineData& data) 
-		: _context(Application::Get()->GetWindow().GetRenderContext())
+		: _context(Application::Get()->GetWindow().GetRenderContext()), _data(data)
 	{
 		Invalidate();
 	}
@@ -25,7 +25,7 @@ namespace ae::grapichs {
 		const vk::PipelineShaderStageCreateInfo vertShaderStageInfo{
 			.stage = vk::ShaderStageFlagBits::eVertex,
 			.module = shader->GetVertexModule(),
-			.pName = "main"
+			.pName = "main",
 		};
 		const vk::PipelineShaderStageCreateInfo fragShaderStageInfo{
 			.stage = vk::ShaderStageFlagBits::eFragment,
