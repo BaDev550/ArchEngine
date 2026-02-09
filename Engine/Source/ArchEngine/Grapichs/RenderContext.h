@@ -14,6 +14,25 @@ namespace ae {
 }
 
 namespace ae::grapichs {
+	struct PipelineConfig {
+		PipelineConfig() {}
+		PipelineConfig(const PipelineConfig&) = delete;
+		PipelineConfig& operator=(PipelineConfig&) = delete;
+
+		vk::PipelineInputAssemblyStateCreateInfo InputAssembyCreateInfo{};
+		vk::PipelineViewportStateCreateInfo      ViewportStateCreateInfo{};
+		vk::PipelineRasterizationStateCreateInfo ResterizationStateCreateInfo{};
+		vk::PipelineMultisampleStateCreateInfo   MultisampleStateCreateInfo{};
+		vk::PipelineColorBlendAttachmentState    ColorBlendAttachment{};
+		vk::PipelineColorBlendStateCreateInfo    ColorBlendStateCreateInfo{};
+		vk::PipelineDepthStencilStateCreateInfo  DepthStencilCreateInfo{};
+
+		std::vector<vk::DynamicState> DynamicStateEnables;
+		vk::PipelineDynamicStateCreateInfo DynamicStateCreateInfo{};
+
+		static void Default(PipelineConfig& config);
+	};
+
 	struct QueueFamilyIndices {
 		std::optional<uint32_t> graphicsFamily;
 		std::optional<uint32_t> presentFamily;

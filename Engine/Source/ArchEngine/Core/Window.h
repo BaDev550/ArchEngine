@@ -21,6 +21,7 @@ namespace ae {
 		~Window();
 
 		grapichs::RenderContext& GetRenderContext() { return *_renderContext; }
+		grapichs::Swapchain& GetSwapchain() { return *_swapchain; }
 		GLFWwindow* GetHandle() const;
 		void PoolEvents() const;
 		bool ShoudClose() const;

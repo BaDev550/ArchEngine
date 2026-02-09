@@ -8,6 +8,8 @@ namespace ae::grapichs {
 		~Swapchain();
 		Swapchain(const Swapchain&) = delete;
 		Swapchain& operator=(const Swapchain&) = delete;
+
+		vk::Format GetSwapchainFormat() const { return _swapChainImageFormat; }
 	private:
 		void CreateSwapchain();
 		void CreateSwapchainImageViews();

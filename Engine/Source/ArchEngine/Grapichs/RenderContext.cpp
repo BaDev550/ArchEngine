@@ -12,6 +12,71 @@
 VULKAN_HPP_DEFAULT_DISPATCH_LOADER_DYNAMIC_STORAGE
 
 namespace ae::grapichs {
+	void PipelineConfig::Default(PipelineConfig& config) {
+		config.InputAssembyCreateInfo.topology = vk::PrimitiveTopology::eTriangleList;
+		config.InputAssembyCreateInfo.primitiveRestartEnable = VK_FALSE;
+
+		config.ViewportStateCreateInfo.viewportCount = 1;
+		config.ViewportStateCreateInfo.scissorCount = 1;
+		config.ViewportStateCreateInfo.pViewports = nullptr;
+		config.ViewportStateCreateInfo.pScissors = nullptr;
+
+		config.ResterizationStateCreateInfo = {};
+		config.ResterizationStateCreateInfo.depthClampEnable = VK_FALSE;
+		config.ResterizationStateCreateInfo.rasterizerDiscardEnable = VK_FALSE;
+		config.ResterizationStateCreateInfo.polygonMode = vk::PolygonMode::eFill;
+		config.ResterizationStateCreateInfo.cullMode =	  vk::CullModeFlagBits::eBack;
+		config.ResterizationStateCreateInfo.frontFace =	  vk::FrontFace::eClockwise;
+		config.ResterizationStateCreateInfo.lineWidth = 1.0f;
+		config.ResterizationStateCreateInfo.depthBiasEnable = VK_FALSE;
+		config.ResterizationStateCreateInfo.depthBiasConstantFactor = 0.0f;
+		config.ResterizationStateCreateInfo.depthBiasClamp = 0.0f;
+		config.ResterizationStateCreateInfo.depthBiasSlopeFactor = 0.0f;
+
+		config.MultisampleStateCreateInfo = {};
+		config.MultisampleStateCreateInfo.sampleShadingEnable = VK_FALSE;
+		config.MultisampleStateCreateInfo.rasterizationSamples = vk::SampleCountFlagBits::1;
+		config.MultisampleStateCreateInfo.minSampleShading = 1.0f;
+		config.MultisampleStateCreateInfo.pSampleMask = nullptr;
+		config.MultisampleStateCreateInfo.alphaToCoverageEnable = VK_FALSE;
+		config.MultisampleStateCreateInfo.alphaToOneEnable = VK_FALSE;
+
+		config.ColorBlendAttachment = {};
+		config.ColorBlendAttachment.colorWriteMask = vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA;
+		config.ColorBlendAttachment.blendEnable = VK_FALSE;
+		config.ColorBlendAttachment.srcColorBlendFactor = vk::BlendFactor::eOne;
+		config.ColorBlendAttachment.dstColorBlendFactor = vk::BlendFactor::eZero;
+		config.ColorBlendAttachment.colorBlendOp = vk::BlendOp::eAdd;
+		config.ColorBlendAttachment.srcAlphaBlendFactor = vk::BlendFactor::eOne;
+		config.ColorBlendAttachment.dstAlphaBlendFactor = vk::BlendFactor::eZero;
+		config.ColorBlendAttachment.alphaBlendOp = vk::BlendOp::eAdd;
+
+		config.ColorBlendStateCreateInfo = {};
+		config.ColorBlendStateCreateInfo.logicOpEnable = VK_FALSE;
+		config.ColorBlendStateCreateInfo.logicOp = vk::LogicOp::eCopy;
+		config.ColorBlendStateCreateInfo.attachmentCount = 1;
+		config.ColorBlendStateCreateInfo.pAttachments = &config.ColorBlendAttachment;
+		config.ColorBlendStateCreateInfo.blendConstants[0] = 0.0f;
+		config.ColorBlendStateCreateInfo.blendConstants[1] = 0.0f;
+		config.ColorBlendStateCreateInfo.blendConstants[2] = 0.0f;
+		config.ColorBlendStateCreateInfo.blendConstants[3] = 0.0f;
+
+		config.DepthStencilCreateInfo = {};
+		config.DepthStencilCreateInfo.depthTestEnable = VK_TRUE;
+		config.DepthStencilCreateInfo.depthWriteEnable = VK_TRUE;
+		config.DepthStencilCreateInfo.depthCompareOp = vk::CompareOp::eLess;
+		config.DepthStencilCreateInfo.depthBoundsTestEnable = VK_FALSE;
+		config.DepthStencilCreateInfo.minDepthBounds = 0.0f;
+		config.DepthStencilCreateInfo.maxDepthBounds = 1.0f;
+		config.DepthStencilCreateInfo.stencilTestEnable = VK_FALSE;
+		config.DepthStencilCreateInfo.front = {};
+		config.DepthStencilCreateInfo.back = {};
+
+		config.DynamicStateEnables = { vk::DynamicState::eViewport, vk::DynamicState::eScissor };
+		config.DynamicStateCreateInfo.pDynamicStates = config.DynamicStateEnables.data();
+		config.DynamicStateCreateInfo.dynamicStateCount = static_cast<uint32_t>(config.DynamicStateEnables.size());
+	}
+
 	static VKAPI_ATTR vk::Bool32 VKAPI_CALL debugCallback(
 		vk::DebugUtilsMessageSeverityFlagBitsEXT severity, 
 		vk::DebugUtilsMessageTypeFlagsEXT type, 
