@@ -11,6 +11,7 @@ target_precompile_headers(ArchEngine PRIVATE "$<$<COMPILE_LANGUAGE:CXX>:${CMAKE_
 target_include_directories(ArchEngine
     PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/Source
+        ${CMAKE_SOURCE_DIR}/vendor/SPIRV-Reflect
 )
 
 target_link_libraries(ArchEngine PUBLIC

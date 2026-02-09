@@ -7,17 +7,24 @@ namespace ae {
 	Window::Window(WindowSpecifications windowSpecs)
 		: _specs(windowSpecs)
 	{
-		if (!s_GLFWInitialized) {
-			bool success = glfwInit();
-			assert(success);
-			glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-			glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+		{
+			PROFILE_SCOPE("WindowCreate");
+			if (!s_GLFWInitialized) {
+				bool success = glfwInit();
+				assert(success);
+				glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+				glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+			}
+			_handle = glfwCreateWindow(_specs.Width, _specs.Height, _specs.Title.c_str(), nullptr, nullptr);
+			glfwMakeContextCurrent(_handle);
 		}
-		_handle = glfwCreateWindow(_specs.Width, _specs.Height, _specs.Title.c_str(), nullptr, nullptr);
-		glfwMakeContextCurrent(_handle);
 
-		_renderContext = new grapichs::RenderContext(this);
-		_swapchain = new grapichs::Swapchain(*_renderContext);
+		{
+			_renderContext = new grapichs::RenderContext(this);
+		}
+		{
+			_swapchain = new grapichs::Swapchain(*_renderContext);
+		}
 	}
 
 	Window::~Window()

@@ -13,7 +13,6 @@ namespace ae {
 		profiler::Profiler::Init();
 		Logger_app::info("Application Created!");
 		
-		PROFILE_SCOPE("WindowCreate");
 		_window = MakeScope<Window>(WindowSpecifications());
 	}
 

@@ -7,6 +7,7 @@ namespace ae::grapichs {
 	Swapchain::Swapchain(RenderContext& context)
 		: _context(context)
 	{
+		PROFILE_SCOPE("Swapchain");
 		try {
 			CreateSwapchain();
 			CreateSwapchainImageViews();
@@ -15,6 +16,7 @@ namespace ae::grapichs {
 			Logger_renderer::error("Failed to initialize swapchain: {}", e.what());
 		}
 	}
+
 	Swapchain::~Swapchain() {
 		for (auto& imageView : _swapChainImageViews)
 			_context.GetDevice().destroyImageView(imageView);
