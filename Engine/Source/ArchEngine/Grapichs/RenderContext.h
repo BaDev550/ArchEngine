@@ -51,6 +51,10 @@ namespace ae::grapichs {
 
 		void WaitDeviceIdle();
 		void CreateBuffer(vk::DeviceSize size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags memoryProperties, vk::Buffer& buffer, vk::DeviceMemory& memory);
+		void CreateImage(uint32_t width, uint32_t height, vk::Format format, vk::ImageTiling tiling, vk::ImageUsageFlags usage, vk::MemoryPropertyFlags memoryProperties, vk::Image& image, vk::DeviceMemory& memory);
+		void CopyBuffer(vk::Buffer srcBuffer, vk::Buffer dstBuffer, vk::DeviceSize size);
+		void CopyBufferToImage(vk::Buffer buffer, vk::Image image, uint32_t width, uint32_t height);
+		void TransitionImageLayout(vk::Image image, vk::Format format, vk::ImageLayout oldLayout, vk::ImageLayout newLayout);
 
 		vk::Instance GetInstance() const { return _instance; }
 		vk::Device GetDevice() const { return _logicalDevice; }
@@ -65,18 +69,22 @@ namespace ae::grapichs {
 		void CreateSurface();
 		void PickPhysicalDevice();
 		void CreateLogicalDevice();
+		void CreateContextCommandPool();
 		bool IsPhysicalDeviceSuitable(vk::PhysicalDevice device);
 		bool HasRequiredDeviceExtensions(vk::PhysicalDevice device);
 		bool CheckValidationLayerSupport();
 		std::vector<const char*> GetRequiredExtensions();
 		QueueFamilyIndices FindQueueFamilies(vk::PhysicalDevice device);
 		uint32_t FindMemoryType(uint32_t typeFilter, vk::MemoryPropertyFlags properties);
+		vk::CommandBuffer BeginSingleTimeCommand();
+		void EndSingleTimeCommand(vk::CommandBuffer cmd);
 	private:
 		vk::Instance _instance = VK_NULL_HANDLE;
 		vk::PhysicalDeviceProperties _physicalDeviceProperties;
 		vk::PhysicalDevice _physicalDevice = VK_NULL_HANDLE;
 		vk::Device _logicalDevice = VK_NULL_HANDLE;
 		vk::SurfaceKHR _surface = VK_NULL_HANDLE;
+		vk::CommandPool _commandPool = VK_NULL_HANDLE;
 
 		Window& _window;
 		vk::Queue _grapichsQueue = VK_NULL_HANDLE;

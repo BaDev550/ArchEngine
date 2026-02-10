@@ -13,6 +13,7 @@ target_include_directories(ArchEngine
         ${CMAKE_CURRENT_SOURCE_DIR}/Source
         ${CMAKE_SOURCE_DIR}/vendor/SPIRV-Reflect
         ${CMAKE_SOURCE_DIR}/vendor/glm
+        ${CMAKE_SOURCE_DIR}/vendor/stb
 )
 
 target_link_libraries(ArchEngine PUBLIC

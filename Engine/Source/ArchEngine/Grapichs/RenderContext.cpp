@@ -97,6 +97,7 @@ namespace ae::grapichs {
 			CreateSurface();
 			PickPhysicalDevice();
 			CreateLogicalDevice();
+			CreateContextCommandPool();
 		}
 		catch (const std::exception& e) {
 			Logger_renderer::error("Render contex failed to initialize: {}", e.what());
@@ -140,6 +141,102 @@ namespace ae::grapichs {
 		memory = _logicalDevice.allocateMemory(allocInfo);
 		CHECKF(memory, "Failed to allocate memory");
 		_logicalDevice.bindBufferMemory(buffer, memory, 0);
+	}
+
+	void RenderContext::CreateImage(uint32_t width, uint32_t height, vk::Format format, vk::ImageTiling tiling, vk::ImageUsageFlags usage, vk::MemoryPropertyFlags memoryProperties, vk::Image& image, vk::DeviceMemory& memory) {
+		vk::ImageCreateInfo createInfo{};
+		createInfo.imageType = vk::ImageType::e2D;
+		createInfo.extent.width = width;
+		createInfo.extent.height = height;
+		createInfo.extent.depth = 1;
+		createInfo.mipLevels = 1;
+		createInfo.arrayLayers = 1;
+		createInfo.tiling = tiling;
+		createInfo.initialLayout = vk::ImageLayout::eUndefined;
+		createInfo.usage = usage;
+		createInfo.sharingMode = vk::SharingMode::eExclusive;
+		createInfo.samples = vk::SampleCountFlagBits::e1;
+		image = _logicalDevice.createImage(createInfo);
+		CHECKF(image, "Failed to create image");
+
+		vk::MemoryRequirements memRequirements;
+		_logicalDevice.getImageMemoryRequirements(image, &memRequirements);
+
+		const vk::MemoryAllocateInfo allocInfo{
+			.allocationSize = memRequirements.size,
+			.memoryTypeIndex = FindMemoryType(memRequirements.memoryTypeBits, memoryProperties)
+		};
+		memory = _logicalDevice.allocateMemory(allocInfo);
+		CHECKF(memory, "Failed to allocate memory");
+		_logicalDevice.bindImageMemory(image, memory, 0);
+	}
+
+	void RenderContext::CopyBuffer(vk::Buffer srcBuffer, vk::Buffer dstBuffer, vk::DeviceSize size) {
+		vk::CommandBuffer cmd = BeginSingleTimeCommand();
+		vk::BufferCopy copyRegion{
+			.srcOffset = 0,
+			.dstOffset = 0,
+			.size = size,
+		};
+		cmd.copyBuffer(srcBuffer, dstBuffer, 1, &copyRegion);
+		EndSingleTimeCommand(cmd);
+	}
+
+	void RenderContext::CopyBufferToImage(vk::Buffer buffer, vk::Image image, uint32_t width, uint32_t height) {
+		vk::CommandBuffer cmd = BeginSingleTimeCommand();
+		vk::BufferImageCopy region{
+			.bufferOffset = 0,
+			.bufferRowLength = 0,
+			.bufferImageHeight = 0
+		};
+		region.imageSubresource.aspectMask = vk::ImageAspectFlagBits::eColor;
+		region.imageSubresource.mipLevel = 0;
+		region.imageSubresource.baseArrayLayer = 0;
+		region.imageSubresource.layerCount = 1;
+		region.imageOffset = { 0, 0, 0 };
+		region.imageExtent = { width, height, 1 };
+		cmd.copyBufferToImage(buffer, image, vk::ImageLayout::eTransferDstOptimal, 1, &region);
+		EndSingleTimeCommand(cmd);
+	}
+
+	void RenderContext::TransitionImageLayout(vk::Image image, vk::Format format, vk::ImageLayout oldLayout, vk::ImageLayout newLayout) {
+		vk::CommandBuffer cmd = BeginSingleTimeCommand();
+		vk::ImageMemoryBarrier barrier{};
+		barrier.oldLayout = oldLayout;
+		barrier.newLayout = newLayout;
+		barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		barrier.image = image;
+		barrier.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
+		barrier.subresourceRange.baseMipLevel = 0;
+		barrier.subresourceRange.levelCount = 1;
+		barrier.subresourceRange.baseArrayLayer = 0;
+		barrier.subresourceRange.layerCount = 1;
+		vk::PipelineStageFlags sourceStage;
+		vk::PipelineStageFlags dstStage;
+		if (oldLayout == vk::ImageLayout::eUndefined && newLayout == vk::ImageLayout::eTransferDstOptimal) {
+			barrier.srcAccessMask = vk::AccessFlagBits::eNone;
+			barrier.dstAccessMask = vk::AccessFlagBits::eTransferWrite;
+			sourceStage = vk::PipelineStageFlagBits::eTopOfPipe;
+			dstStage = vk::PipelineStageFlagBits::eTransfer;
+		}
+		else if (oldLayout == vk::ImageLayout::eTransferDstOptimal && newLayout == vk::ImageLayout::eShaderReadOnlyOptimal) {
+			barrier.srcAccessMask = vk::AccessFlagBits::eTransferWrite;
+			barrier.dstAccessMask = vk::AccessFlagBits::eShaderRead;
+			sourceStage = vk::PipelineStageFlagBits::eTransfer;
+			dstStage = vk::PipelineStageFlagBits::eFragmentShader;
+		}
+		else {
+			CHECKF(false, "unsupported layout transform");
+		}
+		cmd.pipelineBarrier(
+			sourceStage, dstStage,
+			vk::DependencyFlags{},
+			0, nullptr,
+			0, nullptr,
+			1, &barrier
+		);
+		EndSingleTimeCommand(cmd);
 	}
 
 	void RenderContext::CreateInstance()
@@ -247,6 +344,15 @@ namespace ae::grapichs {
 		_presentQueue = _logicalDevice.getQueue(indices.presentFamily.value(), 0);
 	}
 
+	void RenderContext::CreateContextCommandPool() {
+		QueueFamilyIndices indices = FindPhysicalDeviceQueueFamilies();
+		vk::CommandPoolCreateInfo createInfo{
+			.flags = vk::CommandPoolCreateFlagBits::eProtected | vk::CommandPoolCreateFlagBits::eResetCommandBuffer,
+			.queueFamilyIndex = indices.graphicsFamily.value()
+		};
+		_commandPool = _logicalDevice.createCommandPool(createInfo);
+	}
+
 	bool RenderContext::IsPhysicalDeviceSuitable(vk::PhysicalDevice device)
 	{
 		QueueFamilyIndices indices = FindQueueFamilies(device);
@@ -333,5 +439,32 @@ namespace ae::grapichs {
 			}
 		}
 		CHECKF(false, "Failed to find any usable memory type");
+	}
+
+	vk::CommandBuffer RenderContext::BeginSingleTimeCommand() {
+		vk::CommandBufferAllocateInfo allocInfo{
+			.commandPool = _commandPool,
+			.level = vk::CommandBufferLevel::ePrimary,
+			.commandBufferCount = 1
+		};
+		vk::CommandBuffer cmd;
+		_logicalDevice.allocateCommandBuffers(allocInfo, &cmd);
+
+		vk::CommandBufferBeginInfo beginInfo{
+			.flags = vk::CommandBufferUsageFlagBits::eOneTimeSubmit
+		};
+		cmd.begin(beginInfo);
+		return cmd;
+	}
+
+	void RenderContext::EndSingleTimeCommand(vk::CommandBuffer cmd) {
+		cmd.end();
+		vk::SubmitInfo submitInfo{
+			.commandBufferCount = 1,
+			.pCommandBuffers = &cmd
+		};
+		_grapichsQueue.submit(submitInfo);
+		_grapichsQueue.waitIdle();
+		_logicalDevice.freeCommandBuffers(_commandPool, cmd);
 	}
 }
