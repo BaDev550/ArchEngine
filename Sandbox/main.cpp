@@ -10,7 +10,7 @@ public:
 	~SandboxGame() = default;
 
 	virtual void ApplicationUpdate() override {
-
+		
 	}
 };
 

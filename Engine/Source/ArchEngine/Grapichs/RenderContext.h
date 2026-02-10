@@ -50,6 +50,7 @@ namespace ae::grapichs {
 		QueueFamilyIndices FindPhysicalDeviceQueueFamilies() { return FindQueueFamilies(_physicalDevice); }
 
 		void WaitDeviceIdle();
+		void CreateBuffer(vk::DeviceSize size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags memoryProperties, vk::Buffer& buffer, vk::DeviceMemory& memory);
 
 		vk::Instance GetInstance() const { return _instance; }
 		vk::Device GetDevice() const { return _logicalDevice; }
@@ -69,6 +70,7 @@ namespace ae::grapichs {
 		bool CheckValidationLayerSupport();
 		std::vector<const char*> GetRequiredExtensions();
 		QueueFamilyIndices FindQueueFamilies(vk::PhysicalDevice device);
+		uint32_t FindMemoryType(uint32_t typeFilter, vk::MemoryPropertyFlags properties);
 	private:
 		vk::Instance _instance = VK_NULL_HANDLE;
 		vk::PhysicalDeviceProperties _physicalDeviceProperties;

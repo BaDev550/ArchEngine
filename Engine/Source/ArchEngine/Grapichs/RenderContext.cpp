@@ -120,6 +120,28 @@ namespace ae::grapichs {
 			_logicalDevice.waitIdle();
 	}
 
+	void RenderContext::CreateBuffer(vk::DeviceSize size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags memoryProperties, vk::Buffer& buffer, vk::DeviceMemory& memory)
+	{
+		const vk::BufferCreateInfo bufferInfo{
+			.size = size,
+			.usage = usage,
+			.sharingMode = vk::SharingMode::eExclusive
+		};
+		buffer = _logicalDevice.createBuffer(bufferInfo);
+		CHECKF(buffer, "Failed to create buffer");
+
+		vk::MemoryRequirements memRequirements;
+		_logicalDevice.getBufferMemoryRequirements(buffer, &memRequirements);
+
+		const vk::MemoryAllocateInfo allocInfo{
+			.allocationSize = memRequirements.size,
+			.memoryTypeIndex = FindMemoryType(memRequirements.memoryTypeBits, memoryProperties)
+		};
+		memory = _logicalDevice.allocateMemory(allocInfo);
+		CHECKF(memory, "Failed to allocate memory");
+		_logicalDevice.bindBufferMemory(buffer, memory, 0);
+	}
+
 	void RenderContext::CreateInstance()
 	{
 		VULKAN_HPP_DEFAULT_DISPATCHER.init(vkGetInstanceProcAddr);
@@ -300,5 +322,16 @@ namespace ae::grapichs {
 				break;
 		}
 		return indices;
+	}
+
+	uint32_t RenderContext::FindMemoryType(uint32_t typeFilter, vk::MemoryPropertyFlags properties) {
+		VkPhysicalDeviceMemoryProperties memProperties;
+		_physicalDevice.getMemoryProperties(&memProperties);
+		for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
+			if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties) {
+				return i;
+			}
+		}
+		CHECKF(false, "Failed to find any usable memory type");
 	}
 }
