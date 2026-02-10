@@ -2,6 +2,8 @@
 #include "Pipeline.h"
 #include "ArchEngine/Core/Application.h"
 
+#include <glm/glm.hpp>
+
 namespace ae::grapichs {
 	Pipeline::Pipeline(const PipelineData& data) 
 		: _context(Application::Get()->GetWindow().GetRenderContext()), _data(data)
@@ -39,15 +41,17 @@ namespace ae::grapichs {
 		for (const auto& [set, layout] : layoutMap)
 			layouts.push_back(layout);
 
-		//vk::PushConstantRange pushConstant{
-		//	.offset = 0,
-		//	.size = sizeof(glm::mat4),
-		//	.stageFlags = vk::ShaderStageFlagBits::eVertex
-		//}
+		vk::PushConstantRange pushConstant{
+			.stageFlags = vk::ShaderStageFlagBits::eVertex,
+			.offset = 0,
+			.size = sizeof(glm::mat4)
+		};
 
 		vk::PipelineLayoutCreateInfo layoutCreateInfo{
 			.setLayoutCount = static_cast<uint32_t>(layouts.size()),
-			.pSetLayouts = layouts.data()
+			.pSetLayouts = layouts.data(),
+			.pushConstantRangeCount = 1,
+			.pPushConstantRanges = &pushConstant
 		};
 		_pipelineLayout = _context.GetDevice().createPipelineLayout(layoutCreateInfo);
 

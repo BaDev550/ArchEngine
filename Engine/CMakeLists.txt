@@ -12,6 +12,7 @@ target_include_directories(ArchEngine
     PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/Source
         ${CMAKE_SOURCE_DIR}/vendor/SPIRV-Reflect
+        ${CMAKE_SOURCE_DIR}/vendor/glm
 )
 
 target_link_libraries(ArchEngine PUBLIC

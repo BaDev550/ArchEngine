@@ -7,8 +7,13 @@ endif()
 
 project(ArchEngine LANGUAGES C CXX)
 find_package(Vulkan REQUIRED)
-find_library(Vulkan_SHADERC NAMES shaderc_shared HINTS "$ENV{VULKAN_SDK}/Lib")
-find_library(Vulkan_SHADERC_UTILS NAMES shaderc_util HINTS "$ENV{VULKAN_SDK}/Lib")
+if(WIN32)
+    find_library(Vulkan_SHADERC NAMES shaderc_shared HINTS "$ENV{VULKAN_SDK}/Lib")
+    find_library(Vulkan_SHADERC_UTILS NAMES shaderc_util HINTS "$ENV{VULKAN_SDK}/Lib")
+else()
+    find_library(Vulkan_SHADERC NAMES shaderc_shared shaderc)
+    set(Vulkan_SHADERC_UTILS "")
+endif()
 
 include(FetchContent)
 # GLFW

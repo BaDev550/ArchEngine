@@ -4,9 +4,6 @@
 #include "ArchEngine/Grapichs/Renderer.h"
 #include "ArchEngine/Utilities/Logger.h"
 
-#include "ArchEngine/Grapichs/Shader.h"
-#include "ArchEngine/Grapichs/Pipeline.h"
-
 namespace ae {
 	using namespace memory;
 	using namespace grapichs;
@@ -28,9 +25,6 @@ namespace ae {
 		Window& GetWindow() { return *_window; }
 	private:
 		Scope<Window> _window = nullptr;
-
-		Ref<Shader> _shader = nullptr;
-		Ref<Pipeline> _pipeline = nullptr;
 
 		static Application* _instance;
 	};

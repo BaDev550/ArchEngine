@@ -1,4 +1,5 @@
 #pragma once
+#include "ArchEngine/Utilities/Defines.h"
 
 extern ae::Application* CreateApplication();
 
@@ -15,8 +16,6 @@ int main(int argc, char** argv) {
 	auto app = CreateApplication();
 	app->Run();
 	delete app;
-#ifdef _DEBUG && defined(_MSC_VER)
-	_CrtDumpMemoryLeaks();
-#endif
+	DUMP_MEMORY_LEAKS;
 	return 0;
 }
