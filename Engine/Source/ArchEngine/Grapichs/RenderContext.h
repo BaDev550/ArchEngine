@@ -31,6 +31,7 @@ namespace ae::grapichs {
 		vk::PipelineDynamicStateCreateInfo DynamicStateCreateInfo{};
 
 		static void Default(PipelineConfig& config);
+		static void FramebufferConfig(PipelineConfig& config, uint32_t attachmentCount);
 	};
 
 	struct QueueFamilyIndices {

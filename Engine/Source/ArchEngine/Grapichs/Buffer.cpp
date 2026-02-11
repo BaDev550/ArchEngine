@@ -14,7 +14,7 @@ namespace ae::grapichs {
 		uint64_t size,
 		vk::BufferUsageFlags usage,
 		vk::MemoryPropertyFlags memoryProperties,
-		bool mapAtConstructor = false
+		bool mapAtConstructor
 	) 
 		: _context(Application::Get()->GetWindow().GetRenderContext()),
 		_instanceSize(size),
@@ -35,7 +35,7 @@ namespace ae::grapichs {
 		_context.GetDevice().freeMemory(_bufferMemory);
 	}
 
-	void Buffer::Map(uint64_t size = UINT64_MAX, uint64_t offset = 0){
+	void Buffer::Map(uint64_t size, uint64_t offset){
 		CHECKF(_buffer && _bufferMemory, "Called Map buffer before buffer was created!");
 		CHECKF(_data = _context.GetDevice().mapMemory(_bufferMemory, offset, size), "failed to map memory");
 	}
@@ -47,7 +47,7 @@ namespace ae::grapichs {
 		}
 	}
 
-	void Buffer::Write(void* data, uint64_t size = UINT64_MAX, uint64_t offset = 0) {
+	void Buffer::Write(void* data, uint64_t size, uint64_t offset) {
 		CHECKF(_data, "Cannot write to unmapped buffer");
 		if (size == vk::WholeSize) {
 			memcpy(_data, data, _bufferSize);

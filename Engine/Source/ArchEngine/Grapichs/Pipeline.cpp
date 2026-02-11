@@ -13,7 +13,7 @@ namespace ae::grapichs {
 
 	void Pipeline::Invalidate() {
 		PipelineConfig config{};
-		PipelineConfig::Default(config);
+		PipelineConfig::FramebufferConfig(config, _data.TargetFramebuffer->GetSpecification().Attachments.Attachments.size());
 		auto& shader = _data.Shader;
 		auto& compiledData = shader->GetCompiledShaderData();
 
@@ -61,11 +61,18 @@ namespace ae::grapichs {
 		};
 		_pipelineCache = _context.GetDevice().createPipelineCache(cacheCreateInfo);
 
-		const vk::Format colorAttachmentFormat = Application::Get()->GetWindow().GetSwapchain().GetSwapchainFormat();
+		std::vector<vk::Format> colorFormats;
+		if (_data.TargetFramebuffer) {
+			for (const auto& attachment : _data.TargetFramebuffer->GetSpecification().Attachments.Attachments) {
+				if (!IsDepthFormat(attachment))
+					colorFormats.push_back(attachment);
+			}
+		}
+
 		const vk::PipelineRenderingCreateInfo pipelineRenderingInfo{
-			.colorAttachmentCount = 1,
-			.pColorAttachmentFormats = &colorAttachmentFormat, // Change this later to match the framebuffer format
-			.depthAttachmentFormat = vk::Format::eD32Sfloat
+			.colorAttachmentCount = static_cast<uint32_t>(colorFormats.size()),
+			.pColorAttachmentFormats = colorFormats.data(),
+			.depthAttachmentFormat = _data.TargetFramebuffer->GetDepthTexture()->GetFormat()
 		};
 
 		const vk::GraphicsPipelineCreateInfo createInfo{

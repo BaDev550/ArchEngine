@@ -77,6 +77,17 @@ namespace ae::grapichs {
 		config.DynamicStateCreateInfo.dynamicStateCount = static_cast<uint32_t>(config.DynamicStateEnables.size());
 	}
 
+	void PipelineConfig::FramebufferConfig(PipelineConfig& config, uint32_t attachmentCount) {
+		Default(config);
+		std::vector<vk::PipelineColorBlendAttachmentState> attachments(attachmentCount);
+		for (uint32_t i = 0; i < attachmentCount; i++) {
+			attachments[i].colorWriteMask = vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA;
+			attachments[i].blendEnable = false;
+		}
+		config.ColorBlendStateCreateInfo.attachmentCount = attachmentCount;
+		config.ColorBlendStateCreateInfo.pAttachments = attachments.data();
+	}
+
 	static VKAPI_ATTR vk::Bool32 VKAPI_CALL debugCallback(
 		vk::DebugUtilsMessageSeverityFlagBitsEXT severity, 
 		vk::DebugUtilsMessageTypeFlagsEXT type, 
@@ -431,7 +442,7 @@ namespace ae::grapichs {
 	}
 
 	uint32_t RenderContext::FindMemoryType(uint32_t typeFilter, vk::MemoryPropertyFlags properties) {
-		VkPhysicalDeviceMemoryProperties memProperties;
+		vk::PhysicalDeviceMemoryProperties memProperties;
 		_physicalDevice.getMemoryProperties(&memProperties);
 		for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
 			if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties) {

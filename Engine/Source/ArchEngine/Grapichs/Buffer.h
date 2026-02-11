@@ -1,9 +1,10 @@
 #pragma once
 #include "RenderContext.h"
+#include "ArchEngine/Core/Memory.h"
 #include "ArchEngine/Utilities/Defines.h"
 
 namespace ae::grapichs {
-	class Buffer {
+	class Buffer : public memory::RefCounted {
 	public:
 		Buffer(
 			uint64_t size,

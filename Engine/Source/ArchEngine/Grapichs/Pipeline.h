@@ -3,10 +3,12 @@
 
 #include "RenderContext.h"
 #include "Shader.h"
+#include "Framebuffer.h"
 
 namespace ae::grapichs {
 	struct PipelineData {
 		memory::Ref<Shader> Shader;
+		memory::Ref<Framebuffer> TargetFramebuffer;
 	};
 
 	class Pipeline : public memory::RefCounted {
@@ -16,9 +18,9 @@ namespace ae::grapichs {
 		Pipeline(const Pipeline&) = delete;
 		Pipeline& operator=(const Pipeline&) = delete;
 
-		PipelineData& GetPipelineData() { return _data; }
 		vk::Pipeline GetPipeline() const { return _pipeline; }
 		vk::PipelineLayout GetPipelineLayout() const { return _pipelineLayout; }
+		const PipelineData& GetPipelineData() const { return _data; }
 
 		void Invalidate();
 		const memory::Ref<Shader>& GetShader() const { return _data.Shader; }

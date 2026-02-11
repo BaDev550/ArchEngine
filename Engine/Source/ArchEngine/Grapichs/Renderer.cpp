@@ -5,6 +5,7 @@ namespace ae::grapichs {
 	struct RenderData {
 		memory::Scope<ShaderLibrary> ShaderLibrary = nullptr;
 	} s_data;
+	static uint32_t g_frameIndex = 0;
 
 	void Renderer::Init() {
 		s_data.ShaderLibrary = memory::MakeScope<ShaderLibrary>();
@@ -18,4 +19,5 @@ namespace ae::grapichs {
 	}
 
 	ShaderLibrary& Renderer::GetShaderLibrary() { return *s_data.ShaderLibrary; }
+	uint32_t GetFrameIndex() { return g_frameIndex; }
 }
