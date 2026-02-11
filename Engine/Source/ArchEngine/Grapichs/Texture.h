@@ -5,6 +5,12 @@
 #include "ArchEngine/Utilities/DataBuffer.h"
 
 namespace ae::grapichs {
+	const bool IsDepthFormat(vk::Format format) {
+		if (format == vk::Format::eD32Sfloat || format == vk::Format::eD24UnormS8Uint)
+			return true;
+		return false;
+	}
+
 	struct TextureSpecification {
 		vk::Format Format = vk::Format::eR32G32B32A32Sfloat;
 		vk::Filter Filter = vk::Filter::eLinear;
@@ -25,7 +31,7 @@ namespace ae::grapichs {
 		uint32_t GetWidth() const { return _specs.Width; }
 		uint32_t GetHeight() const { return _specs.Width; }
 		bool IsAttachment() const { return _specs.Attachment; }
-	private:
+	protected:
 		TextureSpecification _specs;
 	};
 	
@@ -41,7 +47,8 @@ namespace ae::grapichs {
 		vk::DescriptorImageInfo GetImageDescriptorInfo() const {
 			return {
 				.sampler = _imageSampler,
-				.imageView = _imageView
+				.imageView = _imageView,
+				.imageLayout = vk::ImageLayout::eShaderReadOnlyOptimal
 			};
 		}
 	private:

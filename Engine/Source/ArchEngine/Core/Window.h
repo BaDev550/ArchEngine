@@ -20,6 +20,8 @@ namespace ae {
 		Window(WindowSpecifications windowSpecs);
 		~Window();
 
+		uint32_t GetWidth() const { return _specs.Width; }
+		uint32_t GetHeight() const { return _specs.Height; }
 		grapichs::RenderContext& GetRenderContext() { return *_renderContext; }
 		grapichs::Swapchain& GetSwapchain() { return *_swapchain; }
 		GLFWwindow* GetHandle() const;

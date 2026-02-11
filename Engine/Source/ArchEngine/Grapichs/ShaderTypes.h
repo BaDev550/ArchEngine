@@ -67,4 +67,21 @@ namespace ae::grapichs {
 		case vk::Format::eR32G32B32A32Sfloat: return 16;
 		}
 	}
+
+	static constexpr vk::ImageAspectFlags TextureFormatToAspectFlags(vk::Format format) {
+		switch (format)
+		{
+		case vk::Format::eUndefined: return vk::ImageAspectFlagBits::eColor;
+		case vk::Format::eR16Sfloat: return vk::ImageAspectFlagBits::eColor;
+		case vk::Format::eR16G16Sfloat: return vk::ImageAspectFlagBits::eColor;
+		case vk::Format::eR16G16B16Sfloat: return vk::ImageAspectFlagBits::eColor;
+		case vk::Format::eR16G16B16A16Sfloat: return vk::ImageAspectFlagBits::eColor;
+		case vk::Format::eR32Sfloat: return vk::ImageAspectFlagBits::eColor;
+		case vk::Format::eR32G32Sfloat: return vk::ImageAspectFlagBits::eColor;
+		case vk::Format::eR32G32B32Sfloat: return vk::ImageAspectFlagBits::eColor;
+		case vk::Format::eR32G32B32A32Sfloat: return vk::ImageAspectFlagBits::eColor;
+		case vk::Format::eD32Sfloat: return vk::ImageAspectFlagBits::eDepth;
+		case vk::Format::eD24UnormS8Uint: return vk::ImageAspectFlagBits::eDepth | vk::ImageAspectFlagBits::eStencil;
+		}
+	}
 }
