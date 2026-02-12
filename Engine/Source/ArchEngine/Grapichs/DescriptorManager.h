@@ -5,6 +5,7 @@
 #include "Buffer.h"
 #include "Texture.h"
 #include "Shader.h"
+#include "Renderer.h"
 #include <vector>
 
 namespace ae::grapichs {
@@ -34,10 +35,10 @@ namespace ae::grapichs {
 		}
 	};
 
-	class DescriptorManager {
+	class DescriptorManager : public memory::RefCounted {
 	public:
 		DescriptorManager() = default;
-		DescriptorManager(memory::Ref<Shader>& shader);
+		DescriptorManager(const memory::Ref<Shader>& shader);
 		~DescriptorManager();
 
 		void WriteInput(std::string_view name, memory::Ref<Buffer> buffer);
@@ -47,9 +48,9 @@ namespace ae::grapichs {
 		void Invalidate();
 
 		vk::DescriptorSet Allocate(vk::DescriptorSetLayout layout);
-		vk::DescriptorSet GetDescriptorSet(uint32_t setIndex) { return _descriptorSets[0][setIndex]; }
+		vk::DescriptorSet GetDescriptorSet(uint32_t setIndex) { return _descriptorSets[Renderer::GetFrameIndex()][setIndex]; }
 		vk::DescriptorPool GetDescriptorPool() const { return _descriptorPool; }
-		std::vector<vk::DescriptorSet> GetDescriptorSets() { return _descriptorSets[0]; } // Get frame index
+		std::vector<vk::DescriptorSet> GetDescriptorSets() { return _descriptorSets[Renderer::GetFrameIndex()]; }
 		const std::map<std::string, RenderPassInputDeclaration>& GetInputDeclarations() const { return _inputDeclarations; }
 	private:
 		memory::Ref<Shader> _shader;

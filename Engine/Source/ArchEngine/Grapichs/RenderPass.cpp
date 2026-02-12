@@ -238,7 +238,7 @@ namespace ae::grapichs {
 
 	void RenderPass::End() {
 		vk::CommandBuffer cmd = Renderer::GetCurrentCommandBuffer();
-		cmd.endRendering(cmd);
+		cmd.endRendering();
 	}
 
 	void RenderPass::SetInput(std::string_view name, const memory::Ref<Buffer>& buffer) {

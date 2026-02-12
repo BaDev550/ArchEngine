@@ -29,7 +29,7 @@ namespace ae::grapichs {
 		void Resize(uint32_t width, uint32_t height);
 		uint32_t GetWidth() const { return _specs.Width; }
 		uint32_t GetHeight() const { return _specs.Height; }
-		uint32_t GetAttachmentCount() const {};
+		uint32_t GetAttachmentCount() const { return static_cast<uint32_t>(_colorAttachments.size()); }
 		memory::Ref<Texture2D> GetAttachmentTexture(uint32_t index = 0) const { return _colorAttachments[index]; }
 		memory::Ref<Texture2D> GetDepthTexture() const { return _depthAttachment; }
 		bool DoesFramebufferHasDepthAttachment() const { return _depthAttachment; }

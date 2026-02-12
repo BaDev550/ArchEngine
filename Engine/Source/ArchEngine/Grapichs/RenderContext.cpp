@@ -121,6 +121,7 @@ namespace ae::grapichs {
 	{
 		if (_enableValidationLayer) _instance.destroyDebugUtilsMessengerEXT(_debugMessanger);
 
+		_logicalDevice.destroyCommandPool(_commandPool);
 		_logicalDevice.destroy();
 		_instance.destroySurfaceKHR(_surface);
 		_instance.destroy();
@@ -327,7 +328,7 @@ namespace ae::grapichs {
 		std::set<uint32_t> uniqeQueueFamilies = { indices.graphicsFamily.value(), indices.presentFamily.value() };
 		for (uint32_t queueFamily : uniqeQueueFamilies) {
 			vk::DeviceQueueCreateInfo queueCreateInfo{
-				.queueFamilyIndex = indices.graphicsFamily.value(),
+				.queueFamilyIndex = queueFamily,
 				.queueCount = 1,
 				.pQueuePriorities = &queuePriority
 			};
@@ -337,7 +338,7 @@ namespace ae::grapichs {
 		const vk::PhysicalDeviceDynamicRenderingFeatures dynamicRenderingFeatures{
 			.dynamicRendering = VK_TRUE
 		};
-		
+
 		const vk::DeviceCreateInfo createInfo{
 			.pNext = &dynamicRenderingFeatures,
 			.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size()),
@@ -358,7 +359,7 @@ namespace ae::grapichs {
 	void RenderContext::CreateContextCommandPool() {
 		QueueFamilyIndices indices = FindPhysicalDeviceQueueFamilies();
 		vk::CommandPoolCreateInfo createInfo{
-			.flags = vk::CommandPoolCreateFlagBits::eProtected | vk::CommandPoolCreateFlagBits::eResetCommandBuffer,
+			.flags = vk::CommandPoolCreateFlagBits::eResetCommandBuffer,
 			.queueFamilyIndex = indices.graphicsFamily.value()
 		};
 		_commandPool = _logicalDevice.createCommandPool(createInfo);
@@ -458,8 +459,8 @@ namespace ae::grapichs {
 			.level = vk::CommandBufferLevel::ePrimary,
 			.commandBufferCount = 1
 		};
-		vk::CommandBuffer cmd;
-		_logicalDevice.allocateCommandBuffers(allocInfo, &cmd);
+		auto commandBuffers = _logicalDevice.allocateCommandBuffers(allocInfo);
+		vk::CommandBuffer cmd = commandBuffers[0];
 
 		vk::CommandBufferBeginInfo beginInfo{
 			.flags = vk::CommandBufferUsageFlagBits::eOneTimeSubmit

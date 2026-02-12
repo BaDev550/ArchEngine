@@ -55,6 +55,11 @@ namespace ae::grapichs {
 		);
 		CreateTextureImageView();
 		CreateTextureSampler();
+		_imageInfo = {
+				.sampler = _imageSampler,
+				.imageView = _imageView,
+				.imageLayout = vk::ImageLayout::eShaderReadOnlyOptimal
+		};
 	}
 
 	void Texture2D::CreateTextureImageView()

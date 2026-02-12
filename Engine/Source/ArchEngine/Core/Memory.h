@@ -104,12 +104,38 @@ namespace ae::memory {
 		Ref(Ref<T>&& other) noexcept : _instance(other._instance) {
 			other._instance = nullptr;
 		}
+		template<typename T2>
+		Ref(const Ref<T2>& other) {
+			_instance = (T*)other._instance;
+			IncRef();
+		}
+		template<typename T2>
+		Ref(Ref<T2>&& other) {
+			_instance = (T*)other._instance;
+			other._instance = nullptr;
+		}
 		~Ref() { DecRef(); }
 		Ref& operator=(const Ref<T>& other) {
 			if (this == &other) return *this;
+			other.IncRef();
 			DecRef();
 			_instance = other._instance;
-			IncRef();
+			return *this;
+		}
+
+		template<typename T2>
+		Ref& operator=(const Ref<T2>& other) {
+			other.IncRef();
+			DecRef();
+			_instance = other._instance;
+			return *this;
+		}
+
+		template<typename T2>
+		Ref& operator=(Ref<T2>&& other) {
+			DecRef();
+			_instance = other._instance;
+			other._instance = nullptr;
 			return *this;
 		}
 
@@ -133,7 +159,6 @@ namespace ae::memory {
 		static Ref<T> Create(Args&&... args) {
 			return Ref<T>(new T(std::forward<Args>(args)...));
 		}
-	private:
 		void IncRef() const {
 			static_assert(std::is_base_of<RefCounted, T>::value, "instance is not ref counted");
 			if (_instance) _instance->IncRef();

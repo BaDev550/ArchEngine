@@ -18,7 +18,7 @@ namespace ae::grapichs {
 		void Unmap();
 		void Write(void* data, uint64_t size = UINT64_MAX, uint64_t offset = 0);
 
-		vk::DescriptorBufferInfo GetDescriptorInfo(vk::DeviceSize size = vk::WholeSize, uint64_t offset = 0) const { return { .buffer = _buffer, .offset = offset, .range = size }; }
+		vk::DescriptorBufferInfo& GetDescriptorInfo(vk::DeviceSize size = vk::WholeSize, uint64_t offset = 0) { return _descriptorInfo; }
 		vk::Buffer GetBuffer() const { return _buffer; }
 		void* GetData() const { return _data; }
 	private:
@@ -30,6 +30,7 @@ namespace ae::grapichs {
 		vk::DeviceSize _instanceSize;
 		vk::DeviceSize _alignmentSize;
 		vk::BufferUsageFlags _usageFlags;
+		vk::DescriptorBufferInfo _descriptorInfo;
 		vk::MemoryPropertyFlags _memoryPropertyFlags;
 
 		RenderContext& _context;

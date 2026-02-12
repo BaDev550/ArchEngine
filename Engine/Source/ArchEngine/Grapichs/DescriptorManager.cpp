@@ -4,14 +4,17 @@
 #include "ArchEngine/Core/Application.h"
 
 namespace ae::grapichs {
-	DescriptorManager::DescriptorManager(memory::Ref<Shader>& shader)
-		: _context(Application::Get()->GetWindow().GetRenderContext())
+	DescriptorManager::DescriptorManager(const memory::Ref<Shader>& shader)
+		: _context(Application::Get()->GetWindow().GetRenderContext()), _shader(shader)
 	{
 	}
 
 	DescriptorManager::~DescriptorManager() {
-		for (int i = 0; i < Renderer::MaxFramesInFlight; i++)
-			_context.GetDevice().freeDescriptorSets(_descriptorPool, static_cast<uint32_t>(_descriptorSets[i].size()), _descriptorSets[i].data());
+		for (int i = 0; i < Renderer::MaxFramesInFlight; i++) {
+			if (!_descriptorSets[i].empty()) {
+				_context.GetDevice().freeDescriptorSets(_descriptorPool, _descriptorSets[i]);
+			}
+		}
 		_descriptorSets.clear();
 		_inputDeclarations.clear();
 		_storedResources.clear();
@@ -120,13 +123,12 @@ namespace ae::grapichs {
 	}
 
 	vk::DescriptorSet DescriptorManager::Allocate(vk::DescriptorSetLayout layout) {
-		vk::DescriptorSet set;
 		vk::DescriptorSetAllocateInfo allocInfo{};
 		allocInfo.descriptorPool = _descriptorPool;
 		allocInfo.pSetLayouts = &layout;
 		allocInfo.descriptorSetCount = 1;
-		_context.GetDevice().allocateDescriptorSets(allocInfo, &set);
-		return set;
+		std::vector<vk::DescriptorSet> sets = _context.GetDevice().allocateDescriptorSets(allocInfo);
+		return sets[0];
 	}
 
 	const RenderPassInputDeclaration* DescriptorManager::GetInputDeclaration(std::string_view name)

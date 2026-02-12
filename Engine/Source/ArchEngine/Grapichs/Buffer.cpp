@@ -27,6 +27,12 @@ namespace ae::grapichs {
 		_context.CreateBuffer(_bufferSize, _usageFlags, _memoryPropertyFlags, _buffer, _bufferMemory);
 		if (mapAtConstructor)
 			Map(size);
+
+		_descriptorInfo = {
+			.buffer = _buffer,
+			.offset = 0,
+			.range = size
+		};
 	}
 
 	Buffer::~Buffer() {
@@ -58,5 +64,4 @@ namespace ae::grapichs {
 			memcpy(memOffset, data, _bufferSize);
 		}
 	}
-
 }

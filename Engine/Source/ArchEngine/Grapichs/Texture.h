@@ -44,13 +44,7 @@ namespace ae::grapichs {
 
 		vk::Image GetImage() const { return _image; }
 		vk::ImageView GetImageView() const { return _imageView; }
-		vk::DescriptorImageInfo GetImageDescriptorInfo() const {
-			return {
-				.sampler = _imageSampler,
-				.imageView = _imageView,
-				.imageLayout = vk::ImageLayout::eShaderReadOnlyOptimal
-			};
-		}
+		vk::DescriptorImageInfo& GetImageDescriptorInfo() { return _imageInfo; }
 	private:
 		void LoadTexture(void* data, uint32_t width, uint32_t height, uint32_t channels);
 		void CreateTexture();
@@ -61,6 +55,7 @@ namespace ae::grapichs {
 		vk::DeviceMemory _imageMemory;
 		vk::ImageView _imageView;
 		vk::Sampler _imageSampler;
+		vk::DescriptorImageInfo _imageInfo;
 
 		RenderContext& _context;
 	};
