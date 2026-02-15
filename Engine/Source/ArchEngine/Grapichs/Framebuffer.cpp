@@ -10,17 +10,25 @@ namespace ae::grapichs {
 			_specs.Width = Application::Get()->GetWindow().GetWidth();
 			_specs.Height = Application::Get()->GetWindow().GetHeight();
 		}
-		for (const auto& attachment : _specs.Attachments.Attachments) {
-			TextureSpecification spec{};
-			spec.Format = attachment;
-			spec.Width = _specs.Width;
-			spec.Height = _specs.Height;
-			spec.Attachment = true;
-			if (IsDepthFormat(attachment)) {
-				_depthAttachment = memory::Ref<Texture2D>::Create(spec);
+		if (_specs.IsSwapchain) {
+			auto& swapchain = Application::Get()->GetWindow().GetSwapchain();
+			for (size_t i = 0; i < swapchain._swapChainImages.size(); i++) {
+				_colorAttachments.emplace_back(memory::Ref<Texture2D>::Create(swapchain._swapChainImages[i], swapchain._swapChainImageViews[i]));
 			}
-			else {
-				_colorAttachments.emplace_back(memory::Ref<Texture2D>::Create(spec));
+		}
+		else {
+			for (const auto& attachment : _specs.Attachments.Attachments) {
+				TextureSpecification spec{};
+				spec.Format = attachment;
+				spec.Width = _specs.Width;
+				spec.Height = _specs.Height;
+				spec.Attachment = true;
+				if (IsDepthFormat(attachment)) {
+					_depthAttachment = memory::Ref<Texture2D>::Create(spec);
+				}
+				else {
+					_colorAttachments.emplace_back(memory::Ref<Texture2D>::Create(spec));
+				}
 			}
 		}
 	}

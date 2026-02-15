@@ -119,6 +119,11 @@ namespace ae::grapichs {
 		}
 	}
 
+	Texture2D::Texture2D(const TextureSpecification& specs, vk::Image image, vk::ImageView imageView)
+		: _context(Application::Get()->GetWindow().GetRenderContext()), _image(image), _imageView(imageView)
+	{
+	}
+
 	Texture2D::Texture2D(const TextureSpecification& specs, DataBuffer data)
 		: _context(Application::Get()->GetWindow().GetRenderContext())
 	{

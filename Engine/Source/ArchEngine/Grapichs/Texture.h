@@ -39,6 +39,7 @@ namespace ae::grapichs {
 	public:
 		Texture2D(const TextureSpecification& specs);
 		Texture2D(const TextureSpecification& specs, const std::filesystem::path& path);
+		Texture2D(const TextureSpecification& specs, vk::Image image, vk::ImageView imageView);
 		Texture2D(const TextureSpecification& specs, DataBuffer data);
 		~Texture2D();
 

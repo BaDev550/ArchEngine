@@ -8,11 +8,15 @@ namespace ae::grapichs {
 		~Swapchain();
 		Swapchain(const Swapchain&) = delete;
 		Swapchain& operator=(const Swapchain&) = delete;
+		size_t GetImageCount() const { return _swapChainImages.size(); }
 
+		void Submit(vk::CommandBuffer* cmd, uint32_t* imageIndex);
+		vk::Result Swapbuffers(uint32_t* imageIndex);
 		vk::Format GetSwapchainFormat() const { return _swapChainImageFormat; }
 	private:
 		void CreateSwapchain();
 		void CreateSwapchainImageViews();
+		void CreateSyncObjects();
 		vk::SurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& availableFormats);
 		vk::PresentModeKHR ChooseSwapPresentMode(const std::vector<vk::PresentModeKHR>& availablePresentModes);
 		vk::Extent2D ChooseSwapExtent(const vk::SurfaceCapabilitiesKHR& capabilities);
@@ -24,7 +28,11 @@ namespace ae::grapichs {
 
 		std::vector<vk::Image> _swapChainImages;
 		std::vector<vk::ImageView> _swapChainImageViews;
+		std::vector<vk::Semaphore> _imageAvailableSemaphores;
+		std::vector<vk::Semaphore> _renderFinishedSemaphores;
+		std::vector<vk::Fence> _inFlightFences;
 
 		RenderContext& _context;
+		friend class Framebuffer;
 	};
 }

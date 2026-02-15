@@ -19,6 +19,8 @@ namespace ae::grapichs {
 		float DepthClearValue = 0.0f;
 		glm::vec4 ClearColor = { 0.0f, 0.0f, 0.0f, 1.0f };
 		FramebufferAttachmmentSpecification Attachments;
+
+		bool IsSwapchain = false;
 	};
 
 	class Framebuffer : public memory::RefCounted {

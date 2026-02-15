@@ -5,7 +5,7 @@
 namespace ae::grapichs {
 	class Renderer {
 	public:
-		static inline uint32_t MaxFramesInFlight = 2;
+		static inline const uint32_t MaxFramesInFlight = 2;
 
 		static void Init();
 		static void Destroy();

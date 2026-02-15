@@ -80,6 +80,59 @@ namespace ae::grapichs {
 		}
 	}
 
+	void Swapchain::CreateSyncObjects() {
+		_imageAvailableSemaphores.resize(Renderer::MaxFramesInFlight);
+		_renderFinishedSemaphores.resize(GetImageCount());
+		_inFlightFences.resize(Renderer::MaxFramesInFlight);
+
+		vk::SemaphoreCreateInfo createInfo{};
+		vk::FenceCreateInfo fenceCreateInfo{};
+		fenceCreateInfo.flags = vk::FenceCreateFlagBits::eSignaled;
+
+		for (size_t i = 0; i < Renderer::MaxFramesInFlight; i++) {
+			_imageAvailableSemaphores[i] = _context.GetDevice().createSemaphore(createInfo);
+			_inFlightFences[i] = _context.GetDevice().createFence(fenceCreateInfo);
+		}
+
+		for (size_t i = 0; i < GetImageCount(); i++) {
+			_renderFinishedSemaphores[i] = _context.GetDevice().createSemaphore(createInfo);
+		}
+	}
+
+	void Swapchain::Submit(vk::CommandBuffer* cmd, uint32_t* imageIndex) {
+		vk::SubmitInfo submitInfo{};
+		vk::Semaphore waitSemaphore[] = { _imageAvailableSemaphores[Renderer::GetFrameIndex()]};
+		vk::Semaphore signalSemaphore[] = { _renderFinishedSemaphores[*imageIndex] };
+		vk::PipelineStageFlags waitStages[] = { vk::PipelineStageFlagBits::eColorAttachmentOutput };
+		submitInfo.waitSemaphoreCount = 1;
+		submitInfo.pWaitSemaphores = waitSemaphore;
+		submitInfo.pWaitDstStageMask = waitStages;
+		submitInfo.commandBufferCount = 1;
+		submitInfo.pCommandBuffers = cmd;
+		submitInfo.signalSemaphoreCount = 1;
+		submitInfo.pSignalSemaphores = signalSemaphore;
+		_context.GetGrapichsQueue().submit(submitInfo);
+
+		vk::PresentInfoKHR presentInfo{};
+		presentInfo.waitSemaphoreCount = 1;
+		presentInfo.pWaitSemaphores = waitSemaphore;
+		presentInfo.swapchainCount = 1;
+		presentInfo.pSwapchains = &_swapChain;
+		presentInfo.pImageIndices = imageIndex;
+		CHECKF(_context.GetPresentQueue().presentKHR(presentInfo) == vk::Result::eSuccess, "Failed to swap buffers");
+	}
+
+	vk::Result Swapchain::Swapbuffers(uint32_t* imageIndex) {
+		uint32_t frameIndex = Renderer::GetFrameIndex();
+		vk::Result result = _context.GetDevice().waitForFences(1, &_inFlightFences[frameIndex], vk::True, UINT32_MAX);
+		CHECKF(result == vk::Result::eSuccess, "Failed to wait for events");
+
+		result = _context.GetDevice().acquireNextImageKHR(_swapChain, UINT32_MAX, _imageAvailableSemaphores[*imageIndex], nullptr, imageIndex);
+		CHECKF(result == vk::Result::eSuccess, "Failed to quire next image");
+		CHECKF(_context.GetDevice().resetFences(1, &_inFlightFences[frameIndex]) == vk::Result::eSuccess, "Failed to reset fence");
+		return result;
+	}
+
 	vk::SurfaceFormatKHR Swapchain::ChooseSwapSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& availableFormats) {
 		for (const auto& availableFormat : availableFormats) {
 			if (availableFormat.format == vk::Format::eB8G8R8A8Srgb && availableFormat.colorSpace == vk::ColorSpaceKHR::eSrgbNonlinear)
