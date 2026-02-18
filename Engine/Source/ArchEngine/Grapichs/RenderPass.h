@@ -4,7 +4,7 @@
 #include "Pipeline.h"
 
 namespace ae::grapichs {
-	class RenderPass {
+	class RenderPass : public memory::RefCounted {
 	public:
 		RenderPass(memory::Ref<Pipeline>& pipeline);
 		~RenderPass();

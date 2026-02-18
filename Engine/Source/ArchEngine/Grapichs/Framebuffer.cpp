@@ -13,8 +13,19 @@ namespace ae::grapichs {
 		if (_specs.IsSwapchain) {
 			auto& swapchain = Application::Get()->GetWindow().GetSwapchain();
 			for (size_t i = 0; i < swapchain._swapChainImages.size(); i++) {
-				_colorAttachments.emplace_back(memory::Ref<Texture2D>::Create(swapchain._swapChainImages[i], swapchain._swapChainImageViews[i]));
+				vk::Image swapchainImage = swapchain._swapChainImages[i];
+				vk::ImageView swapchainImageView = swapchain._swapChainImageViews[i];
+				TextureSpecification colorAttachment{};
+				colorAttachment.Format = swapchain.GetSwapchainFormat();
+				colorAttachment.Attachment = true;
+				auto swapchainTexture = memory::Ref<Texture2D>::Create(colorAttachment, swapchainImage, swapchainImageView);
+				_colorAttachments.emplace_back(std::move(swapchainTexture));
 			}
+			TextureSpecification depthAttachment{};
+			depthAttachment.Format = swapchain.GetSwapchainDepthFormat();
+			depthAttachment.Attachment = true;
+			auto swapchainDepthTexture = memory::Ref<Texture2D>::Create(depthAttachment, swapchain._swapChainDepthImage, swapchain._swapChainDepthImageView);
+			_depthAttachment = std::move(swapchainDepthTexture);
 		}
 		else {
 			for (const auto& attachment : _specs.Attachments.Attachments) {

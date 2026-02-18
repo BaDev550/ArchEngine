@@ -1,11 +1,12 @@
 #pragma once
 #include "RenderContext.h"
+#include <filesystem>
 
 #include "ArchEngine/Core/Memory.h"
 #include "ArchEngine/Utilities/DataBuffer.h"
 
 namespace ae::grapichs {
-	const bool IsDepthFormat(vk::Format format) {
+	static bool IsDepthFormat(vk::Format format) {
 		if (format == vk::Format::eD32Sfloat || format == vk::Format::eD24UnormS8Uint)
 			return true;
 		return false;
@@ -39,7 +40,7 @@ namespace ae::grapichs {
 	public:
 		Texture2D(const TextureSpecification& specs);
 		Texture2D(const TextureSpecification& specs, const std::filesystem::path& path);
-		Texture2D(const TextureSpecification& specs, vk::Image image, vk::ImageView imageView);
+		Texture2D(const TextureSpecification& specs, vk::Image& image, vk::ImageView& imageView);
 		Texture2D(const TextureSpecification& specs, DataBuffer data);
 		~Texture2D();
 
@@ -57,6 +58,7 @@ namespace ae::grapichs {
 		vk::ImageView _imageView;
 		vk::Sampler _imageSampler;
 		vk::DescriptorImageInfo _imageInfo;
+		bool _ownsResources = true;
 
 		RenderContext& _context;
 	};

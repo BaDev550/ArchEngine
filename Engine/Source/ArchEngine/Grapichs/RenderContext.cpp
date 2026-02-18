@@ -25,7 +25,7 @@ namespace ae::grapichs {
 		config.ResterizationStateCreateInfo.depthClampEnable = VK_FALSE;
 		config.ResterizationStateCreateInfo.rasterizerDiscardEnable = VK_FALSE;
 		config.ResterizationStateCreateInfo.polygonMode = vk::PolygonMode::eFill;
-		config.ResterizationStateCreateInfo.cullMode =	  vk::CullModeFlagBits::eBack;
+		config.ResterizationStateCreateInfo.cullMode =	  vk::CullModeFlagBits::eNone;
 		config.ResterizationStateCreateInfo.frontFace =	  vk::FrontFace::eClockwise;
 		config.ResterizationStateCreateInfo.lineWidth = 1.0f;
 		config.ResterizationStateCreateInfo.depthBiasEnable = VK_FALSE;
@@ -165,6 +165,7 @@ namespace ae::grapichs {
 		createInfo.arrayLayers = 1;
 		createInfo.tiling = tiling;
 		createInfo.initialLayout = vk::ImageLayout::eUndefined;
+		createInfo.format = format;
 		createInfo.usage = usage;
 		createInfo.sharingMode = vk::SharingMode::eExclusive;
 		createInfo.samples = vk::SampleCountFlagBits::e1;
@@ -478,5 +479,19 @@ namespace ae::grapichs {
 		_grapichsQueue.submit(submitInfo);
 		_grapichsQueue.waitIdle();
 		_logicalDevice.freeCommandBuffers(_commandPool, cmd);
+	}
+
+	vk::Format RenderContext::FindSupportedFormat(const std::vector<vk::Format>& candidates, vk::ImageTiling tilling, vk::FormatFeatureFlags formatFeatures) {
+		for (vk::Format format : candidates) {
+			vk::FormatProperties props;
+			props = _physicalDevice.getFormatProperties(format);
+			if (tilling == vk::ImageTiling::eLinear && (props.linearTilingFeatures & formatFeatures) == formatFeatures) {
+				return format;
+			}
+			else if (
+				tilling == vk::ImageTiling::eOptimal && (props.optimalTilingFeatures & formatFeatures) == formatFeatures) {
+				return format;
+			}
+		}
 	}
 }

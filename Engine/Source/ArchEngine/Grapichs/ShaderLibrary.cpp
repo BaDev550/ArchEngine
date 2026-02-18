@@ -8,7 +8,7 @@ namespace ae::grapichs {
     memory::Ref<Shader>& ShaderLibrary::GetShader(std::string_view name)
     {
         std::string nameStr = name.data();
-        CHECKF(_shaders.find(nameStr) == _shaders.end(), "Failed to find shader");
+        CHECKF(_shaders.find(nameStr) != _shaders.end(), "Failed to find shader");
         return _shaders.at(nameStr);
     }
 

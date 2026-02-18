@@ -4,13 +4,23 @@
 #include "ArchEngine/Core/Application.h"
 
 namespace ae::grapichs {
+	vk::Format Swapchain::FindDepthFormat() {
+		return _context.FindSupportedFormat(
+			{ vk::Format::eD32Sfloat, vk::Format::eD32SfloatS8Uint, vk::Format::eD24UnormS8Uint },
+			vk::ImageTiling::eOptimal,
+			vk::FormatFeatureFlagBits::eDepthStencilAttachment
+		);
+	}
+
 	Swapchain::Swapchain(RenderContext& context)
 		: _context(context)
 	{
 		PROFILE_SCOPE("Swapchain");
 		try {
 			CreateSwapchain();
+			CreateDepthResources();
 			CreateSwapchainImageViews();
+			CreateSyncObjects();
 		}
 		catch (const std::exception& e) {
 			Logger_renderer::error("Failed to initialize swapchain: {}", e.what());
@@ -18,8 +28,20 @@ namespace ae::grapichs {
 	}
 
 	Swapchain::~Swapchain() {
+		for (uint32_t i = 0; i < Renderer::MaxFramesInFlight; i++) {
+			_context.GetDevice().destroySemaphore(_imageAvailableSemaphores[i]);
+			_context.GetDevice().destroyFence(_inFlightFences[i]);
+		}
+
+		for (uint32_t i = 0; i < GetImageCount(); i++)
+			_context.GetDevice().destroySemaphore(_renderFinishedSemaphores[i]);
+
 		for (auto& imageView : _swapChainImageViews)
 			_context.GetDevice().destroyImageView(imageView);
+
+		_context.GetDevice().destroyImage(_swapChainDepthImage);
+		_context.GetDevice().destroyImageView(_swapChainDepthImageView);
+		_context.GetDevice().freeMemory(_swapChainDepthImageMemory);
 
 		_context.GetDevice().destroySwapchainKHR(_swapChain);
 	}
@@ -80,6 +102,31 @@ namespace ae::grapichs {
 		}
 	}
 
+	void Swapchain::CreateDepthResources() {
+		vk::Format depthFormat = FindDepthFormat();
+		_swapChainDepthFormat = depthFormat;
+		_context.CreateImage(
+			_swapChainExtent.width,
+			_swapChainExtent.height,
+			depthFormat,
+			vk::ImageTiling::eOptimal,
+			vk::ImageUsageFlagBits::eDepthStencilAttachment,
+			vk::MemoryPropertyFlagBits::eDeviceLocal,
+			_swapChainDepthImage,
+			_swapChainDepthImageMemory
+		);
+		vk::ImageViewCreateInfo viewInfo{};
+		viewInfo.image = _swapChainDepthImage;
+		viewInfo.viewType = vk::ImageViewType::e2D;
+		viewInfo.format = depthFormat;
+		viewInfo.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eDepth;
+		viewInfo.subresourceRange.baseMipLevel = 0;
+		viewInfo.subresourceRange.levelCount = 1;
+		viewInfo.subresourceRange.baseArrayLayer = 0;
+		viewInfo.subresourceRange.layerCount = 1;
+		_swapChainDepthImageView = _context.GetDevice().createImageView(viewInfo);
+	}
+
 	void Swapchain::CreateSyncObjects() {
 		_imageAvailableSemaphores.resize(Renderer::MaxFramesInFlight);
 		_renderFinishedSemaphores.resize(GetImageCount());
@@ -99,11 +146,12 @@ namespace ae::grapichs {
 		}
 	}
 
-	void Swapchain::Submit(vk::CommandBuffer* cmd, uint32_t* imageIndex) {
+	vk::Result Swapchain::Submit(vk::CommandBuffer* cmd, uint32_t* imageIndex) {
+		uint32_t frameIndex = Renderer::GetFrameIndex();
 		vk::SubmitInfo submitInfo{};
-		vk::Semaphore waitSemaphore[] = { _imageAvailableSemaphores[Renderer::GetFrameIndex()]};
+		vk::Semaphore waitSemaphore[] = { _imageAvailableSemaphores[frameIndex]};
 		vk::Semaphore signalSemaphore[] = { _renderFinishedSemaphores[*imageIndex] };
-		vk::PipelineStageFlags waitStages[] = { vk::PipelineStageFlagBits::eColorAttachmentOutput };
+		vk::PipelineStageFlags waitStages[] = { vk::PipelineStageFlagBits::eColorAttachmentOutput, vk::PipelineStageFlagBits::eEarlyFragmentTests };
 		submitInfo.waitSemaphoreCount = 1;
 		submitInfo.pWaitSemaphores = waitSemaphore;
 		submitInfo.pWaitDstStageMask = waitStages;
@@ -111,15 +159,15 @@ namespace ae::grapichs {
 		submitInfo.pCommandBuffers = cmd;
 		submitInfo.signalSemaphoreCount = 1;
 		submitInfo.pSignalSemaphores = signalSemaphore;
-		_context.GetGrapichsQueue().submit(submitInfo);
+		_context.GetGrapichsQueue().submit(submitInfo, _inFlightFences[frameIndex]);
 
 		vk::PresentInfoKHR presentInfo{};
 		presentInfo.waitSemaphoreCount = 1;
-		presentInfo.pWaitSemaphores = waitSemaphore;
+		presentInfo.pWaitSemaphores = signalSemaphore;
 		presentInfo.swapchainCount = 1;
 		presentInfo.pSwapchains = &_swapChain;
 		presentInfo.pImageIndices = imageIndex;
-		CHECKF(_context.GetPresentQueue().presentKHR(presentInfo) == vk::Result::eSuccess, "Failed to swap buffers");
+		return _context.GetPresentQueue().presentKHR(presentInfo);
 	}
 
 	vk::Result Swapchain::Swapbuffers(uint32_t* imageIndex) {
@@ -127,7 +175,7 @@ namespace ae::grapichs {
 		vk::Result result = _context.GetDevice().waitForFences(1, &_inFlightFences[frameIndex], vk::True, UINT32_MAX);
 		CHECKF(result == vk::Result::eSuccess, "Failed to wait for events");
 
-		result = _context.GetDevice().acquireNextImageKHR(_swapChain, UINT32_MAX, _imageAvailableSemaphores[*imageIndex], nullptr, imageIndex);
+		result = _context.GetDevice().acquireNextImageKHR(_swapChain, UINT32_MAX, _imageAvailableSemaphores[frameIndex], nullptr, imageIndex);
 		CHECKF(result == vk::Result::eSuccess, "Failed to quire next image");
 		CHECKF(_context.GetDevice().resetFences(1, &_inFlightFences[frameIndex]) == vk::Result::eSuccess, "Failed to reset fence");
 		return result;

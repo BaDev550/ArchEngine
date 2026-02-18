@@ -14,6 +14,7 @@ namespace ae {
 		Logger_app::info("Application Created!");
 		
 		_window = MakeScope<Window>(WindowSpecifications());
+		_window->CreateDefaultSwapchainFramebuffer();
 
 		Renderer::Init();
 	}
@@ -26,6 +27,7 @@ namespace ae {
 
 	void Application::Run()
 	{
+		ApplicationStarted();
 		while (!_window->ShoudClose()) {
 			_window->PoolEvents();
 

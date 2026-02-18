@@ -10,11 +10,14 @@ namespace ae::grapichs {
 	}
 
 	DescriptorManager::~DescriptorManager() {
-		for (int i = 0; i < Renderer::MaxFramesInFlight; i++) {
-			if (!_descriptorSets[i].empty()) {
-				_context.GetDevice().freeDescriptorSets(_descriptorPool, _descriptorSets[i]);
+		if (!_descriptorSets.empty()) {
+			for (int i = 0; i < Renderer::MaxFramesInFlight; i++) {
+				if (!_descriptorSets[i].empty()) {
+					_context.GetDevice().freeDescriptorSets(_descriptorPool, _descriptorSets[i]);
+				}
 			}
 		}
+
 		_descriptorSets.clear();
 		_inputDeclarations.clear();
 		_storedResources.clear();

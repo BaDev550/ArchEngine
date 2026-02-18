@@ -44,6 +44,11 @@ namespace ae {
 		return _handle;
 	}
 
+	void Window::SwapBuffers()
+	{
+		_swapchain->Swapbuffers(&_imageIndex);
+	}
+
 	void Window::PoolEvents() const
 	{
 		glfwPollEvents();
@@ -52,5 +57,14 @@ namespace ae {
 	bool Window::ShoudClose() const
 	{
 		return glfwWindowShouldClose(_handle);
+	}
+
+	void Window::CreateDefaultSwapchainFramebuffer() {
+		grapichs::FramebufferSpecification specs{};
+		specs.IsSwapchain = true;
+		specs.Width = _specs.Width;
+		specs.Height = _specs.Height;
+		specs.ClearColor = glm::vec4(0.0f, 1.0f, 1.0f, 1.0f);
+		_defaultFramebuffer = memory::Ref<grapichs::Framebuffer>::Create(specs);
 	}
 }

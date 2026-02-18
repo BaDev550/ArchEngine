@@ -1,6 +1,7 @@
 #include "ArchPch.h"
 #include "RenderPass.h"
 #include "Renderer.h"
+#include "ArchEngine/Core/Application.h"
 
 namespace ae::grapichs {
 	namespace Utils {
@@ -171,7 +172,9 @@ namespace ae::grapichs {
             );
 		}
 	}
-	RenderPass::RenderPass(memory::Ref<Pipeline>& pipeline) {
+	RenderPass::RenderPass(memory::Ref<Pipeline>& pipeline)
+        : _pipeline(pipeline)
+    {
 		_descriptorManager = memory::Ref<DescriptorManager>::Create(pipeline->GetShader());
 	}
 
@@ -186,10 +189,18 @@ namespace ae::grapichs {
 		auto& framebuffer = pipelineData.TargetFramebuffer;
 		auto& shader = pipelineData.Shader;
 		const FramebufferSpecification fbSpecs = framebuffer->GetSpecification();
-		const uint32_t attachmentCount = framebuffer->GetAttachmentCount();
 		const glm::vec4 clearColor = fbSpecs.ClearColor;
+        uint32_t currentImageIndex = 0;
+        uint32_t activeAttachmentCount = 0;
+        if (fbSpecs.IsSwapchain) {
+            currentImageIndex = Application::Get()->GetWindow().GetImageIndex();
+            activeAttachmentCount = 1;
+        }
+        else {
+            activeAttachmentCount = framebuffer->GetAttachmentCount();
+        }
 
-		std::vector<vk::RenderingAttachmentInfo> colorAttachments(attachmentCount);
+		std::vector<vk::RenderingAttachmentInfo> colorAttachments(activeAttachmentCount);
 		vk::RenderingAttachmentInfo depthAttachments{};
 		vk::Extent2D extent{ framebuffer->GetWidth(), framebuffer->GetHeight() };
 		bool hasDepthBuffer = framebuffer->DoesFramebufferHasDepthAttachment();
@@ -207,8 +218,9 @@ namespace ae::grapichs {
             Utils::ImageMemBarrier(cmd, fbDepthImage, fbDepthFormat, vk::ImageLayout::eUndefined, vk::ImageLayout::eDepthStencilAttachmentOptimal, 1);
 		}
 
-		for (int i = 0; i < colorAttachments.size(); i++) {
-			const memory::Ref<Texture2D>& colorAttachment = framebuffer->GetAttachmentTexture(i);
+		for (int i = 0; i < activeAttachmentCount; i++) {
+            uint32_t attachmentIndex = fbSpecs.IsSwapchain ? currentImageIndex : i;
+			const memory::Ref<Texture2D>& colorAttachment = framebuffer->GetAttachmentTexture(attachmentIndex);
 			vk::Image fbImage = colorAttachment->GetImage();
 			vk::Format fbFormat = colorAttachment->GetFormat();
 			colorAttachments[i].imageView = colorAttachment->GetImageView();
@@ -216,7 +228,7 @@ namespace ae::grapichs {
 			colorAttachments[i].loadOp = vk::AttachmentLoadOp::eClear;
 			colorAttachments[i].storeOp = vk::AttachmentStoreOp::eStore;
 			colorAttachments[i].clearValue = vk::ClearValue({ clearColor.x, clearColor.g, clearColor.b, clearColor.a });
-            Utils::ImageMemBarrier(cmd, fbImage, fbFormat, vk::ImageLayout::eUndefined, vk::ImageLayout::eAttachmentOptimal, 1);
+            Utils::ImageMemBarrier(cmd, fbImage, fbFormat, vk::ImageLayout::eUndefined, vk::ImageLayout::eColorAttachmentOptimal, 1);
 		}
 
 		vk::RenderingInfo renderingInfo{};
@@ -224,7 +236,7 @@ namespace ae::grapichs {
 		renderingInfo.layerCount = 1;
 		renderingInfo.colorAttachmentCount = static_cast<uint32_t>(colorAttachments.size());
 		renderingInfo.pColorAttachments = colorAttachments.data();
-		renderingInfo.pDepthAttachment = &depthAttachments;
+		renderingInfo.pDepthAttachment = hasDepthBuffer ? &depthAttachments : nullptr;
 
 		vk::Viewport viewport{ 0, 0, (float)extent.width, (float)extent.height };
 		vk::Rect2D scissor{ {0, 0}, extent };
@@ -239,6 +251,37 @@ namespace ae::grapichs {
 	void RenderPass::End() {
 		vk::CommandBuffer cmd = Renderer::GetCurrentCommandBuffer();
 		cmd.endRendering();
+
+        auto& pipelineData = _pipeline->GetPipelineData();
+        auto& framebuffer = pipelineData.TargetFramebuffer;
+        if (framebuffer->GetSpecification().IsSwapchain) {
+            uint32_t currentImageIndex = Application::Get()->GetWindow().GetImageIndex();
+            const memory::Ref<Texture2D>& currentTexture = framebuffer->GetAttachmentTexture(currentImageIndex);
+
+            vk::ImageMemoryBarrier barrier{};
+            barrier.oldLayout = vk::ImageLayout::eColorAttachmentOptimal;
+            barrier.newLayout = vk::ImageLayout::ePresentSrcKHR;
+            barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+            barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+
+            barrier.image = currentTexture->GetImage();
+            barrier.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
+            barrier.subresourceRange.baseMipLevel = 0;
+            barrier.subresourceRange.levelCount = 1;
+            barrier.subresourceRange.baseArrayLayer = 0;
+            barrier.subresourceRange.layerCount = 1;
+            barrier.srcAccessMask = vk::AccessFlagBits::eColorAttachmentWrite;
+            barrier.dstAccessMask = vk::AccessFlagBits::eNone;
+
+            cmd.pipelineBarrier(
+                vk::PipelineStageFlagBits::eColorAttachmentOutput,
+                vk::PipelineStageFlagBits::eBottomOfPipe,
+                vk::DependencyFlags(),
+                0, nullptr,
+                0, nullptr,
+                1, &barrier
+            );
+        }
 	}
 
 	void RenderPass::SetInput(std::string_view name, const memory::Ref<Buffer>& buffer) {

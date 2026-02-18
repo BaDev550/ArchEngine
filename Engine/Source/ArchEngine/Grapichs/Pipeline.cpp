@@ -13,7 +13,7 @@ namespace ae::grapichs {
 
 	void Pipeline::Invalidate() {
 		PipelineConfig config{};
-		PipelineConfig::FramebufferConfig(config, _data.TargetFramebuffer->GetSpecification().Attachments.Attachments.size());
+		PipelineConfig::Default(config);
 		auto& shader = _data.Shader;
 		auto& compiledData = shader->GetCompiledShaderData();
 
@@ -62,17 +62,36 @@ namespace ae::grapichs {
 		_pipelineCache = _context.GetDevice().createPipelineCache(cacheCreateInfo);
 
 		std::vector<vk::Format> colorFormats;
-		if (_data.TargetFramebuffer) {
+		vk::Format depthFormat = vk::Format::eUndefined;
+		if (_data.TargetFramebuffer->GetSpecification().IsSwapchain) {
+			auto& swapchain = Application::Get()->GetWindow().GetSwapchain();
+			colorFormats.push_back(swapchain.GetSwapchainFormat());
+			depthFormat = swapchain.GetSwapchainDepthFormat();
+		}
+		else {
 			for (const auto& attachment : _data.TargetFramebuffer->GetSpecification().Attachments.Attachments) {
-				if (!IsDepthFormat(attachment))
+				if (!IsDepthFormat(attachment)) {
 					colorFormats.push_back(attachment);
+				}
+				else {
+					depthFormat = attachment;
+				}
 			}
 		}
+		std::vector<vk::PipelineColorBlendAttachmentState> blendAttachments(colorFormats.size());
+		for (auto& attachment : blendAttachments) {
+			attachment.colorWriteMask = vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA;
+			attachment.blendEnable = vk::False;
+		}
+		config.ColorBlendStateCreateInfo.logicOpEnable = vk::False;
+		config.ColorBlendStateCreateInfo.logicOp = vk::LogicOp::eCopy;
+		config.ColorBlendStateCreateInfo.attachmentCount = static_cast<uint32_t>(blendAttachments.size());
+		config.ColorBlendStateCreateInfo.pAttachments = blendAttachments.data();
 
 		const vk::PipelineRenderingCreateInfo pipelineRenderingInfo{
 			.colorAttachmentCount = static_cast<uint32_t>(colorFormats.size()),
 			.pColorAttachmentFormats = colorFormats.data(),
-			.depthAttachmentFormat = _data.TargetFramebuffer->GetDepthTexture()->GetFormat()
+			.depthAttachmentFormat = depthFormat
 		};
 
 		const vk::GraphicsPipelineCreateInfo createInfo{

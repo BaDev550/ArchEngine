@@ -49,6 +49,7 @@ namespace ae::grapichs {
 		~RenderContext();
 
 		QueueFamilyIndices FindPhysicalDeviceQueueFamilies() { return FindQueueFamilies(_physicalDevice); }
+		vk::Format FindSupportedFormat(const std::vector<vk::Format>& candidates, vk::ImageTiling tilling, vk::FormatFeatureFlags formatFeatures);
 
 		void WaitDeviceIdle();
 		void CreateBuffer(vk::DeviceSize size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags memoryProperties, vk::Buffer& buffer, vk::DeviceMemory& memory);

@@ -4,6 +4,7 @@
 #include "ShaderTypes.h"
 #include "ArchEngine/Core/Application.h"
 
+#define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
 namespace ae::grapichs {
@@ -119,9 +120,10 @@ namespace ae::grapichs {
 		}
 	}
 
-	Texture2D::Texture2D(const TextureSpecification& specs, vk::Image image, vk::ImageView imageView)
+	Texture2D::Texture2D(const TextureSpecification& specs, vk::Image& image, vk::ImageView& imageView)
 		: _context(Application::Get()->GetWindow().GetRenderContext()), _image(image), _imageView(imageView)
 	{
+		_ownsResources = false;
 	}
 
 	Texture2D::Texture2D(const TextureSpecification& specs, DataBuffer data)
@@ -134,9 +136,12 @@ namespace ae::grapichs {
 
 	Texture2D::~Texture2D()
 	{
-		_context.GetDevice().destroySampler(_imageSampler);
-		_context.GetDevice().destroyImageView(_imageView);
-		_context.GetDevice().destroyImage(_image);
-		_context.GetDevice().freeMemory(_imageMemory);
+		if (_imageSampler)
+			_context.GetDevice().destroySampler(_imageSampler);
+		if (_ownsResources) {
+			_context.GetDevice().destroyImageView(_imageView);
+			_context.GetDevice().destroyImage(_image);
+			_context.GetDevice().freeMemory(_imageMemory);
+		}
 	}
 }

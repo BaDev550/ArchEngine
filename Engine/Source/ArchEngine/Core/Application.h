@@ -19,6 +19,7 @@ namespace ae {
 		virtual ~Application();
 
 		void Run();
+		virtual void ApplicationStarted() = 0;
 		virtual void ApplicationUpdate() = 0;
 
 		static Application* Get() { return _instance; }

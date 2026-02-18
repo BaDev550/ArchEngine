@@ -9,6 +9,8 @@ namespace ae::grapichs {
 
 		static void Init();
 		static void Destroy();
+		static void BeginFrame();
+		static void EndFrame();
 
 		static vk::CommandBuffer GetCurrentCommandBuffer();
 		static uint32_t GetFrameIndex();

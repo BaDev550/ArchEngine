@@ -4,6 +4,7 @@
 
 #include "ArchEngine/Grapichs/RenderContext.h"
 #include "ArchEngine/Grapichs/Swapchain.h"
+#include "ArchEngine/Grapichs/Framebuffer.h"
 
 namespace ae {
 	struct WindowSpecifications {
@@ -20,17 +21,23 @@ namespace ae {
 		Window(WindowSpecifications windowSpecs);
 		~Window();
 
+		void SwapBuffers();
+		uint32_t GetImageIndex() const { return _imageIndex; }
 		uint32_t GetWidth() const { return _specs.Width; }
 		uint32_t GetHeight() const { return _specs.Height; }
+		grapichs::Framebuffer* GetDefaultSwapchainFramebuffer() { return _defaultFramebuffer.Get(); }
 		grapichs::RenderContext& GetRenderContext() { return *_renderContext; }
 		grapichs::Swapchain& GetSwapchain() { return *_swapchain; }
 		GLFWwindow* GetHandle() const;
 		void PoolEvents() const;
 		bool ShoudClose() const;
+		void CreateDefaultSwapchainFramebuffer();
 	private:
 		GLFWwindow* _handle;
+		uint32_t _imageIndex;
 		grapichs::RenderContext* _renderContext;
 		grapichs::Swapchain* _swapchain;
+		memory::Ref<grapichs::Framebuffer> _defaultFramebuffer = nullptr;
 		WindowSpecifications _specs;
 	};
 }

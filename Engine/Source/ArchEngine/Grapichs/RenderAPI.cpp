@@ -18,25 +18,53 @@ namespace ae::grapichs {
             allocInfo.commandBufferCount = 1;
             allocInfo.level = vk::CommandBufferLevel::ePrimary;
             allocInfo.commandPool = frame.CommandPool;
-            auto cmds = _context.GetDevice().allocateCommandBuffers(allocInfo);
-            frame.CommandBuffer = cmds[0];
+            frame.CommandBuffer = _context.GetDevice().allocateCommandBuffers(allocInfo).at(0);
         }
     }
 
     RenderAPI::~RenderAPI()
     {
+        for (uint32_t i = 0; i < Renderer::MaxFramesInFlight; i++) {
+            _context.GetDevice().freeCommandBuffers(_frames[i].CommandPool, _frames[i].CommandBuffer);
+            _context.GetDevice().destroyCommandPool(_frames[i].CommandPool);
+        }
     }
 
     void RenderAPI::BeginFrame()
     {
+        CHECKF(!_frameStarted, "Cannot call BeginFrame while processing a frame");
+        _frameStarted = true;
+        uint32_t frameIndex = Renderer::GetFrameIndex();
+        FrameContext& frame = _frames[frameIndex];
+        vk::CommandBufferBeginInfo beginInfo{};
+
+        Application::Get()->GetWindow().SwapBuffers();
+
+        _context.GetDevice().resetCommandPool(frame.CommandPool);
+        frame.CommandBuffer.begin(beginInfo);
     }
 
     void RenderAPI::EndFrame()
     {
+        CHECKF(_frameStarted, "Cannot call EndFrame while not processing a frame");
+        vk::CommandBuffer cmd = GetCurrentCommandBuffer();
+        uint32_t frameIndex = Renderer::GetFrameIndex();
+        auto& window = Application::Get()->GetWindow();
+        auto& swapchain = window.GetSwapchain();
+        uint32_t imageIndex = window.GetImageIndex();
+
+        cmd.end();
+        vk::Result result = swapchain.Submit(&cmd, &imageIndex);
+        if (result == vk::Result::eErrorOutOfDateKHR || result == vk::Result::eSuboptimalKHR) {
+            //RESIZED
+        }
+        _renderStats.DrawCalls = 0;
+        _frameStarted = false;
     }
 
     vk::CommandBuffer RenderAPI::GetCurrentCommandBuffer()
     {
-        return vk::CommandBuffer();
+        CHECKF(_frameStarted, "Cannot get active command buffer while frame is not started");
+        return _frames[Renderer::GetFrameIndex()].CommandBuffer;
     }
 }
