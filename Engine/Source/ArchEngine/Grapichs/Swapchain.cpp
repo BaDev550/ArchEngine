@@ -89,7 +89,7 @@ namespace ae::grapichs {
 
 	void Swapchain::CreateSwapchainImageViews() {
 		_swapChainImageViews.clear();
-
+		
 		vk::ImageViewCreateInfo imageViewCreateInfo{
 			.viewType = vk::ImageViewType::e2D,
 			.format = _swapChainImageFormat,
@@ -98,7 +98,8 @@ namespace ae::grapichs {
 
 		for (auto image : _swapChainImages) {
 			imageViewCreateInfo.setImage(image);
-			_swapChainImageViews.emplace_back(_context.GetDevice().createImageView(imageViewCreateInfo));
+			vk::ImageView imageView = _context.GetDevice().createImageView(imageViewCreateInfo);
+			_swapChainImageViews.emplace_back(imageView);
 		}
 	}
 

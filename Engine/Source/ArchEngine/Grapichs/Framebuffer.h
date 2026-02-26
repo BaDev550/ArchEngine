@@ -16,7 +16,7 @@ namespace ae::grapichs {
 	struct FramebufferSpecification {
 		uint32_t Width = 0;
 		uint32_t Height = 0;
-		float DepthClearValue = 0.0f;
+		float DepthClearValue = 1.0f;
 		glm::vec4 ClearColor = { 0.0f, 0.0f, 0.0f, 1.0f };
 		FramebufferAttachmmentSpecification Attachments;
 

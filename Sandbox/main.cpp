@@ -30,7 +30,7 @@ public:
 		vk::PipelineLayout layout = _defaultPipeline->GetPipelineLayout();
 
 		cmd.pushConstants(layout, vk::ShaderStageFlagBits::eVertex, 0, sizeof(glm::mat4), &transform);
-		vkCmdDraw(cmd, 3, 1, 0, 0);
+		cmd.draw(3, 1, 0, 0);
 
 		_defaultRenderPass->End();
 		Renderer::EndFrame();

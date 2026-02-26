@@ -11,5 +11,5 @@ vec3 positions[3] = vec3[](
 );
 
 void main() {
-	gl_Position = vec4(positions[gl_VertexIndex], 1.0);
+	gl_Position = pc.Transform * vec4(positions[gl_VertexIndex], 1.0);
 } 

@@ -214,7 +214,7 @@ namespace ae::grapichs {
 			depthAttachments.imageLayout = vk::ImageLayout::eDepthStencilAttachmentOptimal;
 			depthAttachments.loadOp = vk::AttachmentLoadOp::eClear;
 			depthAttachments.storeOp = vk::AttachmentStoreOp::eStore;
-			depthAttachments.clearValue = vk::ClearValue(depthClearColor);
+			depthAttachments.clearValue = vk::ClearValue(vk::ClearDepthStencilValue(depthClearColor, 0));
             Utils::ImageMemBarrier(cmd, fbDepthImage, fbDepthFormat, vk::ImageLayout::eUndefined, vk::ImageLayout::eDepthStencilAttachmentOptimal, 1);
 		}
 
@@ -239,9 +239,9 @@ namespace ae::grapichs {
 		renderingInfo.pDepthAttachment = hasDepthBuffer ? &depthAttachments : nullptr;
 
 		vk::Viewport viewport{ 0, 0, (float)extent.width, (float)extent.height };
-		vk::Rect2D scissor{ {0, 0}, extent };
 		viewport.minDepth = 0;
 		viewport.maxDepth = 1;
+		vk::Rect2D scissor{ {0, 0}, extent };
 		cmd.beginRendering(renderingInfo);
 		cmd.bindPipeline(vk::PipelineBindPoint::eGraphics, _pipeline->GetPipeline());
 		cmd.setViewport(0, 1, &viewport);
