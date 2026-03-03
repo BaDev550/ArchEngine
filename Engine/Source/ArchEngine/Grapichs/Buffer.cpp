@@ -18,12 +18,12 @@ namespace ae::grapichs {
 	) 
 		: _context(Application::Get()->GetWindow().GetRenderContext()),
 		_instanceSize(size),
-		_alignmentSize(GetAlignment(size, 1)),
-		_bufferSize(_alignmentSize * _instanceCount),
 		_instanceCount(1),
 		_usageFlags(usage),
 		_memoryPropertyFlags(memoryProperties)
 	{
+		_alignmentSize = GetAlignment(size, 1);
+		_bufferSize = _alignmentSize * _instanceCount;
 		_context.CreateBuffer(_bufferSize, _usageFlags, _memoryPropertyFlags, _buffer, _bufferMemory);
 		if (mapAtConstructor)
 			Map(size);

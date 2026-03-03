@@ -2,6 +2,7 @@
 #include "DescriptorManager.h"
 
 #include "ArchEngine/Core/Application.h"
+#include "Renderer.h"
 
 namespace ae::grapichs {
 	DescriptorManager::DescriptorManager(const memory::Ref<Shader>& shader)
@@ -23,6 +24,9 @@ namespace ae::grapichs {
 		_storedResources.clear();
 		_context.GetDevice().destroyDescriptorPool(_descriptorPool);
 	}
+
+	std::vector<vk::DescriptorSet> DescriptorManager::GetDescriptorSets() { return _descriptorSets[Renderer::GetFrameIndex()]; }
+	vk::DescriptorSet DescriptorManager::GetDescriptorSet(uint32_t setIndex) { return _descriptorSets[Renderer::GetFrameIndex()][setIndex]; }
 
 	void DescriptorManager::WriteInput(std::string_view name, memory::Ref<Buffer> buffer) {
 		const RenderPassInputDeclaration* decl = GetInputDeclaration(name);

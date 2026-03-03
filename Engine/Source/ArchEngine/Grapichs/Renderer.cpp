@@ -1,6 +1,7 @@
 #include "ArchPch.h"
 #include "Renderer.h"
 #include "RenderAPI.h"
+#include "ArchEngine/Core/Application.h"
 
 namespace ae::grapichs {
 	struct RenderData {
@@ -29,6 +30,22 @@ namespace ae::grapichs {
 	void Renderer::EndFrame() {
 		g_renderAPI->EndFrame();
 		g_frameIndex = (g_frameIndex + 1) % MaxFramesInFlight;
+	}
+
+	void Renderer::DrawVertex(vk::CommandBuffer cmd, memory::Ref<Buffer>& vertexBuffer, uint32_t vertexCount) {
+		g_renderAPI->DrawVertex(cmd, vertexBuffer, vertexCount);
+	}
+
+	void Renderer::DrawIndexed(vk::CommandBuffer cmd, memory::Ref<Buffer>& vertexBuffer, memory::Ref<Buffer>& indexBuffer, uint32_t indexCount) {
+		g_renderAPI->DrawIndexed(cmd, vertexBuffer, indexBuffer, indexCount);
+	}
+
+	void Renderer::DrawStaticMesh(memory::Ref<RenderPass>& renderPass, vk::CommandBuffer cmd, memory::Ref<Model>& model) {
+		g_renderAPI->DrawStaticMesh(renderPass, cmd, model);
+	}
+
+	void Renderer::CopyBuffer(memory::Ref<Buffer>& src, memory::Ref<Buffer>& dst, vk::DeviceSize size) {
+		Application::Get()->GetWindow().GetRenderContext().CopyBuffer(src->GetBuffer(), dst->GetBuffer(), size);
 	}
 
 	vk::CommandBuffer Renderer::GetCurrentCommandBuffer() {

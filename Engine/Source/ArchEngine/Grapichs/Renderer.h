@@ -1,5 +1,8 @@
 #pragma once
 #include "ShaderLibrary.h"
+#include "Model.h"
+#include "RenderPass.h"
+
 #include <iostream>
 
 namespace ae::grapichs {
@@ -11,6 +14,10 @@ namespace ae::grapichs {
 		static void Destroy();
 		static void BeginFrame();
 		static void EndFrame();
+		static void DrawVertex(vk::CommandBuffer cmd, memory::Ref<Buffer>& vertexBuffer, uint32_t vertexCount);
+		static void DrawIndexed(vk::CommandBuffer cmd, memory::Ref<Buffer>& vertexBuffer, memory::Ref<Buffer>& indexBuffer, uint32_t indexCount);
+		static void DrawStaticMesh(memory::Ref<RenderPass>& renderPass, vk::CommandBuffer cmd, memory::Ref<Model>& model);
+		static void CopyBuffer(memory::Ref<Buffer>& src, memory::Ref<Buffer>& dst, vk::DeviceSize size);
 
 		static vk::CommandBuffer GetCurrentCommandBuffer();
 		static uint32_t GetFrameIndex();

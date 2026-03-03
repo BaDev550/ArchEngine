@@ -18,6 +18,7 @@ target_include_directories(ArchEngine
 
 target_link_libraries(ArchEngine PUBLIC
     glfw
+    assimp
     Vulkan::Vulkan
     ${Vulkan_SHADERC}
     ${Vulkan_SHADERC_UTILS}

@@ -5,7 +5,6 @@
 #include "Buffer.h"
 #include "Texture.h"
 #include "Shader.h"
-#include "Renderer.h"
 #include <vector>
 
 namespace ae::grapichs {
@@ -48,9 +47,9 @@ namespace ae::grapichs {
 		void Invalidate();
 
 		vk::DescriptorSet Allocate(vk::DescriptorSetLayout layout);
-		vk::DescriptorSet GetDescriptorSet(uint32_t setIndex) { return _descriptorSets[Renderer::GetFrameIndex()][setIndex]; }
+		vk::DescriptorSet GetDescriptorSet(uint32_t setIndex);
 		vk::DescriptorPool GetDescriptorPool() const { return _descriptorPool; }
-		std::vector<vk::DescriptorSet> GetDescriptorSets() { return _descriptorSets[Renderer::GetFrameIndex()]; }
+		std::vector<vk::DescriptorSet> GetDescriptorSets();
 		const std::map<std::string, RenderPassInputDeclaration>& GetInputDeclarations() const { return _inputDeclarations; }
 	private:
 		memory::Ref<Shader> _shader;

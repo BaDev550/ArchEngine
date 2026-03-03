@@ -18,6 +18,8 @@ public:
 		pipelineData.TargetFramebuffer = GetWindow().GetDefaultSwapchainFramebuffer();
 		_defaultPipeline = memory::Ref<Pipeline>::Create(pipelineData);
 		_defaultRenderPass = memory::Ref<RenderPass>::Create(_defaultPipeline);
+
+		_defaultModel = memory::Ref<Model>::Create("Resources/Models/mario_2/mario_2.obj");
 	}
 
 	virtual void ApplicationUpdate() override {
@@ -30,7 +32,8 @@ public:
 		vk::PipelineLayout layout = _defaultPipeline->GetPipelineLayout();
 
 		cmd.pushConstants(layout, vk::ShaderStageFlagBits::eVertex, 0, sizeof(glm::mat4), &transform);
-		cmd.draw(3, 1, 0, 0);
+
+		//Renderer::DrawStaticMesh(_defaultRenderPass, cmd, _defaultModel);
 
 		_defaultRenderPass->End();
 		Renderer::EndFrame();
@@ -38,6 +41,7 @@ public:
 private:
 	memory::Ref<grapichs::RenderPass> _defaultRenderPass = nullptr;
 	memory::Ref<grapichs::Pipeline> _defaultPipeline = nullptr;
+	memory::Ref<grapichs::Model> _defaultModel = nullptr;
 };
 
 ae::Application* CreateApplication() {
