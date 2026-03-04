@@ -20,9 +20,9 @@ namespace ae {
 	}
 
 	Application::~Application() {
-		Renderer::Destroy();
 		profiler::Profiler::Get().Clear();
 		profiler::Profiler::Destroy();
+		Renderer::Destroy();
 	}
 
 	void Application::Run()

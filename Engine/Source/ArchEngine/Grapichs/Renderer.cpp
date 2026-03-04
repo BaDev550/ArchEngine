@@ -45,6 +45,7 @@ namespace ae::grapichs {
 	}
 
 	void Renderer::CopyBuffer(memory::Ref<Buffer>& src, memory::Ref<Buffer>& dst, vk::DeviceSize size) {
+		Application::Get()->GetWindow().GetRenderContext().WaitDeviceIdle();
 		Application::Get()->GetWindow().GetRenderContext().CopyBuffer(src->GetBuffer(), dst->GetBuffer(), size);
 	}
 

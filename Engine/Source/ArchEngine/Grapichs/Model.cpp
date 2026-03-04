@@ -18,7 +18,7 @@ namespace ae::grapichs {
 			Logger_renderer::warn(" -Failed to load mesh");
 			return;
 		}
-
+		
 		if (scene->HasMeshes()) {
 			uint32_t vertexCount = 0;
 			uint32_t indexCount = 0;
@@ -31,16 +31,14 @@ namespace ae::grapichs {
 				submesh.IndexOffset = indexCount;
 				submesh.MaterialIndex = mesh->mMaterialIndex;
 				submesh.VertexCount = mesh->mNumVertices;
-				submesh.IndexCount = mesh->mNumFaces;
+				submesh.IndexCount = mesh->mNumFaces * 3;
 				submesh.Name = mesh->mName.C_Str();
 				vertexCount += mesh->mNumVertices;
-				indexCount += mesh->mNumFaces;
+				indexCount += submesh.IndexCount;
 				for (size_t i = 0; i < mesh->mNumVertices; i++) {
 					Vertex v;
 					v.Position = { mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z };
-					if (mesh->HasNormals()) {
-						v.Normal = { mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z };
-					}
+					v.Normal = { mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z };
 					if (mesh->HasTextureCoords(0)) {
 						v.TexCoords = { mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y };
 					}
@@ -96,6 +94,8 @@ namespace ae::grapichs {
 			);
 			Renderer::CopyBuffer(stagingBuffer, _indexBuffer, bufferSize);
 		}
+		importer.FreeScene();
+		
 		Logger_renderer::info(" -Loaded");
 	}
 }

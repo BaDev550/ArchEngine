@@ -64,22 +64,29 @@ namespace ae::grapichs {
 
     void RenderAPI::DrawVertex(vk::CommandBuffer cmd, memory::Ref<Buffer>& vertexBuffer, uint32_t vertexCount)
     {
-		cmd.bindVertexBuffers(0, vertexBuffer->GetBuffer(), { 0 });
+        vk::Buffer vertexBuffers[] = { vertexBuffer->GetBuffer() };
+        vk::DeviceSize offsets[] = { 0 };
+		cmd.bindVertexBuffers(0, vertexBuffers, offsets);
         cmd.draw(vertexCount, 1, 0, 0);
     }
 
     void RenderAPI::DrawIndexed(vk::CommandBuffer cmd, memory::Ref<Buffer>& vertexBuffer, memory::Ref<Buffer>& indexBuffer, uint32_t indexCount)
     {
-		cmd.bindVertexBuffers(0, vertexBuffer->GetBuffer(), { 0 });
+		vk::Buffer vertexBuffers[] = { vertexBuffer->GetBuffer() };
+		vk::DeviceSize offsets[] = { 0 };
+		cmd.bindVertexBuffers(0, vertexBuffers, offsets);
 		cmd.bindIndexBuffer(indexBuffer->GetBuffer(), 0, vk::IndexType::eUint32);
         cmd.drawIndexed(indexCount, 1, 0, 0, 0);
     }
 
     void RenderAPI::DrawStaticMesh(memory::Ref<RenderPass>& renderPass, vk::CommandBuffer cmd, memory::Ref<Model>& model)
     {
+        vk::Buffer vertexBuffers[] = { model->GetVertexBuffer()->GetBuffer()};
+        vk::DeviceSize offsets[] = { 0 };
+        cmd.bindVertexBuffers(0, vertexBuffers, offsets);
+        cmd.bindIndexBuffer(model->GetIndexBuffer()->GetBuffer(), 0, vk::IndexType::eUint32);
+
         for (const auto& submesh : model->GetSubmeshes()) {
-            cmd.bindVertexBuffers(0, model->GetVertexBuffer()->GetBuffer(), {0});
-            cmd.bindIndexBuffer(model->GetIndexBuffer()->GetBuffer(), 0, vk::IndexType::eUint32);
             cmd.drawIndexed(submesh.IndexCount, 1, submesh.IndexOffset, submesh.VertexOffset, 0);
         }
     }

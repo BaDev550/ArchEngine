@@ -32,8 +32,7 @@ public:
 		vk::PipelineLayout layout = _defaultPipeline->GetPipelineLayout();
 
 		cmd.pushConstants(layout, vk::ShaderStageFlagBits::eVertex, 0, sizeof(glm::mat4), &transform);
-
-		//Renderer::DrawStaticMesh(_defaultRenderPass, cmd, _defaultModel);
+		Renderer::DrawStaticMesh(_defaultRenderPass, cmd, _defaultModel);
 
 		_defaultRenderPass->End();
 		Renderer::EndFrame();

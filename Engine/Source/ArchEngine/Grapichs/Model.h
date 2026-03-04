@@ -16,6 +16,7 @@ namespace ae::grapichs {
 	constexpr uint32_t MODEL_IMPORT_FLAGS = 
 		aiProcess_Triangulate | 
 		aiProcess_FlipUVs | 
+		aiProcess_GenSmoothNormals |
 		aiProcess_CalcTangentSpace;
 
 	struct Vertex {
