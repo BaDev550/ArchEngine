@@ -15,6 +15,7 @@ namespace ae {
 		
 		_window = MakeScope<Window>(WindowSpecifications());
 		_window->CreateDefaultSwapchainFramebuffer();
+		_window->SetCursor(false);
 
 		Renderer::Init();
 	}
@@ -29,6 +30,11 @@ namespace ae {
 	{
 		ApplicationStarted();
 		while (!_window->ShoudClose()) {
+			static auto lastFrameTime = std::chrono::high_resolution_clock::now();
+			auto currentTime = std::chrono::high_resolution_clock::now();
+			_deltaTime = std::chrono::duration<float>(currentTime - lastFrameTime).count();
+			lastFrameTime = currentTime;
+
 			_window->PoolEvents();
 
 			ApplicationUpdate();

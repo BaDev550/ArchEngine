@@ -176,6 +176,7 @@ namespace ae::grapichs {
         : _pipeline(pipeline)
     {
 		_descriptorManager = memory::Ref<DescriptorManager>::Create(pipeline->GetShader());
+        _descriptorManager->Invalidate();
 	}
 
 	RenderPass::~RenderPass() {
@@ -237,7 +238,8 @@ namespace ae::grapichs {
 		renderingInfo.colorAttachmentCount = static_cast<uint32_t>(colorAttachments.size());
 		renderingInfo.pColorAttachments = colorAttachments.data();
 		renderingInfo.pDepthAttachment = hasDepthBuffer ? &depthAttachments : nullptr;
-
+        _descriptorManager->UpdateSets(cmd, _pipeline->GetPipelineLayout());
+        
 		vk::Viewport viewport{ 0, 0, (float)extent.width, (float)extent.height };
 		viewport.minDepth = 0;
 		viewport.maxDepth = 1;

@@ -83,6 +83,7 @@ namespace ae::grapichs {
     {
         vk::Buffer vertexBuffers[] = { model->GetVertexBuffer()->GetBuffer()};
         vk::DeviceSize offsets[] = { 0 };
+        cmd.bindPipeline(vk::PipelineBindPoint::eGraphics, renderPass->GetPipeline()->GetPipeline());
         cmd.bindVertexBuffers(0, vertexBuffers, offsets);
         cmd.bindIndexBuffer(model->GetIndexBuffer()->GetBuffer(), 0, vk::IndexType::eUint32);
 

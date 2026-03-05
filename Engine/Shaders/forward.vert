@@ -7,8 +7,13 @@ layout(location = 4) in vec3 aBitangent;
 
 layout(push_constant) uniform pcData {
     mat4 Transform;
-} pc;
+} uPc;
+
+layout(set = 0, binding = 0) uniform CameraData {
+	mat4 View;
+	mat4 Proj;
+} uCamera;
 
 void main() {
-	gl_Position = pc.Transform * vec4(aPosition, 1.0);
+	gl_Position = uCamera.Proj * uCamera.View * uPc.Transform * vec4(aPosition, 1.0);
 } 

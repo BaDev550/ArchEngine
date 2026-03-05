@@ -30,6 +30,7 @@ namespace ae {
 		grapichs::Swapchain& GetSwapchain() { return *_swapchain; }
 		GLFWwindow* GetHandle() const;
 		void PoolEvents() const;
+		void SetCursor(bool enabled);
 		bool ShoudClose() const;
 		void CreateDefaultSwapchainFramebuffer();
 	private:

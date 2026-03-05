@@ -47,7 +47,7 @@ namespace ae::grapichs {
 			_writes.clear();
 
 			for (auto& [bindingIndex, resource] : bindings) {
-				auto& currentData = resource._data[frameIndex];
+				auto& currentData = resource._data[0]; // TEMP
 				if (!currentData) continue;
 
 				switch (resource._type)
