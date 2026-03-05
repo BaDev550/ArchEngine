@@ -3,7 +3,7 @@
 #include "Renderer.h"
 
 namespace ae::grapichs {
-	Model::Model(const std::string& path) {
+	Model::Model(const std::string& path) : _path(path) {
 		LoadModel(path);
 	}
 
@@ -56,7 +56,52 @@ namespace ae::grapichs {
 				}
 			}
 		}
+
 		// Load Material
+		if (scene->HasMaterials()) {
+			memory::Ref<Texture2D>& whiteTexture = Renderer::GetWhiteTexture();
+
+			_materials.resize(scene->mNumMaterials);
+			for (uint32_t i = 0; i < scene->mNumMaterials; i++) {
+				aiMaterial* aiMat = scene->mMaterials[i];
+				auto aiMaterialName = aiMat->GetName();
+				auto modelDirectory = _path.parent_path();
+				aiString aiTexturePath;
+				memory::Ref<Material> mat = memory::Ref<Material>::Create(Renderer::GetShaderLibrary().GetShader("ForwardShader"));
+
+				bool hasAlbedo = aiMat->GetTexture(AI_MATKEY_BASE_COLOR_TEXTURE, &aiTexturePath) == AI_SUCCESS;
+				if (!hasAlbedo)
+					hasAlbedo = aiMat->GetTexture(aiTextureType_DIFFUSE, 0, &aiTexturePath) == AI_SUCCESS;
+
+				if (hasAlbedo) {
+					TextureSpecification specs{};
+					specs.Attachment = false;
+					specs.GenerateMipMap = false;
+					specs.Filter = vk::Filter::eLinear;
+					specs.Wrap = vk::SamplerAddressMode::eClampToBorder;
+					specs.Format = vk::Format::eR8G8B8A8Unorm;
+					auto texturePath = modelDirectory / aiTexturePath.C_Str();
+					memory::Ref<Texture2D> texture = memory::Ref<Texture2D>::Create(specs, texturePath.string());
+					mat->SetAlbedoTexture(texture);
+				}
+
+				bool hasNormal = aiMat->GetTexture(aiTextureType_NORMALS, 0, &aiTexturePath) == AI_SUCCESS;
+				if (hasNormal) {
+					TextureSpecification specs{};
+					specs.Attachment = false;
+					specs.GenerateMipMap = false;
+					specs.Filter = vk::Filter::eLinear;
+					specs.Wrap = vk::SamplerAddressMode::eClampToBorder;
+					specs.Format = vk::Format::eR8G8B8A8Unorm;
+					auto texturePath = modelDirectory / aiTexturePath.C_Str();
+					memory::Ref<Texture2D> texture = memory::Ref<Texture2D>::Create(specs, texturePath.string());
+					mat->SetNormalTexture(texture);
+				}
+				mat->Build();
+
+				_materials[i] = mat;
+			}
+		}
 
 		// Create Buffers
 		{

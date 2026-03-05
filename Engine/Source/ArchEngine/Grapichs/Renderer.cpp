@@ -6,6 +6,7 @@
 namespace ae::grapichs {
 	struct RenderData {
 		memory::Scope<ShaderLibrary> ShaderLibrary = nullptr;
+		memory::Ref<Texture2D> WhiteTexture = nullptr;
 	} s_data;
 	static RenderAPI* g_renderAPI = nullptr;
 	static uint32_t g_frameIndex = 0;
@@ -13,6 +14,12 @@ namespace ae::grapichs {
 	void Renderer::Init() {
 		s_data.ShaderLibrary = memory::MakeScope<ShaderLibrary>();
 		g_renderAPI = new RenderAPI();
+
+		TextureSpecification whiteTextureSpecs{};
+		whiteTextureSpecs.Width = 1;
+		whiteTextureSpecs.Height = 1;
+		uint32_t whitePixelData = 0xffffffff;
+		s_data.WhiteTexture = memory::Ref<Texture2D>::Create(whiteTextureSpecs, DataBuffer(&whitePixelData, sizeof(uint32_t)));
 
 		PROFILE_SCOPE("Renderer");
 		Renderer::GetShaderLibrary().AddShader("ForwardShader", "Shaders/forward.vert", "Shaders/forward.frag");
@@ -47,6 +54,10 @@ namespace ae::grapichs {
 	void Renderer::CopyBuffer(memory::Ref<Buffer>& src, memory::Ref<Buffer>& dst, vk::DeviceSize size) {
 		Application::Get()->GetWindow().GetRenderContext().WaitDeviceIdle();
 		Application::Get()->GetWindow().GetRenderContext().CopyBuffer(src->GetBuffer(), dst->GetBuffer(), size);
+	}
+
+	memory::Ref<Texture2D>& Renderer::GetWhiteTexture() {
+		return s_data.WhiteTexture;
 	}
 
 	vk::CommandBuffer Renderer::GetCurrentCommandBuffer() {

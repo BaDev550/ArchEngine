@@ -1,6 +1,7 @@
 #pragma once
 #include <iostream>
 #include <map>
+#include <unordered_map>
 #include <vulkan/vulkan.hpp>
 
 namespace ae::grapichs {
@@ -28,7 +29,30 @@ namespace ae::grapichs {
 		uint32_t Count = 1;
 	};
 
+	class ShaderUniform {
+	public:
+		ShaderUniform() = default;
+		ShaderUniform(const std::string& name, ShaderUniformType type, uint32_t size, uint32_t offset)
+			: _name(name), _type(type), _size(size), _offset(offset) {
+		}
+		const std::string& GetName() const { return _name; }
+		const uint32_t& GetSize() const { return _size; }
+		const uint32_t& GetOffset() const { return _offset; }
+	private:
+		std::string _name;
+		ShaderUniformType _type = ShaderUniformType::None;
+		uint32_t _size = 0;
+		uint32_t _offset = 0;
+	};
+
+	struct ShaderBuffer {
+		std::string Name;
+		uint32_t Size = 0;
+		std::unordered_map<std::string, ShaderUniform> Uniforms;
+	};
+
 	struct CompiledShaderInfo {
+		std::unordered_map<std::string, ShaderBuffer> ShaderBuffers;
 		std::map<uint32_t, std::map<uint32_t, DescriptorInfo>> ReflectData;
 		std::vector<vk::VertexInputAttributeDescription> AttribDescriptions;
 		vk::VertexInputBindingDescription BindingDescription;
@@ -73,6 +97,7 @@ namespace ae::grapichs {
 		switch (format)
 		{
 		case vk::Format::eUndefined: return vk::ImageAspectFlagBits::eColor;
+		case vk::Format::eR8G8B8A8Unorm: return vk::ImageAspectFlagBits::eColor;
 		case vk::Format::eR16Sfloat: return vk::ImageAspectFlagBits::eColor;
 		case vk::Format::eR16G16Sfloat: return vk::ImageAspectFlagBits::eColor;
 		case vk::Format::eR16G16B16Sfloat: return vk::ImageAspectFlagBits::eColor;

@@ -2,6 +2,8 @@
 #include "ShaderLibrary.h"
 #include "Model.h"
 #include "RenderPass.h"
+#include "Texture.h"
+#include "ArchEngine/Core/Memory.h"
 
 #include <iostream>
 
@@ -9,7 +11,7 @@ namespace ae::grapichs {
 	class Renderer {
 	public:
 		static inline const uint32_t MaxFramesInFlight = 2;
-
+		
 		static void Init();
 		static void Destroy();
 		static void BeginFrame();
@@ -19,6 +21,7 @@ namespace ae::grapichs {
 		static void DrawStaticMesh(memory::Ref<RenderPass>& renderPass, vk::CommandBuffer cmd, memory::Ref<Model>& model);
 		static void CopyBuffer(memory::Ref<Buffer>& src, memory::Ref<Buffer>& dst, vk::DeviceSize size);
 
+		static memory::Ref<Texture2D>& GetWhiteTexture();
 		static vk::CommandBuffer GetCurrentCommandBuffer();
 		static uint32_t GetFrameIndex();
 		static ShaderLibrary& GetShaderLibrary();

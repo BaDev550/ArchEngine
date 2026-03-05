@@ -22,6 +22,7 @@ namespace ae::grapichs {
 
 		const vk::DescriptorSetLayout& GetDescriptorLayout(uint32_t index) const { return _DescriptorLayouts.at(index); }
 		const CompiledShaderInfo& GetCompiledShaderData() const { return _CompiledData; }
+		const std::unordered_map<std::string, ShaderBuffer>& GetShaderBuffers() const { return _CompiledData.ShaderBuffers; }
 		const std::map<uint32_t, vk::DescriptorSetLayout>& GetDesciptorLayouts() const { return _DescriptorLayouts; }
 		const std::map<uint32_t, std::map<uint32_t, DescriptorInfo>>& GetReflectData() const { return _CompiledData.ReflectData; }
 	private:

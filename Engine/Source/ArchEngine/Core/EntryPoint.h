@@ -16,6 +16,6 @@ int main(int argc, char** argv) {
 	auto app = CreateApplication();
 	app->Run();
 	delete app;
-	DUMP_MEMORY_LEAKS;
+	//DUMP_MEMORY_LEAKS;
 	return 0;
 }

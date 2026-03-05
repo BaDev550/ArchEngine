@@ -10,6 +10,8 @@
 namespace ae::grapichs {
 	void Texture2D::LoadTexture(void* data, uint32_t width, uint32_t height, uint32_t channels)
 	{
+		_specs.Width = width;
+		_specs.Height = height;
 		uint32_t bytesPerPixel = GetFormatSize(_specs.Format);
 		uint64_t imageSize = width * height * bytesPerPixel;
 		CreateTexture();
@@ -22,7 +24,7 @@ namespace ae::grapichs {
 				vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent
 			);
 			stagingBuffer->Map();
-			stagingBuffer->Write(data);
+			stagingBuffer->Write(data, imageSize);
 			stagingBuffer->Unmap();
 			_context.TransitionImageLayout(_image, _specs.Format, vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal);
 			_context.CopyBufferToImage(stagingBuffer->GetBuffer(), _image, width, height);
@@ -131,7 +133,7 @@ namespace ae::grapichs {
 	{
 		_specs = specs;
 		LoadTexture(data.Data, _specs.Width, _specs.Height, STBI_rgb_alpha);
-		data.Release();
+		//data.Release();
 	}
 
 	Texture2D::~Texture2D()

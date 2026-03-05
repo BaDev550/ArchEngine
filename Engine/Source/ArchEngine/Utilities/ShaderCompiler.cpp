@@ -166,7 +166,24 @@ namespace ae {
 
         for (const auto& ds : bindings) {
             shaderInfo.ReflectData[ds->set][ds->binding] = { ds->name, utils::GetResourceType(ds), ds->count };
-            Logger_renderer::info("Found input n:{}, b:{}", ds->name, ds->binding);
+            Logger_renderer::info("Found input/buffer n:{}, b:{}", ds->name, ds->binding);
+
+			auto& bufferInfo = shaderInfo.ShaderBuffers[ds->name];
+			bufferInfo.Name = ds->name;
+			bufferInfo.Size = ds->block.size;
+            for (uint32_t i = 0; i < ds->block.member_count; i++) {
+                const auto& member = ds->block.members[i];
+
+                const auto& typeDesc = member.type_description;
+                ShaderUniform uniform(
+                    member.name, 
+                    utils::GetShaderUniformType(typeDesc), 
+                    member.size, 
+                    member.offset
+                );
+                bufferInfo.Uniforms[member.name] = uniform;
+                Logger_renderer::info("Found uniform n:{}, o:{}, s:{}", member.name, member.offset, member.size);
+			}
         }
 
         if (module.shader_stage & SPV_REFLECT_SHADER_STAGE_VERTEX_BIT) {

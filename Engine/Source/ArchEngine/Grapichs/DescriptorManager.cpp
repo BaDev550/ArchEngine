@@ -64,7 +64,7 @@ namespace ae::grapichs {
 				}
 				case ShaderReflectionDataType::Sampler2D: {
 					vk::WriteDescriptorSet bufferWrite{};
-					bufferWrite.descriptorType = vk::DescriptorType::eSampledImage;
+					bufferWrite.descriptorType = vk::DescriptorType::eCombinedImageSampler;
 					bufferWrite.dstBinding = bindingIndex;
 					bufferWrite.dstSet = _descriptorSets[frameIndex][setIndex];
 					bufferWrite.pImageInfo = &currentData.As<Texture2D>()->GetImageDescriptorInfo();
