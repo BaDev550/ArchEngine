@@ -46,6 +46,7 @@ namespace ae::grapichs {
 
 		vk::Image GetImage() const { return _image; }
 		vk::ImageView GetImageView() const { return _imageView; }
+		vk::Sampler GetSampler() const { return _imageSampler; }
 		vk::DescriptorImageInfo& GetImageDescriptorInfo() { return _imageInfo; }
 	private:
 		void LoadTexture(void* data, uint32_t width, uint32_t height, uint32_t channels);

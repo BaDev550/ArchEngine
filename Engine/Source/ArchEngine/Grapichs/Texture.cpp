@@ -105,6 +105,7 @@ namespace ae::grapichs {
 		: _context(Application::Get()->GetWindow().GetRenderContext())
 	{
 		_specs = specs;
+		CreateTexture();
 	}
 
 	Texture2D::Texture2D(const TextureSpecification& specs, const std::filesystem::path& path)

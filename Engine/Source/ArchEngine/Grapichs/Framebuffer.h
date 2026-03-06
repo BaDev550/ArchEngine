@@ -36,6 +36,7 @@ namespace ae::grapichs {
 		memory::Ref<Texture2D> GetAttachmentTexture(uint32_t index = 0) const { return _colorAttachments[index]; }
 		memory::Ref<Texture2D> GetDepthTexture() const { return _depthAttachment; }
 		bool DoesFramebufferHasDepthAttachment() const { return _depthAttachment; }
+		FramebufferSpecification& GetSpecification() { return _specs; }
 		const FramebufferSpecification& GetSpecification() const { return _specs; }
 	private:
 		std::vector<memory::Ref<Texture2D>> _colorAttachments;

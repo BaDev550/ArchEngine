@@ -22,6 +22,7 @@ namespace ae {
 		~Window();
 
 		void SwapBuffers();
+		void SetClearColor(glm::vec4 clearColor);
 		uint32_t GetImageIndex() const { return _imageIndex; }
 		uint32_t GetWidth() const { return _specs.Width; }
 		uint32_t GetHeight() const { return _specs.Height; }
@@ -43,6 +44,7 @@ namespace ae {
 		uint32_t _imageIndex;
 		grapichs::RenderContext* _renderContext;
 		grapichs::Swapchain* _swapchain;
+		grapichs::FramebufferSpecification _defaultFramebufferSpecs;
 		memory::Ref<grapichs::Framebuffer> _defaultFramebuffer = nullptr;
 		WindowSpecifications _specs;
 		bool _resized = false;

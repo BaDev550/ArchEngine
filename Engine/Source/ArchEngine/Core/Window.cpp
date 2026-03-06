@@ -51,6 +51,10 @@ namespace ae {
 		_swapchain->Swapbuffers(&_imageIndex);
 	}
 
+	void Window::SetClearColor(glm::vec4 clearColor) {
+		_defaultFramebuffer->GetSpecification().ClearColor = clearColor;
+	}
+
 	void Window::PoolEvents() const
 	{
 		glfwPollEvents();
@@ -66,22 +70,17 @@ namespace ae {
 	}
 
 	void Window::CreateDefaultSwapchainFramebuffer() {
-		grapichs::FramebufferSpecification specs{};
-		specs.IsSwapchain = true;
-		specs.DepthClearValue = 1.0f;
-		specs.ClearColor = glm::vec4(0.0f, 1.0f, 1.0f, 1.0f);
-		_defaultFramebuffer = memory::Ref<grapichs::Framebuffer>::Create(specs);
+		_defaultFramebufferSpecs.IsSwapchain = true;
+		_defaultFramebufferSpecs.DepthClearValue = 1.0f;
+		_defaultFramebufferSpecs.ClearColor = glm::vec4(0.0f, 1.0f, 1.0f, 1.0f);
+		_defaultFramebuffer = memory::Ref<grapichs::Framebuffer>::Create(_defaultFramebufferSpecs);
 	}
 
 	void Window::RecreateDefaultSwapchainAndFramebuffer() {
-		grapichs::FramebufferSpecification specs{};
-		specs.Width = _specs.Width;
-		specs.Height = _specs.Height;
-		specs.IsSwapchain = true;
-		specs.DepthClearValue = 1.0f;
-		specs.ClearColor = glm::vec4(0.0f, 1.0f, 1.0f, 1.0f);
+		_defaultFramebufferSpecs.Width = _specs.Width;
+		_defaultFramebufferSpecs.Height = _specs.Height;
 		_swapchain->Recreate();
-		_defaultFramebuffer->Invalidate(specs);
+		_defaultFramebuffer->Invalidate(_defaultFramebufferSpecs);
 	}
 
 	void Window::FramebufferResizeCallback(GLFWwindow* window, int width, int height) {

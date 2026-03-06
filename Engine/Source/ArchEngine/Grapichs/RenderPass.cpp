@@ -284,6 +284,19 @@ namespace ae::grapichs {
                 1, &barrier
             );
         }
+        else {
+            for (int i = 0; i < framebuffer->GetAttachmentCount(); i++) {
+                const memory::Ref<Texture2D>& colorTexture = framebuffer->GetAttachmentTexture(i);
+                Utils::ImageMemBarrier(
+                    cmd,
+                    colorTexture->GetImage(),
+                    colorTexture->GetFormat(),
+                    vk::ImageLayout::eColorAttachmentOptimal,
+                    vk::ImageLayout::eShaderReadOnlyOptimal,
+                    1
+                );
+            }
+        }
 	}
 
 	void RenderPass::SetInput(std::string_view name, const memory::Ref<Buffer>& buffer) {
