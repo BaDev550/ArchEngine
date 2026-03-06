@@ -17,6 +17,7 @@ namespace ae {
 		_window->CreateDefaultSwapchainFramebuffer();
 		_window->SetCursor(false);
 
+		Input::Init();
 		Renderer::Init();
 		ImGuiRenderer::Init();
 	}
@@ -39,6 +40,7 @@ namespace ae {
 
 			_window->PoolEvents();
 
+			Input::Update();
 			ApplicationUpdate();
 		}
 		_window->GetRenderContext().WaitDeviceIdle();

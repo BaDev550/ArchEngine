@@ -99,6 +99,25 @@ namespace ae::grapichs {
         }
     }
 
+    void RenderAPI::DrawEnityWithStaticMesh(memory::Ref<RenderPass>& renderPass, vk::CommandBuffer cmd, memory::Ref<Model>& model, const glm::mat4& transform)
+    {
+        vk::Buffer vertexBuffers[] = { model->GetVertexBuffer()->GetBuffer() };
+        vk::PipelineLayout layout = renderPass->GetPipeline()->GetPipelineLayout();
+        vk::DeviceSize offsets[] = { 0 };
+        cmd.bindPipeline(vk::PipelineBindPoint::eGraphics, renderPass->GetPipeline()->GetPipeline());
+        cmd.bindVertexBuffers(0, vertexBuffers, offsets);
+        cmd.bindIndexBuffer(model->GetIndexBuffer()->GetBuffer(), 0, vk::IndexType::eUint32);
+        cmd.pushConstants(layout, vk::ShaderStageFlagBits::eVertex, 0, sizeof(glm::mat4), &transform);
+
+        for (const auto& submesh : model->GetSubmeshes()) {
+            memory::Ref<Material> material = model->GetMaterialByID(submesh.MaterialIndex);
+
+            material->Bind(cmd, renderPass->GetPipeline()->GetPipelineLayout());
+            cmd.drawIndexed(submesh.IndexCount, 1, submesh.IndexOffset, submesh.VertexOffset, 0);
+            _renderStats.DrawCalls++;
+        }
+    }
+
     vk::CommandBuffer RenderAPI::GetCurrentCommandBuffer()
     {
         CHECKF(_frameStarted, "Cannot get active command buffer while frame is not started");

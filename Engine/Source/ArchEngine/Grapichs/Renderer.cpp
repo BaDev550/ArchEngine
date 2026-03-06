@@ -10,6 +10,8 @@ namespace ae::grapichs {
 	} s_data;
 	static RenderAPI* g_renderAPI = nullptr;
 	static uint32_t g_frameIndex = 0;
+	static memory::Ref<grapichs::RenderPass> _defaultRenderPass = nullptr;
+	static memory::Ref<grapichs::Pipeline> _defaultPipeline = nullptr;
 
 	void Renderer::Init() {
 		s_data.ShaderLibrary = memory::MakeScope<ShaderLibrary>();
@@ -23,9 +25,19 @@ namespace ae::grapichs {
 
 		PROFILE_SCOPE("Renderer");
 		Renderer::GetShaderLibrary().AddShader("ForwardShader", "Shaders/forward.vert", "Shaders/forward.frag");
+
+		{
+			PipelineData pipelineData{};
+			pipelineData.Shader = Renderer::GetShaderLibrary().GetShader("ForwardShader");
+			pipelineData.TargetFramebuffer = Application::Get()->GetWindow().GetDefaultSwapchainFramebuffer();
+			_defaultPipeline = memory::Ref<Pipeline>::Create(pipelineData);
+			_defaultRenderPass = memory::Ref<RenderPass>::Create(_defaultPipeline);
+		}
 	}
 
 	void Renderer::Destroy() {
+		_defaultRenderPass = nullptr;
+		_defaultPipeline = nullptr;
 		s_data.ShaderLibrary = nullptr;
 		s_data.WhiteTexture = nullptr;
 		delete g_renderAPI;
@@ -40,6 +52,14 @@ namespace ae::grapichs {
 		g_frameIndex = (g_frameIndex + 1) % MaxFramesInFlight;
 	}
 
+	void Renderer::BeginDefaultRenderPass(){
+		_defaultRenderPass->Begin();
+	}
+
+	void Renderer::EndDefaultRenderPass() {
+		_defaultRenderPass->End();
+	}
+
 	void Renderer::DrawVertex(vk::CommandBuffer cmd, memory::Ref<Buffer>& vertexBuffer, uint32_t vertexCount) {
 		g_renderAPI->DrawVertex(cmd, vertexBuffer, vertexCount);
 	}
@@ -50,6 +70,10 @@ namespace ae::grapichs {
 
 	void Renderer::DrawStaticMesh(memory::Ref<RenderPass>& renderPass, vk::CommandBuffer cmd, memory::Ref<Model>& model) {
 		g_renderAPI->DrawStaticMesh(renderPass, cmd, model);
+	}
+
+	void Renderer::DrawEnityWithStaticMesh(memory::Ref<RenderPass>& renderPass, vk::CommandBuffer cmd, memory::Ref<Model>& model, const glm::mat4& transform) {
+		g_renderAPI->DrawEnityWithStaticMesh(renderPass, cmd, model, transform);
 	}
 
 	void Renderer::CopyBuffer(memory::Ref<Buffer>& src, memory::Ref<Buffer>& dst, vk::DeviceSize size) {

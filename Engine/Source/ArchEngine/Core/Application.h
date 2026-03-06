@@ -4,6 +4,7 @@
 #include "ArchEngine/Grapichs/Renderer.h"
 #include "ArchEngine/Grapichs/ImGuiRenderer.h"
 #include "ArchEngine/Utilities/Logger.h"
+#include <ArchEngine/Core/Input.h>
 
 namespace ae {
 	using namespace memory;
