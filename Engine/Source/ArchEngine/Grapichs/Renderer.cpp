@@ -65,5 +65,6 @@ namespace ae::grapichs {
 		return g_renderAPI->GetCurrentCommandBuffer();
 	}
 	ShaderLibrary& Renderer::GetShaderLibrary() { return *s_data.ShaderLibrary; }
+	uint32_t Renderer::GetDrawCallCount() { return g_renderAPI->_renderStats.DrawCalls; }
 	uint32_t Renderer::GetFrameIndex() { return g_frameIndex; }
 }

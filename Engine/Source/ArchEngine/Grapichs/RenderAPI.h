@@ -8,6 +8,10 @@
 namespace ae::grapichs {
 	class RenderAPI {
 	public:
+		struct RenderStats {
+			uint32_t DrawCalls;
+		} _renderStats;
+
 		RenderAPI();
 		~RenderAPI();
 		void BeginFrame();
@@ -17,10 +21,6 @@ namespace ae::grapichs {
 		void DrawStaticMesh(memory::Ref<RenderPass>& renderPass, vk::CommandBuffer cmd, memory::Ref<Model>& model);
 		vk::CommandBuffer GetCurrentCommandBuffer();
 	private:
-		struct RenderStats {
-			uint32_t DrawCalls;
-		} _renderStats;
-
 		struct FrameContext {
 			vk::CommandPool CommandPool;
 			vk::CommandBuffer CommandBuffer;

@@ -93,18 +93,63 @@ public:
 			_window->SetCursor(_cursorEnabled);
 		}
 
-		_defaultRenderPass->Begin();
-		ImGui::ShowDemoWindow();
+		if (Input::IsKeyPressed(key::F1)) {
+			_debugOverlayEnabled = !_debugOverlayEnabled;
+		}
 
-		ImGui::Begin("Scene Viewport");
+		_defaultRenderPass->Begin();
+
+		ImGuiViewport* viewport = ImGui::GetMainViewport();
+		ImGui::SetNextWindowPos(viewport->WorkPos);
+		ImGui::SetNextWindowSize(viewport->WorkSize);
+		ImGui::SetNextWindowViewport(viewport->ID);
+		ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse |
+			ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
+			ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus |
+			ImGuiWindowFlags_NoBackground;
+
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+		ImGui::Begin("Viewport", nullptr, windowFlags);
+		ImGui::PopStyleVar();
 		ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
-		ImGui::Image((ImTextureID)_viewportTextureID, ImVec2{ viewportPanelSize.x, viewportPanelSize.y });
+		ImGui::Image((ImTextureID)_viewportTextureID, viewportPanelSize);
 		ImGui::End();
+
+		if (_debugOverlayEnabled)
+			DrawDebugOverlay();
 
 		_defaultRenderPass->End();
 
 		ImGuiRenderer::End();
 		Renderer::EndFrame();
+	}
+
+	void DrawDebugOverlay() {
+		ImGuiWindowFlags overlayFlags = ImGuiWindowFlags_NoDecoration |
+			ImGuiWindowFlags_AlwaysAutoResize |
+			ImGuiWindowFlags_NoSavedSettings |
+			ImGuiWindowFlags_NoFocusOnAppearing |
+			ImGuiWindowFlags_NoNav |
+			ImGuiWindowFlags_NoMove;
+
+		ImGuiViewport* mainViewport = ImGui::GetMainViewport();
+		ImGui::SetNextWindowPos({ mainViewport->WorkPos.x, mainViewport->WorkPos.y }, ImGuiCond_Always, ImVec2(0.0f, 0.0f));
+		ImGui::SetNextWindowSize({ mainViewport->WorkSize.x, mainViewport->WorkSize.y / 2 });
+		ImGui::SetNextWindowBgAlpha(0.0f);
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+		if (ImGui::Begin("Debug Overlay", nullptr, overlayFlags)) {
+			ImGui::Text("ArchEngine Debug Info");
+			ImGui::Separator();
+			ImGui::Text("Cursor Enabled: %s", _cursorEnabled ? "True" : "False");
+
+			if (ImGui::CollapsingHeader("Render stats")) {
+				ImGui::Text("FPS: %.1f", 1.0f / _deltaTime);
+				ImGui::Text("Draw Calls: %d", Renderer::GetDrawCallCount());
+				ImGui::Text("Frame Time: %.3f ms", 1000.0f / ImGui::GetIO().Framerate);
+			}
+		}
+		ImGui::End();
+		ImGui::PopStyleVar();
 	}
 private:
 	struct SceneData {
@@ -122,6 +167,7 @@ private:
 	memory::Ref<grapichs::Buffer> _cameraBuffer = nullptr;
 	VkDescriptorSet _viewportTextureID = nullptr;
 	bool _cursorEnabled = false;
+	bool _debugOverlayEnabled = false;
 };
 
 ae::Application* CreateApplication() {

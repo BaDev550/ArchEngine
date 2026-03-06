@@ -23,6 +23,7 @@ namespace ae::grapichs {
 
 		static memory::Ref<Texture2D>& GetWhiteTexture();
 		static vk::CommandBuffer GetCurrentCommandBuffer();
+		static uint32_t GetDrawCallCount();
 		static uint32_t GetFrameIndex();
 		static ShaderLibrary& GetShaderLibrary();
 	};

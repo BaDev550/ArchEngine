@@ -69,6 +69,7 @@ namespace ae::grapichs {
         vk::DeviceSize offsets[] = { 0 };
 		cmd.bindVertexBuffers(0, vertexBuffers, offsets);
         cmd.draw(vertexCount, 1, 0, 0);
+        _renderStats.DrawCalls++;
     }
 
     void RenderAPI::DrawIndexed(vk::CommandBuffer cmd, memory::Ref<Buffer>& vertexBuffer, memory::Ref<Buffer>& indexBuffer, uint32_t indexCount)
@@ -78,6 +79,7 @@ namespace ae::grapichs {
 		cmd.bindVertexBuffers(0, vertexBuffers, offsets);
 		cmd.bindIndexBuffer(indexBuffer->GetBuffer(), 0, vk::IndexType::eUint32);
         cmd.drawIndexed(indexCount, 1, 0, 0, 0);
+        _renderStats.DrawCalls++;
     }
 
     void RenderAPI::DrawStaticMesh(memory::Ref<RenderPass>& renderPass, vk::CommandBuffer cmd, memory::Ref<Model>& model)
@@ -93,6 +95,7 @@ namespace ae::grapichs {
 
             material->Bind(cmd, renderPass->GetPipeline()->GetPipelineLayout());
             cmd.drawIndexed(submesh.IndexCount, 1, submesh.IndexOffset, submesh.VertexOffset, 0);
+            _renderStats.DrawCalls++;
         }
     }
 
