@@ -81,6 +81,7 @@ namespace ae::grapichs {
 		switch (format)
 		{
 		case vk::Format::eUndefined: return 0;
+		case vk::Format::eR8G8B8A8Unorm: return 4;
 		case vk::Format::eR16Sfloat: return 2;
 		case vk::Format::eR16G16Sfloat: return 4;
 		case vk::Format::eR16G16B16Sfloat: return 8;

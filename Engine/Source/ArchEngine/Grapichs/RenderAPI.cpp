@@ -88,13 +88,9 @@ namespace ae::grapichs {
         cmd.bindIndexBuffer(model->GetIndexBuffer()->GetBuffer(), 0, vk::IndexType::eUint32);
 
         for (const auto& submesh : model->GetSubmeshes()) {
-			memory::Ref<Material> material = model->GetMaterialByID(submesh.MaterialIndex);
+            memory::Ref<Material> material = model->GetMaterialByID(submesh.MaterialIndex);
 
-			vk::DescriptorSet descriptorSet = material->GetDescriptorSets().at(Renderer::GetFrameIndex());
-            if (descriptorSet)
-				cmd.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, renderPass->GetPipeline()->GetPipelineLayout(), 0, descriptorSet, {});
-			material->Bind(cmd, renderPass->GetPipeline()->GetPipelineLayout());
-
+            material->Bind(cmd, renderPass->GetPipeline()->GetPipelineLayout());
             cmd.drawIndexed(submesh.IndexCount, 1, submesh.IndexOffset, submesh.VertexOffset, 0);
         }
     }

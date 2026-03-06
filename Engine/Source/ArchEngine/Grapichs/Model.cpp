@@ -97,7 +97,6 @@ namespace ae::grapichs {
 					memory::Ref<Texture2D> texture = memory::Ref<Texture2D>::Create(specs, texturePath.string());
 					mat->SetNormalTexture(texture);
 				}
-				mat->Build();
 
 				_materials[i] = mat;
 			}

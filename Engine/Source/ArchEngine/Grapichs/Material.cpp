@@ -35,10 +35,10 @@ namespace ae::grapichs {
                 _materialBuffer->Map();
             }
 
-            _descriptorSets.resize(Renderer::MaxFramesInFlight);
-            for (uint32_t i = 0; i < Renderer::MaxFramesInFlight; i++) {
-                _descriptorSets[i] = _descriptorManager->Allocate(layout);
-            }
+            //_descriptorSets.resize(Renderer::MaxFramesInFlight);
+            //for (uint32_t i = 0; i < Renderer::MaxFramesInFlight; i++) {
+            //    _descriptorSets[i] = _descriptorManager->Allocate(layout);
+            //}
 
             for (const auto& [name, decl] : _descriptorManager->GetInputDeclarations()) {
                 if (decl.Type == ShaderReflectionDataType::Sampler2D) {
@@ -56,27 +56,30 @@ namespace ae::grapichs {
     {
         if (_materialBuffer && _materialData.Data)
 			_materialBuffer->Write(_materialData.Data, _materialData.Size);
+        //vk::DescriptorSet descriptorSet = _descriptorSets.at(Renderer::GetFrameIndex());
+        //if (descriptorSet)
+        //    cmd.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, layout, 1, descriptorSet, {});
 		_descriptorManager->UpdateSets(cmd, layout);
     }
 
     void Material::Set(const std::string& name, float value)
     {
-        Set<float>(name, value);
+        SetData<float>(name, value);
     }
 
     void Material::Set(const std::string& name, int value)
     {
-        Set<float>(name, value);
+        SetData<float>(name, value);
     }
 
     void Material::Set(const std::string& name, const glm::vec2& value)
     {
-        Set<glm::vec2>(name, value);
+        SetData<glm::vec2>(name, value);
     }
 
     void Material::Set(const std::string& name, const glm::vec3& value)
     {
-        Set<glm::vec3>(name, value);
+        SetData<glm::vec3>(name, value);
     }
 
     void Material::Set(const std::string& name, const memory::Ref<Texture2D>& value)

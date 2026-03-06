@@ -27,6 +27,7 @@ namespace ae::grapichs {
 
 	void Renderer::Destroy() {
 		s_data.ShaderLibrary = nullptr;
+		s_data.WhiteTexture = nullptr;
 		delete g_renderAPI;
 	}
 

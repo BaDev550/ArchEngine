@@ -26,13 +26,13 @@ namespace ae::grapichs {
 		bool HasNormalTexture() const { return _data.Normal; }
 
 		template<typename T>
-		void Set(const std::string& name, const T& value) {
+		void SetData(const std::string& name, const T& value) {
 			auto decl = FindUniformDeclaration(name);
 			_materialData.Write((uint8_t*)&value, decl->GetSize(), decl->GetOffset());
 		}
 
 		template<typename T>
-		T& Get(const std::string& name) {
+		T& GetData(const std::string& name) {
 			auto decl = FindUniformDeclaration(name);
 			auto& buffer = _materialData;
 			return buffer.Read<T>(decl->GetOffset());

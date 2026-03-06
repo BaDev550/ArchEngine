@@ -59,17 +59,17 @@ namespace ae::grapichs {
 					bufferWrite.dstSet = _descriptorSets[frameIndex][setIndex];
 					bufferWrite.pBufferInfo = &currentData.As<Buffer>()->GetDescriptorInfo();
 					bufferWrite.descriptorCount = 1;
-					_writes[setIndex] = bufferWrite;
+					_writes.push_back(bufferWrite);
 					break;
 				}
 				case ShaderReflectionDataType::Sampler2D: {
-					vk::WriteDescriptorSet bufferWrite{};
-					bufferWrite.descriptorType = vk::DescriptorType::eCombinedImageSampler;
-					bufferWrite.dstBinding = bindingIndex;
-					bufferWrite.dstSet = _descriptorSets[frameIndex][setIndex];
-					bufferWrite.pImageInfo = &currentData.As<Texture2D>()->GetImageDescriptorInfo();
-					bufferWrite.descriptorCount = 1;
-					_writes[setIndex] = bufferWrite;
+					vk::WriteDescriptorSet imageWrite{};
+					imageWrite.descriptorType = vk::DescriptorType::eCombinedImageSampler;
+					imageWrite.dstBinding = bindingIndex;
+					imageWrite.dstSet = _descriptorSets[frameIndex][setIndex];
+					imageWrite.pImageInfo = &currentData.As<Texture2D>()->GetImageDescriptorInfo();
+					imageWrite.descriptorCount = 1;
+					_writes.push_back(imageWrite);
 					break;
 				}
 				}
@@ -82,7 +82,7 @@ namespace ae::grapichs {
 				1,
 				&_descriptorSets[frameIndex][setIndex],
 				0, nullptr);
-			_context.GetDevice().updateDescriptorSets(1, &_writes[setIndex], 0, nullptr);
+			_context.GetDevice().updateDescriptorSets(static_cast<uint32_t>(_writes.size()), _writes.data(), 0, nullptr);
 		}
 	}
 

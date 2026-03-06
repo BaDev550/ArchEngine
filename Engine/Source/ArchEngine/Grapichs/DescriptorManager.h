@@ -57,7 +57,7 @@ namespace ae::grapichs {
 		std::vector<std::vector<vk::DescriptorSet>> _descriptorSets;
 		std::map<std::string, RenderPassInputDeclaration> _inputDeclarations;
 		std::map<uint32_t, std::map<uint32_t, ResourceBinding>> _storedResources;
-		std::map<uint32_t, vk::WriteDescriptorSet> _writes;
+		std::vector<vk::WriteDescriptorSet> _writes;
 
 		RenderContext& _context;
 		const RenderPassInputDeclaration* GetInputDeclaration(std::string_view name);
