@@ -6,6 +6,9 @@
 #include <ArchEngine/Grapichs/RenderPass.h>
 #include <ArchEngine/Grapichs/FreeCamera.h>
 #include <ArchEngine/Core/EntryPoint.h>
+#include <ArchEngine/Core/Input.h>
+
+#include <imgui.h>
 
 using namespace ae;
 class SandboxGame : public Application {
@@ -41,8 +44,10 @@ public:
 
 	virtual void ApplicationUpdate() override {
 		Renderer::BeginFrame();
-		_defaultRenderPass->Begin();
+		ImGuiRenderer::Begin();
 
+		// Default renderpass
+		_defaultRenderPass->Begin();
 		vk::CommandBuffer cmd = Renderer::GetCurrentCommandBuffer();
 
 		_defaultCamera->Update(_deltaTime);
@@ -57,8 +62,18 @@ public:
 		cmd.pushConstants(layout, vk::ShaderStageFlagBits::eVertex, 0, sizeof(glm::mat4), &transform);
 
 		Renderer::DrawStaticMesh(_defaultRenderPass, cmd, _defaultModel);
-
 		_defaultRenderPass->End();
+
+		if (Input::IsKeyPressed(key::Tab)) {
+			_cursorEnabled = !_cursorEnabled;
+			_defaultCamera->SetFirstMouse();
+			_defaultCamera->SetProccessingMouse(!_cursorEnabled);
+			_window->SetCursor(_cursorEnabled);
+		}
+
+		ImGui::ShowDemoWindow();
+
+		ImGuiRenderer::End();
 		Renderer::EndFrame();
 	}
 private:
@@ -71,6 +86,7 @@ private:
 	memory::Ref<grapichs::FreeCamera> _defaultCamera = nullptr;
 
 	memory::Ref<grapichs::Buffer> _cameraBuffer = nullptr;
+	bool _cursorEnabled = false;
 };
 
 ae::Application* CreateApplication() {

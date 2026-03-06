@@ -13,10 +13,12 @@ namespace ae {
 				bool success = glfwInit();
 				assert(success);
 				glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-				glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+				glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 			}
 			_handle = glfwCreateWindow(_specs.Width, _specs.Height, _specs.Title.c_str(), nullptr, nullptr);
 			glfwMakeContextCurrent(_handle);
+			glfwSetWindowUserPointer(_handle, this);
+			glfwSetFramebufferSizeCallback(_handle, FramebufferResizeCallback);
 		}
 
 		{
@@ -69,5 +71,23 @@ namespace ae {
 		specs.DepthClearValue = 1.0f;
 		specs.ClearColor = glm::vec4(0.0f, 1.0f, 1.0f, 1.0f);
 		_defaultFramebuffer = memory::Ref<grapichs::Framebuffer>::Create(specs);
+	}
+
+	void Window::RecreateDefaultSwapchainAndFramebuffer() {
+		grapichs::FramebufferSpecification specs{};
+		specs.Width = _specs.Width;
+		specs.Height = _specs.Height;
+		specs.IsSwapchain = true;
+		specs.DepthClearValue = 1.0f;
+		specs.ClearColor = glm::vec4(0.0f, 1.0f, 1.0f, 1.0f);
+		_swapchain->Recreate();
+		_defaultFramebuffer->Invalidate(specs);
+	}
+
+	void Window::FramebufferResizeCallback(GLFWwindow* window, int width, int height) {
+		Window* win = reinterpret_cast<Window*>(glfwGetWindowUserPointer(window));
+		win->_specs.Width = width;
+		win->_specs.Height = height;
+		win->_resized = true;
 	}
 }

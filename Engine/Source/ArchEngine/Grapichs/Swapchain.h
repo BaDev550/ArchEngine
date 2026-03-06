@@ -9,12 +9,16 @@ namespace ae::grapichs {
 		Swapchain(const Swapchain&) = delete;
 		Swapchain& operator=(const Swapchain&) = delete;
 		size_t GetImageCount() const { return _swapChainImages.size(); }
+		void Recreate();
 
 		vk::Result Submit(vk::CommandBuffer* cmd, uint32_t* imageIndex);
 		vk::Result Swapbuffers(uint32_t* imageIndex);
 		vk::Format GetSwapchainFormat() const { return _swapChainImageFormat; }
 		vk::Format GetSwapchainDepthFormat() const { return _swapChainDepthFormat; }
+		vk::Extent2D GetSwapChainExtent() const { return _swapChainExtent; }
+		vk::ImageView GetSwapChainImageView(uint32_t index) const { return _swapChainImageViews.at(index); }
 	private:
+		void DestroyResources();
 		void CreateSwapchain();
 		void CreateSwapchainImageViews();
 		void CreateDepthResources();

@@ -18,11 +18,13 @@ namespace ae {
 		_window->SetCursor(false);
 
 		Renderer::Init();
+		ImGuiRenderer::Init();
 	}
 
 	Application::~Application() {
 		profiler::Profiler::Get().Clear();
 		profiler::Profiler::Destroy();
+		ImGuiRenderer::Destroy();
 		Renderer::Destroy();
 	}
 

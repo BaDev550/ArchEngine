@@ -27,6 +27,7 @@ namespace ae::grapichs {
 	public:
 		Framebuffer(const FramebufferSpecification& spec);
 		~Framebuffer();
+		void Invalidate(const FramebufferSpecification& spec);
 
 		void Resize(uint32_t width, uint32_t height);
 		uint32_t GetWidth() const { return _specs.Width; }

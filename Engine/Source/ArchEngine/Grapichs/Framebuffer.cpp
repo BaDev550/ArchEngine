@@ -6,6 +6,13 @@ namespace ae::grapichs {
 	Framebuffer::Framebuffer(const FramebufferSpecification& spec)
 		: _specs(spec)
 	{
+		Invalidate(spec);
+	}
+
+	void Framebuffer::Invalidate(const FramebufferSpecification& spec) {
+		_specs = spec;
+		_colorAttachments.clear();
+		_depthAttachment = nullptr;
 		if (_specs.Width == 0 || _specs.Height == 0) {
 			_specs.Width = Application::Get()->GetWindow().GetWidth();
 			_specs.Height = Application::Get()->GetWindow().GetHeight();
@@ -43,6 +50,7 @@ namespace ae::grapichs {
 			}
 		}
 	}
+
 	Framebuffer::~Framebuffer() {}
 
 	void Framebuffer::Resize(uint32_t width, uint32_t height) {

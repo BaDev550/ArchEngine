@@ -218,7 +218,7 @@ namespace ae::grapichs {
 			depthAttachments.clearValue = vk::ClearValue(vk::ClearDepthStencilValue(depthClearColor, 0));
             Utils::ImageMemBarrier(cmd, fbDepthImage, fbDepthFormat, vk::ImageLayout::eUndefined, vk::ImageLayout::eDepthStencilAttachmentOptimal, 1);
 		}
-
+        
 		for (int i = 0; i < activeAttachmentCount; i++) {
             uint32_t attachmentIndex = fbSpecs.IsSwapchain ? currentImageIndex : i;
 			const memory::Ref<Texture2D>& colorAttachment = framebuffer->GetAttachmentTexture(attachmentIndex);

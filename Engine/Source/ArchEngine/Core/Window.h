@@ -32,13 +32,19 @@ namespace ae {
 		void PoolEvents() const;
 		void SetCursor(bool enabled);
 		bool ShoudClose() const;
+		void RecreateDefaultSwapchainAndFramebuffer();
 		void CreateDefaultSwapchainFramebuffer();
+		bool Resized() const { return _resized; }
+		void ResetResizedFlag() { _resized = false; }
 	private:
+		static void FramebufferResizeCallback(GLFWwindow* window, int width, int height);
+
 		GLFWwindow* _handle;
 		uint32_t _imageIndex;
 		grapichs::RenderContext* _renderContext;
 		grapichs::Swapchain* _swapchain;
 		memory::Ref<grapichs::Framebuffer> _defaultFramebuffer = nullptr;
 		WindowSpecifications _specs;
+		bool _resized = false;
 	};
 }

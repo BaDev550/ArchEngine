@@ -36,14 +36,7 @@ namespace ae::grapichs {
 		for (uint32_t i = 0; i < GetImageCount(); i++)
 			_context.GetDevice().destroySemaphore(_renderFinishedSemaphores[i]);
 
-		for (auto& imageView : _swapChainImageViews)
-			_context.GetDevice().destroyImageView(imageView);
-
-		_context.GetDevice().destroyImage(_swapChainDepthImage);
-		_context.GetDevice().destroyImageView(_swapChainDepthImageView);
-		_context.GetDevice().freeMemory(_swapChainDepthImageMemory);
-
-		_context.GetDevice().destroySwapchainKHR(_swapChain);
+		DestroyResources();
 	}
 
 	void Swapchain::CreateSwapchain() {
@@ -168,18 +161,59 @@ namespace ae::grapichs {
 		presentInfo.swapchainCount = 1;
 		presentInfo.pSwapchains = &_swapChain;
 		presentInfo.pImageIndices = imageIndex;
-		return _context.GetPresentQueue().presentKHR(presentInfo);
+		vk::Result result;
+		try {
+			result = _context.GetPresentQueue().presentKHR(presentInfo);
+		}
+		catch (const vk::OutOfDateKHRError& e) {
+			result = vk::Result::eErrorOutOfDateKHR;
+		}
+
+		return result;
 	}
 
 	vk::Result Swapchain::Swapbuffers(uint32_t* imageIndex) {
 		uint32_t frameIndex = Renderer::GetFrameIndex();
 		vk::Result result = _context.GetDevice().waitForFences(1, &_inFlightFences[frameIndex], vk::True, UINT32_MAX);
 		CHECKF(result == vk::Result::eSuccess, "Failed to wait for events");
-
-		result = _context.GetDevice().acquireNextImageKHR(_swapChain, UINT32_MAX, _imageAvailableSemaphores[frameIndex], nullptr, imageIndex);
-		CHECKF(result == vk::Result::eSuccess, "Failed to quire next image");
+		try {
+			result = _context.GetDevice().acquireNextImageKHR(_swapChain, UINT32_MAX, _imageAvailableSemaphores[frameIndex], nullptr, imageIndex);
+		}
+		catch (const vk::OutOfDateKHRError& e) {
+			return vk::Result::eErrorOutOfDateKHR;
+		}
+		CHECKF(result == vk::Result::eSuccess || result == vk::Result::eSuboptimalKHR, "Failed to acquire next image");
 		CHECKF(_context.GetDevice().resetFences(1, &_inFlightFences[frameIndex]) == vk::Result::eSuccess, "Failed to reset fence");
+
 		return result;
+	}
+
+	void Swapchain::Recreate() {
+		int width = 0, height = 0;
+		auto& window = Application::Get()->GetWindow();
+		width = window.GetWidth();
+		height = window.GetHeight();
+		while (width == 0 || height == 0) {
+			width = window.GetWidth();
+			height = window.GetHeight();
+			glfwWaitEvents();
+		}
+
+		_context.WaitDeviceIdle();
+		DestroyResources();
+		CreateSwapchain();
+		CreateDepthResources();
+		CreateSwapchainImageViews();
+	}
+
+	void Swapchain::DestroyResources() {
+		for (auto& imageView : _swapChainImageViews)
+			_context.GetDevice().destroyImageView(imageView);
+
+		_context.GetDevice().destroyImage(_swapChainDepthImage);
+		_context.GetDevice().destroyImageView(_swapChainDepthImageView);
+		_context.GetDevice().freeMemory(_swapChainDepthImageMemory);
+		_context.GetDevice().destroySwapchainKHR(_swapChain);
 	}
 
 	vk::SurfaceFormatKHR Swapchain::ChooseSwapSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& availableFormats) {

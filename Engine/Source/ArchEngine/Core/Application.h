@@ -2,6 +2,7 @@
 #include "Window.h"
 #include "Memory.h"
 #include "ArchEngine/Grapichs/Renderer.h"
+#include "ArchEngine/Grapichs/ImGuiRenderer.h"
 #include "ArchEngine/Utilities/Logger.h"
 
 namespace ae {
@@ -26,8 +27,8 @@ namespace ae {
 		Window& GetWindow() { return *_window; }
 	protected:
 		float _deltaTime;
-	private:
 		Scope<Window> _window = nullptr;
+	private:
 		static Application* _instance;
 	};
 }

@@ -55,8 +55,9 @@ namespace ae::grapichs {
 
         cmd.end();
         vk::Result result = swapchain.Submit(&cmd, &imageIndex);
-        if (result == vk::Result::eErrorOutOfDateKHR || result == vk::Result::eSuboptimalKHR) {
-            //RESIZED
+        if (result == vk::Result::eErrorOutOfDateKHR || result == vk::Result::eSuboptimalKHR || window.Resized()) {
+            window.ResetResizedFlag();
+            window.RecreateDefaultSwapchainAndFramebuffer();
         }
         _renderStats.DrawCalls = 0;
         _frameStarted = false;
