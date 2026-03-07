@@ -99,7 +99,6 @@ namespace ae {
 			PhysicsMotionTypeToJoltType(),
 			physics::Layers::MOVING
 		);
-		settings.mAllowSleeping = false;
 		_rgBody = interface.CreateBody(settings);
 		if (!_rgBody) {
 			Logger_app::error("Failed to create rigidbody");
