@@ -17,6 +17,7 @@ namespace ae {
 		_window->CreateDefaultSwapchainFramebuffer();
 		_window->SetCursor(false);
 
+		PhysicsEngine::Init(PhysicsSettings());
 		AssetManager::Init();
 		Input::Init();
 		Renderer::Init();
@@ -26,9 +27,11 @@ namespace ae {
 	Application::~Application() {
 		profiler::Profiler::Get().Clear();
 		profiler::Profiler::Destroy();
+		PhysicsEngine::Shutdown();
 		AssetManager::Destroy();
 		ImGuiRenderer::Destroy();
 		Renderer::Destroy();
+		_window = nullptr;
 	}
 
 	void Application::Run()

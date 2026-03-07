@@ -14,12 +14,14 @@ target_include_directories(ArchEngine
         ${CMAKE_SOURCE_DIR}/vendor/SPIRV-Reflect
         ${CMAKE_SOURCE_DIR}/vendor/glm
         ${CMAKE_SOURCE_DIR}/vendor/stb
+        ${joltphysics_SOURCE_DIR}
 )
 
 target_link_libraries(ArchEngine PUBLIC
     glfw
     assimp
     imgui
+    Jolt
     yaml-cpp
     Vulkan::Vulkan
     ${Vulkan_SHADERC}

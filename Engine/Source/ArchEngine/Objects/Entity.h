@@ -8,9 +8,15 @@
 namespace ae {
 	class Scene;
 	struct Drawnable;
+	struct PhysicsBody;
 	using EntityID = UUID;
 
 	struct RenderHandle {
+		size_t index = SIZE_MAX;
+		bool IsValid() const { return index != SIZE_MAX; }
+	};
+
+	struct PhysicsHandle {
 		size_t index = SIZE_MAX;
 		bool IsValid() const { return index != SIZE_MAX; }
 	};
@@ -46,6 +52,7 @@ namespace ae {
 		const glm::mat4 GetTransformMatrix() const { return _transform.Mat4(); }
 		const std::string GetName() const { return _identifier.Name; }
 		Drawnable& GetDrawnable();
+		PhysicsBody& GetPhysicsBody();
 
 		virtual void OnCreate() {};
 		virtual void OnUpdate(float deltaTime) {};
@@ -53,6 +60,7 @@ namespace ae {
 
 		void RegisterAsDrawnable();
 		void RegisterAsDrawnable(const std::string& modelPath);
+		void RegisterAsPhysicsBody();
 		void SetID(EntityID id) { _id = id; }
 		void SetScene(Scene* scene) { _scene = scene; }
 		void SetPosition(const glm::vec3& position) { _transform.Position = position; }
@@ -63,13 +71,20 @@ namespace ae {
 			if (!_renderHandle.IsValid())
 				_renderHandle = handle;
 		}
+		void SetPhysicsHandle(const PhysicsHandle& handle) {
+			if (!_physicsHandle.IsValid())
+				_physicsHandle = handle;
+		}
 
 		TransformComponent& GetTransform() { return _transform; }
 		IdentifierComponent& GetIdentifier() { return _identifier; }
+		RenderHandle GetRenderHandle() const { return _renderHandle; }
+		PhysicsHandle GetPhysicsHandle() const { return _physicsHandle; }
 		Scene* GetScene() { return _scene; }
 	private:
 		Scene* _scene = nullptr;
 		RenderHandle _renderHandle;
+		PhysicsHandle _physicsHandle;
 
 		EntityID _id = 0;
 		TransformComponent _transform;

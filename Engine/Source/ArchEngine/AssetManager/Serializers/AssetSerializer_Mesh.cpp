@@ -3,6 +3,7 @@
 
 #include "ArchEngine/Grapichs/Renderer.h"
 #include "ArchEngine/AssetManager/AssetManager.h"
+#include "ArchEngine/Utilities/Math.h"
 
 #include <yaml-cpp/yaml.h>
 
@@ -46,14 +47,14 @@ namespace ae {
 				indexCount += submesh.IndexCount;
 				for (size_t i = 0; i < mesh->mNumVertices; i++) {
 					grapichs::Vertex v;
-					v.Position = { mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z };
-					v.Normal = { mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z };
+					v.Position = math::AssimpToGlm(mesh->mVertices[i]);
+					v.Normal = math::AssimpToGlm(mesh->mNormals[i]);
 					if (mesh->HasTextureCoords(0)) {
-						v.TexCoords = { mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y };
+						v.TexCoords = math::AssimpToGlm(mesh->mTextureCoords[0][i]);
 					}
 					if (mesh->HasTangentsAndBitangents()) {
-						v.Tangent = { mesh->mTangents[i].x, mesh->mTangents[i].y, mesh->mTangents[i].z };
-						v.Bitangent = { mesh->mBitangents[i].x, mesh->mBitangents[i].y, mesh->mBitangents[i].z };
+						v.Tangent = math::AssimpToGlm(mesh->mTangents[i]);
+						v.Bitangent = math::AssimpToGlm(mesh->mBitangents[i]);
 					}
 					meshSource->GetVertices().push_back(v);
 				}

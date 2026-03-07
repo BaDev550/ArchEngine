@@ -9,6 +9,7 @@
 #include <ArchEngine/AssetManager/AssetManager.h>
 
 #include "BasicObject.h"
+#include "PhysicsObject.h"
 
 #include <imgui.h>
 #include <glm/gtc/type_ptr.hpp>
@@ -24,6 +25,9 @@ public:
 		_defaultCamera = memory::Ref<FreeCamera>::Create();
 		_defaultScene = memory::Ref<Scene>::Create();
 		_basicObject = _defaultScene->CreateEntity<BasicObject>();
+
+		_physicsObject = _defaultScene->CreateEntity<PhysicsObject>(ae::PhysicsMotionType::Dynamic, glm::vec3(0.0f, 10.0f, 0.0f));
+		_defaultScene->CreateEntity<PhysicsObject>(ae::PhysicsMotionType::Kinematic, glm::vec3(0.0f, 0.0f, 0.0f));
 	}
 
 	virtual void ApplicationUpdate() override {
@@ -126,6 +130,7 @@ private:
 
 	memory::Ref<Scene> _defaultScene = nullptr;
 	memory::Ref<BasicObject> _basicObject = nullptr;
+	memory::Ref<PhysicsObject> _physicsObject = nullptr;
 	Entity* _selectedEntity = nullptr;
 
 	bool _cursorEnabled = false;

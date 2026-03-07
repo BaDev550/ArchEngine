@@ -3,6 +3,7 @@
 #include "Memory.h"
 #include "ArchEngine/Grapichs/Renderer.h"
 #include "ArchEngine/Grapichs/ImGuiRenderer.h"
+#include "ArchEngine/Physics/PhysicsEngine.h"
 #include "ArchEngine/AssetManager/AssetManager.h"
 #include "ArchEngine/Utilities/Logger.h"
 #include <ArchEngine/Core/Input.h>
@@ -10,6 +11,7 @@
 namespace ae {
 	using namespace memory;
 	using namespace grapichs;
+	using namespace physics;
 	struct ApplicationSpecifications {
 		uint32_t Width;
 		uint32_t Height;

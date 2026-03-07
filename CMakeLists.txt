@@ -84,6 +84,19 @@ FetchContent_Declare(
     SOURCE_DIR ${CMAKE_SOURCE_DIR}/vendor/yaml-cpp
 )
 FetchContent_MakeAvailable(yaml-cpp)
+set(TARGET_UNIT_TESTS OFF CACHE BOOL "" FORCE)
+set(TARGET_HELLO_WORLD OFF CACHE BOOL "" FORCE)
+set(TARGET_PERFORMANCE_TEST OFF CACHE BOOL "" FORCE)
+set(ENABLE_ALL_WARNINGS OFF CACHE BOOL "" FORCE)
+set(USE_STATIC_MSVC_RUNTIME_LIBRARY OFF CACHE BOOL "" FORCE)
+FetchContent_Declare(
+    joltphysics
+    GIT_REPOSITORY https://github.com/jrouwe/JoltPhysics.git
+    GIT_TAG v5.0.0
+    SOURCE_SUBDIR Build
+    SOURCE_DIR ${CMAKE_SOURCE_DIR}/vendor/joltphysics
+)
+FetchContent_MakeAvailable(joltphysics)
 set(SPIRV_REFLECT_SOURCE "${CMAKE_SOURCE_DIR}/vendor/SPIRV-Reflect/spirv_reflect.c")
 
 add_subdirectory(Engine)

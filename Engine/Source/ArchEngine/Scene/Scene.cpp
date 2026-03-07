@@ -4,6 +4,7 @@
 namespace ae {
 	Scene::Scene() {
 		_sceneRenderer = memory::MakeScope<SceneRenderer>();
+		_scenePhysics = memory::MakeScope<ScenePhysics>(this);
 	}
 
 	void Scene::DestroyEntity(EntityID id) {
@@ -24,6 +25,7 @@ namespace ae {
 
 	void Scene::OnEditorUpdate(const memory::Ref<grapichs::Camera>& cam, float deltaTime) {
 		_sceneRenderer->RenderScene(cam, _entities);
+		_scenePhysics->Step(deltaTime, _entities);
 	}
 
 	void Scene::OnRuntimeUpdate(float deltaTime) {

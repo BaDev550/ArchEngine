@@ -4,6 +4,7 @@
 #include "ArchEngine/Objects/Entity.h"
 #include "ArchEngine/Core/Memory.h"
 #include "ArchEngine/Scene/SceneRenderer.h"
+#include "ArchEngine/Scene/ScenePhysics.h"
 
 #include <unordered_map>
 
@@ -17,6 +18,7 @@ namespace ae {
 		void DestroyEntity(EntityID id);
 		Entity& GetEntity(EntityID id);
 		SceneRenderer& GetRenderer() { return *_sceneRenderer; }
+		ScenePhysics& GetPhysics() { return *_scenePhysics; }
 		std::unordered_map<EntityID, memory::Ref<Entity>>& GetEntities() { return _entities; }
 
 		void OnEditorUpdate(const memory::Ref<grapichs::Camera>& cam, float deltaTime);
@@ -24,6 +26,7 @@ namespace ae {
 	private:
 		std::unordered_map<EntityID, memory::Ref<Entity>> _entities;
 		memory::Scope<SceneRenderer> _sceneRenderer = nullptr;
+		memory::Scope<ScenePhysics> _scenePhysics = nullptr;
 	};
 
 	template<typename T, typename ...Args>
