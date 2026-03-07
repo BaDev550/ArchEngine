@@ -10,6 +10,8 @@
 
 #include "BasicObject.h"
 #include "PhysicsObject.h"
+#include "Rat.h"
+#include "PropObject.h"
 
 #include <imgui.h>
 #include <glm/gtc/type_ptr.hpp>
@@ -24,10 +26,11 @@ public:
 	virtual void ApplicationStarted() override {
 		_defaultCamera = memory::Ref<FreeCamera>::Create();
 		_defaultScene = memory::Ref<Scene>::Create();
-		_basicObject = _defaultScene->CreateEntity<BasicObject>();
 
-		_physicsObject = _defaultScene->CreateEntity<PhysicsObject>(ae::PhysicsMotionType::Dynamic, glm::vec3(0.0f, 10.0f, 0.0f));
-		_defaultScene->CreateEntity<PhysicsObject>(ae::PhysicsMotionType::Kinematic, glm::vec3(0.0f, 0.0f, 0.0f));
+		_rat = _defaultScene->CreateEntity<Entity_Rat>();
+		_prop_table = _defaultScene->CreateEntity<Entity_Prop>("Resources/Models/table/scene.gltf");
+		_prop_table->SetRotation({ -90.0, 0.0f, 0.0f });
+		_prop_table->SetPosition({ 0.0f, -0.5f, 0.0f });
 	}
 
 	virtual void ApplicationUpdate() override {
@@ -129,9 +132,10 @@ private:
 	memory::Ref<grapichs::FreeCamera> _defaultCamera = nullptr;
 
 	memory::Ref<Scene> _defaultScene = nullptr;
-	memory::Ref<BasicObject> _basicObject = nullptr;
-	memory::Ref<PhysicsObject> _physicsObject = nullptr;
 	Entity* _selectedEntity = nullptr;
+
+	memory::Ref<Entity_Rat> _rat = nullptr;
+	memory::Ref<Entity_Prop> _prop_table = nullptr;
 
 	bool _cursorEnabled = false;
 	bool _debugOverlayEnabled = false;

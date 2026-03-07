@@ -11,6 +11,8 @@ namespace ae {
 		return _scene->GetPhysics().GetPhysicsBody(_physicsHandle);
 	}
 
+	bool Entity::HasPhysicsBody() { return _physicsHandle.IsValid(); }
+
 	void Entity::RegisterAsDrawnable() {
 		SetRenderHandle(GetScene()->GetRenderer().AddDrawnable(GetID()));
 	}
@@ -22,5 +24,17 @@ namespace ae {
 
 	void Entity::RegisterAsPhysicsBody() {
 		SetPhysicsHandle(GetScene()->GetPhysics().CreatePhysicsBody(GetID()));
+	}
+
+	void Entity::SetPosition(const glm::vec3& position) { 
+		_transform.Position = position; 
+	}
+
+	void Entity::SetRotation(const glm::vec3& rotation) { 
+		_transform.Rotation = rotation; 
+	}
+
+	void Entity::SetScale(const glm::vec3& scale) { 
+		_transform.Scale = scale; 
 	}
 }

@@ -1,0 +1,11 @@
+Model Information:
+* title:	Low Poly Rat
+* source:	https://sketchfab.com/3d-models/low-poly-rat-bc142f713e3e46599e4b4974eebfa846
+* author:	Tsar Games (https://sketchfab.com/borymaster3)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Low Poly Rat" (https://sketchfab.com/3d-models/low-poly-rat-bc142f713e3e46599e4b4974eebfa846) by Tsar Games (https://sketchfab.com/borymaster3) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

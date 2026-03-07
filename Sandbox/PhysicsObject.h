@@ -5,21 +5,19 @@
 
 class PhysicsObject : public ae::Entity {
 public:
-	PhysicsObject(ae::PhysicsMotionType type, const glm::vec3& pos) : _type(type) {
-		SetPosition(pos);
-	}
+	PhysicsObject() {}
 
 	virtual void OnCreate() override {
 		SetName("Physics Object");
-		RegisterAsDrawnable("Resources/Models/mario_2/mario_2.obj");
 		RegisterAsPhysicsBody();
 		GetPhysicsBody().MotionType = _type;
-		GetPhysicsBody().CreateBoxCollider({1.0f, 1.0f, 1.0f});
+		GetPhysicsBody().CreateBoxCollider(_boxColliderExtent);
 		GetPhysicsBody().CreateRigidBody();
 	};
 
 	virtual void OnUpdate(float deltaTime) override {};
 	virtual void OnDestroy() override {};
-private:
+protected:
+	glm::vec3 _boxColliderExtent = { 1.0f, 1.0f, 1.0f };
 	ae::PhysicsMotionType _type = ae::PhysicsMotionType::Dynamic;
 };

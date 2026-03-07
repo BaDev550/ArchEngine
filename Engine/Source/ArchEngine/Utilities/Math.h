@@ -24,6 +24,6 @@ namespace ae::math {
 	}
 	inline static glm::vec3 JoltQuatToGlmVec3(const JPH::Quat& quat) {
 		JPH::Vec3 euler = quat.GetEulerAngles();
-		return glm::vec3(euler.GetX(), euler.GetY(), euler.GetZ());
+		return glm::degrees(glm::vec3(euler.GetX(), euler.GetY(), euler.GetZ()));
 	}
 }

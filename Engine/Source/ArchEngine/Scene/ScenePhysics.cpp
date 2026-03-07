@@ -25,14 +25,33 @@ namespace ae {
 
 	void ScenePhysics::Step(float deltaTime, std::unordered_map<EntityID, memory::Ref<Entity>>& entities)
 	{
+		auto& bodyInterface = physics::PhysicsEngine::GetBodyInterface();
+		for (auto& body : _physicsBodies) {
+			if (!body.IsValid())
+				continue;
+
+			auto entityIt = entities.find(body.OwnerID);
+			if (entityIt == entities.end())
+				continue;
+
+			auto& entity = entityIt->second;
+			if (body.MotionType == PhysicsMotionType::Static) {
+				bodyInterface.SetPositionAndRotation(
+					body.JoltBodyID, 
+					math::GlmToJolt(entity->GetPosition()), 
+					math::GlmVec3ToJoltQuat(entity->GetRotation()), 
+					JPH::EActivation::Activate
+				);
+			}
+		}
+
 		physics::PhysicsEngine::Update(deltaTime);
-		auto& system = physics::PhysicsEngine::GetSystem();
 
 		for (auto& body : _physicsBodies) {
 			if (!body.IsValid())
 				continue;
 
-			if (body.MotionType == PhysicsMotionType::Static)
+			if (body.MotionType != PhysicsMotionType::Dynamic)
 				continue;
 
 			auto entityIt = entities.find(body.OwnerID);
@@ -80,6 +99,7 @@ namespace ae {
 			PhysicsMotionTypeToJoltType(),
 			physics::Layers::MOVING
 		);
+		settings.mAllowSleeping = false;
 		_rgBody = interface.CreateBody(settings);
 		if (!_rgBody) {
 			Logger_app::error("Failed to create rigidbody");

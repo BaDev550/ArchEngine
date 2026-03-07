@@ -53,6 +53,7 @@ namespace ae {
 		const std::string GetName() const { return _identifier.Name; }
 		Drawnable& GetDrawnable();
 		PhysicsBody& GetPhysicsBody();
+		bool HasPhysicsBody();
 
 		virtual void OnCreate() {};
 		virtual void OnUpdate(float deltaTime) {};
@@ -63,9 +64,9 @@ namespace ae {
 		void RegisterAsPhysicsBody();
 		void SetID(EntityID id) { _id = id; }
 		void SetScene(Scene* scene) { _scene = scene; }
-		void SetPosition(const glm::vec3& position) { _transform.Position = position; }
-		void SetRotation(const glm::vec3& rotation) { _transform.Rotation = rotation; }
-		void SetScale(const glm::vec3& scale) { _transform.Scale = scale; }
+		void SetPosition(const glm::vec3& position);
+		void SetRotation(const glm::vec3& rotation);
+		void SetScale(const glm::vec3& scale);
 		void SetName(const std::string& name) { _identifier.Name = name; }
 		void SetRenderHandle(const RenderHandle& handle) {
 			if (!_renderHandle.IsValid())
