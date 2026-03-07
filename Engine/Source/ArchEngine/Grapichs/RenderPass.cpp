@@ -238,7 +238,7 @@ namespace ae::grapichs {
 		renderingInfo.colorAttachmentCount = static_cast<uint32_t>(colorAttachments.size());
 		renderingInfo.pColorAttachments = colorAttachments.data();
 		renderingInfo.pDepthAttachment = hasDepthBuffer ? &depthAttachments : nullptr;
-        _descriptorManager->UpdateSets(cmd, _pipeline->GetPipelineLayout());
+        _descriptorManager->BindSets(cmd, _pipeline->GetPipelineLayout());
         
 		vk::Viewport viewport{ 0, 0, (float)extent.width, (float)extent.height };
 		viewport.minDepth = 0;
@@ -301,8 +301,11 @@ namespace ae::grapichs {
 
 	void RenderPass::SetInput(std::string_view name, const memory::Ref<Buffer>& buffer) {
 		_descriptorManager->WriteInput(name, buffer);
+        _descriptorManager->Bake();
 	}
+
 	void RenderPass::SetInput(std::string_view name, const memory::Ref<Texture2D>& texture) {
 		_descriptorManager->WriteInput(name, texture);
+        _descriptorManager->Bake();
 	}
 }

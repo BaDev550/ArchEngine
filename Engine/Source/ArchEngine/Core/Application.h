@@ -3,6 +3,7 @@
 #include "Memory.h"
 #include "ArchEngine/Grapichs/Renderer.h"
 #include "ArchEngine/Grapichs/ImGuiRenderer.h"
+#include "ArchEngine/AssetManager/AssetManager.h"
 #include "ArchEngine/Utilities/Logger.h"
 #include <ArchEngine/Core/Input.h>
 

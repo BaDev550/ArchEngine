@@ -82,16 +82,16 @@ namespace ae::grapichs {
         _renderStats.DrawCalls++;
     }
 
-    void RenderAPI::DrawStaticMesh(memory::Ref<RenderPass>& renderPass, vk::CommandBuffer cmd, memory::Ref<Model>& model)
+    void RenderAPI::DrawStaticMesh(memory::Ref<RenderPass>& renderPass, vk::CommandBuffer cmd, memory::Ref<MeshSource>& meshSource, memory::Ref<StaticMesh>& staticMesh)
     {
-        vk::Buffer vertexBuffers[] = { model->GetVertexBuffer()->GetBuffer()};
+        vk::Buffer vertexBuffers[] = { meshSource->GetVertexBuffer()->GetBuffer()};
         vk::DeviceSize offsets[] = { 0 };
-        cmd.bindPipeline(vk::PipelineBindPoint::eGraphics, renderPass->GetPipeline()->GetPipeline());
         cmd.bindVertexBuffers(0, vertexBuffers, offsets);
-        cmd.bindIndexBuffer(model->GetIndexBuffer()->GetBuffer(), 0, vk::IndexType::eUint32);
+        cmd.bindIndexBuffer(meshSource->GetIndexBuffer()->GetBuffer(), 0, vk::IndexType::eUint32);
 
-        for (const auto& submesh : model->GetSubmeshes()) {
-            memory::Ref<Material> material = model->GetMaterialByID(submesh.MaterialIndex);
+        for (const auto& submesh : meshSource->GetSubmeshes()) {
+            memory::Ref<MaterialAsset>& materialAsset = staticMesh->GetMaterialByID(submesh.MaterialIndex);
+            memory::Ref<Material>& material = materialAsset->GetMaterial();
 
             material->Bind(cmd, renderPass->GetPipeline()->GetPipelineLayout());
             cmd.drawIndexed(submesh.IndexCount, 1, submesh.IndexOffset, submesh.VertexOffset, 0);
@@ -99,23 +99,10 @@ namespace ae::grapichs {
         }
     }
 
-    void RenderAPI::DrawEnityWithStaticMesh(memory::Ref<RenderPass>& renderPass, vk::CommandBuffer cmd, memory::Ref<Model>& model, const glm::mat4& transform)
+    void RenderAPI::DrawEnityWithStaticMesh(memory::Ref<RenderPass>& renderPass, vk::CommandBuffer cmd, memory::Ref<MeshSource>& meshSource, memory::Ref<StaticMesh>& staticMesh, const glm::mat4& transform)
     {
-        vk::Buffer vertexBuffers[] = { model->GetVertexBuffer()->GetBuffer() };
-        vk::PipelineLayout layout = renderPass->GetPipeline()->GetPipelineLayout();
-        vk::DeviceSize offsets[] = { 0 };
-        cmd.bindPipeline(vk::PipelineBindPoint::eGraphics, renderPass->GetPipeline()->GetPipeline());
-        cmd.bindVertexBuffers(0, vertexBuffers, offsets);
-        cmd.bindIndexBuffer(model->GetIndexBuffer()->GetBuffer(), 0, vk::IndexType::eUint32);
-        cmd.pushConstants(layout, vk::ShaderStageFlagBits::eVertex, 0, sizeof(glm::mat4), &transform);
-
-        for (const auto& submesh : model->GetSubmeshes()) {
-            memory::Ref<Material> material = model->GetMaterialByID(submesh.MaterialIndex);
-
-            material->Bind(cmd, renderPass->GetPipeline()->GetPipelineLayout());
-            cmd.drawIndexed(submesh.IndexCount, 1, submesh.IndexOffset, submesh.VertexOffset, 0);
-            _renderStats.DrawCalls++;
-        }
+        cmd.pushConstants(renderPass->GetPipeline()->GetPipelineLayout(), vk::ShaderStageFlagBits::eVertex, 0, sizeof(glm::mat4), &transform);
+		DrawStaticMesh(renderPass, cmd, meshSource, staticMesh);
     }
 
     vk::CommandBuffer RenderAPI::GetCurrentCommandBuffer()

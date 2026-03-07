@@ -43,7 +43,8 @@ namespace ae::grapichs {
 		void WriteInput(std::string_view name, memory::Ref<Buffer> buffer);
 		void WriteInput(std::string_view name, memory::Ref<Texture2D> texture);
 
-		void UpdateSets(vk::CommandBuffer cmd, vk::PipelineLayout layout);
+		void Bake();
+		void BindSets(vk::CommandBuffer cmd, vk::PipelineLayout layout);
 		void Invalidate();
 
 		vk::DescriptorSet Allocate(vk::DescriptorSetLayout layout);

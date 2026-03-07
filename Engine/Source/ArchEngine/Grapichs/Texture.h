@@ -4,6 +4,7 @@
 
 #include "ArchEngine/Core/Memory.h"
 #include "ArchEngine/Utilities/DataBuffer.h"
+#include "ArchEngine/AssetManager/Asset.h"
 
 namespace ae::grapichs {
 	static bool IsDepthFormat(vk::Format format) {
@@ -23,7 +24,7 @@ namespace ae::grapichs {
 		bool GenerateMipMap = false;
 	};
 
-	class Texture : public memory::RefCounted {
+	class Texture : public Asset {
 	public:
 		virtual ~Texture() = default;
 		vk::Format GetFormat() const { return _specs.Format; }
@@ -32,6 +33,8 @@ namespace ae::grapichs {
 		uint32_t GetWidth() const { return _specs.Width; }
 		uint32_t GetHeight() const { return _specs.Width; }
 		bool IsAttachment() const { return _specs.Attachment; }
+		static AssetType GetStaticAssetType() { return AssetType::Texture; }
+		virtual AssetType GetAssetType() const override { return GetStaticAssetType(); }
 	protected:
 		TextureSpecification _specs;
 	};

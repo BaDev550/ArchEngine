@@ -74,6 +74,16 @@ if(NOT TARGET imgui)
     )
     target_link_libraries(imgui PRIVATE glfw Vulkan::Vulkan)
 endif()
+set(YAML_CPP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(YAML_CPP_BUILD_TOOLS OFF CACHE BOOL "" FORCE)
+set(YAML_CPP_BUILD_CONTRIB OFF CACHE BOOL "" FORCE)
+FetchContent_Declare(
+    yaml-cpp
+    GIT_REPOSITORY https://github.com/jbeder/yaml-cpp.git
+    GIT_TAG 0.8.0
+    SOURCE_DIR ${CMAKE_SOURCE_DIR}/vendor/yaml-cpp
+)
+FetchContent_MakeAvailable(yaml-cpp)
 set(SPIRV_REFLECT_SOURCE "${CMAKE_SOURCE_DIR}/vendor/SPIRV-Reflect/spirv_reflect.c")
 
 add_subdirectory(Engine)

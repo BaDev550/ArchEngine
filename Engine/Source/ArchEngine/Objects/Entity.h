@@ -7,6 +7,7 @@
 
 namespace ae {
 	class Scene;
+	struct Drawnable;
 	using EntityID = UUID;
 
 	struct RenderHandle {
@@ -44,11 +45,14 @@ namespace ae {
 		const glm::vec3 GetScale() const { return _transform.Scale; }
 		const glm::mat4 GetTransformMatrix() const { return _transform.Mat4(); }
 		const std::string GetName() const { return _identifier.Name; }
+		Drawnable& GetDrawnable();
 
 		virtual void OnCreate() {};
 		virtual void OnUpdate(float deltaTime) {};
 		virtual void OnDestroy() {};
 
+		void RegisterAsDrawnable();
+		void RegisterAsDrawnable(const std::string& modelPath);
 		void SetID(EntityID id) { _id = id; }
 		void SetScene(Scene* scene) { _scene = scene; }
 		void SetPosition(const glm::vec3& position) { _transform.Position = position; }

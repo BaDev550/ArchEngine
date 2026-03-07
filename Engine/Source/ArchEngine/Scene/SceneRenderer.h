@@ -5,15 +5,21 @@
 #include "ArchEngine/Grapichs/Camera.h"
 #include "ArchEngine/Grapichs/RenderPass.h"
 #include "ArchEngine/Grapichs/Framebuffer.h"
+#include "ArchEngine/AssetManager/AssetManager.h"
 
 namespace ae {
 	struct Drawnable {
 		EntityID OwnerID = 0;
+		AssetHandle StaticMeshHandle = INVALID_ASSET_HANDLE;
 		bool IsVisible = true;
-		memory::Ref<grapichs::Model> Model = nullptr;
 
-		Drawnable(EntityID ownerID, const std::string& modelPath) : OwnerID(ownerID) {
-			Model = memory::Ref<grapichs::Model>::Create(modelPath);
+		Drawnable(EntityID ownerID) : OwnerID(ownerID) {}
+		void ImportStaticMesh(const std::string& modelPath) {
+			std::filesystem::path staticMeshPath = modelPath;
+			staticMeshPath.replace_extension(".mesh");
+			AssetHandle sourceMeshHandle = AssetManager::ImportAsset(modelPath);
+			const auto& staticMesh = AssetManager::Create<grapichs::StaticMesh>(staticMeshPath.string(), sourceMeshHandle);
+			StaticMeshHandle = staticMesh->GetAssetHandle();
 		}
 	};
 
@@ -29,7 +35,7 @@ namespace ae {
 	class SceneRenderer {
 	public:
 		SceneRenderer();
-		RenderHandle AddDrawnable(EntityID entityID, const std::string& modelPath);
+		RenderHandle AddDrawnable(EntityID entityID);
 		Drawnable& GetDrawnable(const RenderHandle& handle);
 		size_t GetDrawnableCount() const { return _drawnables.size(); }
 		VkDescriptorSet GetSceneOutputTexture() const { return _sceneOutTextureID; }

@@ -40,41 +40,49 @@ namespace ae::grapichs {
 			_storedResources[decl->Set][decl->Binding].Set(texture);
 	}
 
-	void DescriptorManager::UpdateSets(vk::CommandBuffer cmd, vk::PipelineLayout layout) {
-		uint32_t frameIndex = Renderer::GetFrameIndex();
+	void DescriptorManager::Bake() {
+		for (uint32_t frameIndex = 0; frameIndex < Renderer::MaxFramesInFlight; frameIndex++) {
+			for (auto& [setIndex, bindings] : _storedResources) {
+				_writes.clear();
 
-		for (auto& [setIndex, bindings] : _storedResources) {
-			_writes.clear();
+				for (auto& [bindingIndex, resource] : bindings) {
+					auto& currentData = resource._data[0];
+					if (!currentData) continue;
 
-			for (auto& [bindingIndex, resource] : bindings) {
-				auto& currentData = resource._data[0]; // TEMP
-				if (!currentData) continue;
-
-				switch (resource._type)
-				{
-				case ShaderReflectionDataType::UniformBuffer: {
-					vk::WriteDescriptorSet bufferWrite{};
-					bufferWrite.descriptorType = vk::DescriptorType::eUniformBuffer;
-					bufferWrite.dstBinding = bindingIndex;
-					bufferWrite.dstSet = _descriptorSets[frameIndex][setIndex];
-					bufferWrite.pBufferInfo = &currentData.As<Buffer>()->GetDescriptorInfo();
-					bufferWrite.descriptorCount = 1;
-					_writes.push_back(bufferWrite);
-					break;
+					switch (resource._type) {
+					case ShaderReflectionDataType::UniformBuffer: {
+						vk::WriteDescriptorSet bufferWrite{};
+						bufferWrite.descriptorType = vk::DescriptorType::eUniformBuffer;
+						bufferWrite.dstBinding = bindingIndex;
+						bufferWrite.dstSet = _descriptorSets[frameIndex][setIndex];
+						bufferWrite.pBufferInfo = &currentData.As<Buffer>()->GetDescriptorInfo();
+						bufferWrite.descriptorCount = 1;
+						_writes.push_back(bufferWrite);
+						break;
+					}
+					case ShaderReflectionDataType::Sampler2D: {
+						vk::WriteDescriptorSet imageWrite{};
+						imageWrite.descriptorType = vk::DescriptorType::eCombinedImageSampler;
+						imageWrite.dstBinding = bindingIndex;
+						imageWrite.dstSet = _descriptorSets[frameIndex][setIndex];
+						imageWrite.pImageInfo = &currentData.As<Texture2D>()->GetImageDescriptorInfo();
+						imageWrite.descriptorCount = 1;
+						_writes.push_back(imageWrite);
+						break;
+					}
+					}
 				}
-				case ShaderReflectionDataType::Sampler2D: {
-					vk::WriteDescriptorSet imageWrite{};
-					imageWrite.descriptorType = vk::DescriptorType::eCombinedImageSampler;
-					imageWrite.dstBinding = bindingIndex;
-					imageWrite.dstSet = _descriptorSets[frameIndex][setIndex];
-					imageWrite.pImageInfo = &currentData.As<Texture2D>()->GetImageDescriptorInfo();
-					imageWrite.descriptorCount = 1;
-					_writes.push_back(imageWrite);
-					break;
-				}
+
+				if (!_writes.empty()) {
+					_context.GetDevice().updateDescriptorSets(static_cast<uint32_t>(_writes.size()), _writes.data(), 0, nullptr);
 				}
 			}
+		}
+	}
 
+	void DescriptorManager::BindSets(vk::CommandBuffer cmd, vk::PipelineLayout layout) {
+		uint32_t frameIndex = Renderer::GetFrameIndex();
+		for (auto& [setIndex, bindings] : _storedResources) {
 			cmd.bindDescriptorSets(
 				vk::PipelineBindPoint::eGraphics,
 				layout,
@@ -82,7 +90,6 @@ namespace ae::grapichs {
 				1,
 				&_descriptorSets[frameIndex][setIndex],
 				0, nullptr);
-			_context.GetDevice().updateDescriptorSets(static_cast<uint32_t>(_writes.size()), _writes.data(), 0, nullptr);
 		}
 	}
 

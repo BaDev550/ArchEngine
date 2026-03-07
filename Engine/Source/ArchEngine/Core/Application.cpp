@@ -17,6 +17,7 @@ namespace ae {
 		_window->CreateDefaultSwapchainFramebuffer();
 		_window->SetCursor(false);
 
+		AssetManager::Init();
 		Input::Init();
 		Renderer::Init();
 		ImGuiRenderer::Init();
@@ -25,6 +26,7 @@ namespace ae {
 	Application::~Application() {
 		profiler::Profiler::Get().Clear();
 		profiler::Profiler::Destroy();
+		AssetManager::Destroy();
 		ImGuiRenderer::Destroy();
 		Renderer::Destroy();
 	}

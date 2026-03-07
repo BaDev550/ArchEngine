@@ -2,7 +2,29 @@
 #include "Material.h"
 #include "Renderer.h"
 
+#include "ArchEngine/AssetManager/AssetManager.h"
+
 namespace ae::grapichs {
+    const static std::string ALBEDO_TEXTURE_UNIFORM_NAME = "uAlbedoTexture";
+    const static std::string NORMAL_TEXTURE_UNIFORM_NAME = "uNormTexture";
+    const static uint32_t MATERIAL_DESCRIPTOR_LAYOUT_SET_INDEX = 1;
+
+    void MaterialAsset::SetAlbedoTexture(const AssetHandle& textureHandle) {
+        if (textureHandle == INVALID_ASSET_HANDLE)
+            return;
+		_textureHandles.AlbedoHandle = textureHandle;
+		const memory::Ref<Texture2D>& texture = AssetManager::GetAsset<Texture2D>(textureHandle);
+		_material->Set(ALBEDO_TEXTURE_UNIFORM_NAME, texture);
+    }
+
+    void MaterialAsset::SetNormalTexture(const AssetHandle& textureHandle) {
+        if (textureHandle == INVALID_ASSET_HANDLE)
+            return;
+        _textureHandles.NormalHandle = textureHandle;
+        const memory::Ref<Texture2D>& texture = AssetManager::GetAsset<Texture2D>(textureHandle);
+        _material->Set(NORMAL_TEXTURE_UNIFORM_NAME, texture);
+    }
+
     Material::Material(memory::Ref<Shader>& shader)
     {
 		_shader = shader;
@@ -49,6 +71,7 @@ namespace ae::grapichs {
                         _descriptorManager->WriteInput("uMaterial", _materialBuffer);
                 }
             }
+            _descriptorManager->Bake();
         }
     }
 
@@ -59,32 +82,37 @@ namespace ae::grapichs {
         //vk::DescriptorSet descriptorSet = _descriptorSets.at(Renderer::GetFrameIndex());
         //if (descriptorSet)
         //    cmd.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, layout, 1, descriptorSet, {});
-		_descriptorManager->UpdateSets(cmd, layout);
+		_descriptorManager->BindSets(cmd, layout);
     }
 
     void Material::Set(const std::string& name, float value)
     {
         SetData<float>(name, value);
+        _descriptorManager->Bake();
     }
 
     void Material::Set(const std::string& name, int value)
     {
         SetData<float>(name, value);
+        _descriptorManager->Bake();
     }
 
     void Material::Set(const std::string& name, const glm::vec2& value)
     {
         SetData<glm::vec2>(name, value);
+        _descriptorManager->Bake();
     }
 
     void Material::Set(const std::string& name, const glm::vec3& value)
     {
         SetData<glm::vec3>(name, value);
+        _descriptorManager->Bake();
     }
 
     void Material::Set(const std::string& name, const memory::Ref<Texture2D>& value)
     {
         _descriptorManager->WriteInput(name, value);
+        _descriptorManager->Bake();
     }
 
     const ShaderUniform* Material::FindUniformDeclaration(const std::string& name) const

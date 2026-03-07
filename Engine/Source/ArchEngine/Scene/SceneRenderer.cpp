@@ -37,8 +37,8 @@ namespace ae {
 		}
 	}
 
-	RenderHandle SceneRenderer::AddDrawnable(EntityID entityID, const std::string& modelPath) {
-		_drawnables.emplace_back(entityID, modelPath);
+	RenderHandle SceneRenderer::AddDrawnable(EntityID entityID) {
+		_drawnables.emplace_back(entityID);
 		return RenderHandle{ _drawnables.size() - 1 };
 	}
 
@@ -50,11 +50,13 @@ namespace ae {
 	}
 
 	void SceneRenderer::RenderScene(const memory::Ref<grapichs::Camera>& cam, const std::unordered_map<EntityID, memory::Ref<Entity>>& entities) {
-		_sceneRenderPass->Begin();
-
 		_sceneData.ActiveCameraData.View = cam->GetView();
 		_sceneData.ActiveCameraData.Projection = cam->GetProjection();
 		_cameraBuffer->Write(&_sceneData.ActiveCameraData);
+
+		_sceneRenderPass->Begin();
+		vk::CommandBuffer cmd = grapichs::Renderer::GetCurrentCommandBuffer();
+		cmd.bindPipeline(vk::PipelineBindPoint::eGraphics, _sceneRenderPass->GetPipeline()->GetPipeline());
 
 		for (auto& drawable : _drawnables) {
 			if (!drawable.IsVisible)
@@ -63,7 +65,9 @@ namespace ae {
 			auto entityIt = entities.find(drawable.OwnerID);
 			if (entityIt != entities.end()) {
 				const auto& entity = entityIt->second;
-				grapichs::Renderer::DrawEnityWithStaticMesh(_sceneRenderPass, grapichs::Renderer::GetCurrentCommandBuffer(), drawable.Model, entity->GetTransformMatrix());
+				memory::Ref<grapichs::StaticMesh> staticMesh = AssetManager::GetAsset<grapichs::StaticMesh>(drawable.StaticMeshHandle);
+				memory::Ref<grapichs::MeshSource> meshSource = AssetManager::GetAsset<grapichs::MeshSource>(staticMesh->GetMeshSource());
+				grapichs::Renderer::DrawEnityWithStaticMesh(_sceneRenderPass, cmd, meshSource, staticMesh, entity->GetTransformMatrix());
 			}
 		}
 		_sceneRenderPass->End();

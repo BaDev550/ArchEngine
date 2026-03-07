@@ -20,6 +20,7 @@ target_link_libraries(ArchEngine PUBLIC
     glfw
     assimp
     imgui
+    yaml-cpp
     Vulkan::Vulkan
     ${Vulkan_SHADERC}
     ${Vulkan_SHADERC_UTILS}

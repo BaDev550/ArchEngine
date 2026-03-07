@@ -7,7 +7,7 @@ class BasicObject : public ae::Entity {
 public:
 	virtual void OnCreate() override {
 		SetName("Basic Object");
-		GetScene()->GetRenderer().AddDrawnable(GetID(), "Resources/Models/mario_2/mario_2.obj");
+		RegisterAsDrawnable("Resources/Models/mario_2/mario_2.obj");
 	};
 
 	virtual void OnUpdate(float deltaTime) override {};

@@ -68,12 +68,12 @@ namespace ae::grapichs {
 		g_renderAPI->DrawIndexed(cmd, vertexBuffer, indexBuffer, indexCount);
 	}
 
-	void Renderer::DrawStaticMesh(memory::Ref<RenderPass>& renderPass, vk::CommandBuffer cmd, memory::Ref<Model>& model) {
-		g_renderAPI->DrawStaticMesh(renderPass, cmd, model);
+	void Renderer::DrawStaticMesh(memory::Ref<RenderPass>& renderPass, vk::CommandBuffer cmd, memory::Ref<MeshSource>& meshSource, memory::Ref<StaticMesh>& staticMesh) {
+		g_renderAPI->DrawStaticMesh(renderPass, cmd, meshSource, staticMesh);
 	}
 
-	void Renderer::DrawEnityWithStaticMesh(memory::Ref<RenderPass>& renderPass, vk::CommandBuffer cmd, memory::Ref<Model>& model, const glm::mat4& transform) {
-		g_renderAPI->DrawEnityWithStaticMesh(renderPass, cmd, model, transform);
+	void Renderer::DrawEnityWithStaticMesh(memory::Ref<RenderPass>& renderPass, vk::CommandBuffer cmd, memory::Ref<MeshSource>& meshSource, memory::Ref<StaticMesh>& staticMesh, const glm::mat4& transform) {
+		g_renderAPI->DrawEnityWithStaticMesh(renderPass, cmd, meshSource, staticMesh, transform);
 	}
 
 	void Renderer::CopyBuffer(memory::Ref<Buffer>& src, memory::Ref<Buffer>& dst, vk::DeviceSize size) {

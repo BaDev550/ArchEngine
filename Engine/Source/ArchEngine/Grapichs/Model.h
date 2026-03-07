@@ -1,25 +1,13 @@
 #pragma once
 #include <ArchEngine/Core/Memory.h>
+#include <ArchEngine/AssetManager/Asset.h>
 #include <iostream>
 #include <vector>
-
-#include <assimp/Importer.hpp>
-#include <assimp/postprocess.h>
-#include <assimp/types.h>
-#include <assimp/mesh.h>
-#include <assimp/scene.h>
-#include <glm/glm.hpp>
 
 #include "Buffer.h"
 #include "Material.h"
 
 namespace ae::grapichs {
-	constexpr uint32_t MODEL_IMPORT_FLAGS = 
-		aiProcess_Triangulate | 
-		aiProcess_FlipUVs | 
-		aiProcess_GenSmoothNormals |
-		aiProcess_CalcTangentSpace;
-
 	struct Vertex {
 		glm::vec3 Position;
 		glm::vec3 Normal;
@@ -37,24 +25,39 @@ namespace ae::grapichs {
 		uint32_t MaterialIndex;
 	};
 
-	class Model : public memory::RefCounted {
+	class MeshSource : public Asset {
 	public:
-		Model(const std::string& path);
-		~Model() = default;
-
-		const std::vector<Submesh>& GetSubmeshes() const { return _submeshes; }
-		const memory::Ref<Buffer>& GetVertexBuffer() const { return _vertexBuffer; }
-		const memory::Ref<Buffer>& GetIndexBuffer() const { return _indexBuffer; }
-		const memory::Ref<Material>& GetMaterialByID(uint32_t id) const { return _materials.at(id); }
+		std::vector<Submesh>& GetSubmeshes() { return _submeshes; }
+		std::vector<AssetHandle>& GetMaterials() { return _materials; }
+		std::vector<Vertex>& GetVertices() { return _vertices; }
+		std::vector<uint32_t>& GetIndices() { return _indices; }
+		memory::Ref<Buffer>& GetVertexBuffer() { return _vertexBuffer; }
+		memory::Ref<Buffer>& GetIndexBuffer() { return _indexBuffer; }
+		void CreateVertexBuffer();
+		void CreateIndexBuffer();
+		static AssetType GetStaticAssetType() { return AssetType::MeshSource; }
+		virtual AssetType GetAssetType() const override { return GetStaticAssetType(); }
 	private:
-		void LoadModel(const std::string& path);
-		
 		std::filesystem::path _path;
 		std::vector<Vertex> _vertices;
 		std::vector<uint32_t> _indices;
 		std::vector<Submesh> _submeshes;
-		std::vector<memory::Ref<Material>> _materials;
+		std::vector<AssetHandle> _materials;
 		memory::Ref<Buffer> _vertexBuffer = nullptr;
 		memory::Ref<Buffer> _indexBuffer = nullptr;
+	};
+
+	class StaticMesh : public Asset {
+	public:
+		StaticMesh(AssetHandle meshSource);
+		~StaticMesh() = default;
+		AssetHandle GetMeshSource() const { return _meshSource; }
+		memory::Ref<MaterialAsset>& GetMaterialByID(uint32_t id) { return _materials[id]; }
+
+		static AssetType GetStaticAssetType() { return AssetType::StaticMesh; }
+		virtual AssetType GetAssetType() const override { return GetStaticAssetType(); }
+	private:
+		AssetHandle _meshSource = INVALID_ASSET_HANDLE;
+		std::unordered_map<uint32_t, memory::Ref<MaterialAsset>> _materials;
 	};
 }
