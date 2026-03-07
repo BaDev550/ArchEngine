@@ -15,6 +15,8 @@ namespace ae {
 		aiProcess_Triangulate |
 		aiProcess_FlipUVs |
 		aiProcess_GenSmoothNormals |
+		aiProcess_JoinIdenticalVertices |
+		aiProcess_ImproveCacheLocality |
 		aiProcess_CalcTangentSpace;
 
 	class MeshSourceImporter {

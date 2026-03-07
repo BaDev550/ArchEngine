@@ -23,8 +23,16 @@ namespace ae {
 		if (scene->HasMeshes()) {
 			uint32_t vertexCount = 0;
 			uint32_t indexCount = 0;
+			uint32_t totalVertices = 0;
+			uint32_t totalIndices = 0;
+			for (uint32_t m = 0; m < scene->mNumMeshes; m++) {
+				totalVertices += scene->mMeshes[m]->mNumVertices;
+				totalIndices += scene->mMeshes[m]->mNumFaces * 3;
+			}
 
 			meshSource->GetSubmeshes().reserve(scene->mNumMeshes);
+			meshSource->GetVertices().reserve(totalVertices);
+			meshSource->GetIndices().reserve(totalIndices);
 			for (uint32_t m = 0; m < scene->mNumMeshes; m++) {
 				aiMesh* mesh = scene->mMeshes[m];
 				grapichs::Submesh& submesh = meshSource->GetSubmeshes().emplace_back();
@@ -81,7 +89,7 @@ namespace ae {
 					specs.GenerateMipMap = false;
 					specs.Filter = vk::Filter::eLinear;
 					specs.Wrap = vk::SamplerAddressMode::eClampToBorder;
-					specs.Format = vk::Format::eR8G8B8A8Unorm;
+					specs.Format = vk::Format::eR8G8B8A8Srgb;
 					auto texturePath = modelDirectory / aiTexturePath.C_Str();
 					AssetHandle texture = AssetManager::AddMemoryOnlyAsset(memory::Ref<grapichs::Texture2D>::Create(specs, texturePath.string()));
 					matAsset->SetAlbedoTexture(texture);
@@ -94,7 +102,7 @@ namespace ae {
 					specs.GenerateMipMap = false;
 					specs.Filter = vk::Filter::eLinear;
 					specs.Wrap = vk::SamplerAddressMode::eClampToBorder;
-					specs.Format = vk::Format::eR8G8B8A8Unorm;
+					specs.Format = vk::Format::eR8G8B8A8Srgb;
 					auto texturePath = modelDirectory / aiTexturePath.C_Str();
 					AssetHandle texture = AssetManager::AddMemoryOnlyAsset(memory::Ref<grapichs::Texture2D>::Create(specs, texturePath.string()));
 					matAsset->SetNormalTexture(texture);

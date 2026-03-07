@@ -82,6 +82,7 @@ namespace ae::grapichs {
 		{
 		case vk::Format::eUndefined: return 0;
 		case vk::Format::eR8G8B8A8Unorm: return 4;
+		case vk::Format::eR8G8B8A8Srgb: return 4;
 		case vk::Format::eR16Sfloat: return 2;
 		case vk::Format::eR16G16Sfloat: return 4;
 		case vk::Format::eR16G16B16Sfloat: return 8;
@@ -99,6 +100,7 @@ namespace ae::grapichs {
 		{
 		case vk::Format::eUndefined: return vk::ImageAspectFlagBits::eColor;
 		case vk::Format::eR8G8B8A8Unorm: return vk::ImageAspectFlagBits::eColor;
+		case vk::Format::eR8G8B8A8Srgb: return vk::ImageAspectFlagBits::eColor;
 		case vk::Format::eR16Sfloat: return vk::ImageAspectFlagBits::eColor;
 		case vk::Format::eR16G16Sfloat: return vk::ImageAspectFlagBits::eColor;
 		case vk::Format::eR16G16B16Sfloat: return vk::ImageAspectFlagBits::eColor;

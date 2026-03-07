@@ -72,7 +72,7 @@ namespace ae {
 	void Window::CreateDefaultSwapchainFramebuffer() {
 		_defaultFramebufferSpecs.IsSwapchain = true;
 		_defaultFramebufferSpecs.DepthClearValue = 1.0f;
-		_defaultFramebufferSpecs.ClearColor = glm::vec4(0.0f, 1.0f, 1.0f, 1.0f);
+		_defaultFramebufferSpecs.ClearColor = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
 		_defaultFramebuffer = memory::Ref<grapichs::Framebuffer>::Create(_defaultFramebufferSpecs);
 	}
 

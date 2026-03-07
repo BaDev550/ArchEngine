@@ -23,9 +23,6 @@ public:
 		_defaultCamera = memory::Ref<FreeCamera>::Create();
 		_defaultScene = memory::Ref<Scene>::Create();
 		_basicObject = _defaultScene->CreateEntity<BasicObject>();
-		_defaultScene->CreateEntity<BasicObject>();
-		//_defaultScene->CreateEntity<BasicObject>();
-		//_defaultScene->CreateEntity<BasicObject>();
 	}
 
 	virtual void ApplicationUpdate() override {
