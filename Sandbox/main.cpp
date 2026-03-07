@@ -6,6 +6,7 @@
 #include <ArchEngine/Core/EntryPoint.h>
 #include <ArchEngine/Core/Input.h>
 #include <ArchEngine/Scene/Scene.h>
+#include <ArchEngine/AssetManager/AssetManager.h>
 
 #include "BasicObject.h"
 
@@ -67,7 +68,7 @@ public:
 		ImGui::Begin("Viewport", nullptr, windowFlags);
 		ImGui::PopStyleVar();
 		ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
-		ImGui::Image((ImTextureID)(VkDescriptorSet)_defaultScene->GetSceneOutputTexture(), viewportPanelSize);
+		ImGui::Image((ImTextureID)(VkDescriptorSet)Renderer::GetFinalImageOfScene(_defaultScene), viewportPanelSize);
 		ImGui::End();
 	}
 
@@ -107,6 +108,13 @@ public:
 					ImGui::DragFloat3("Position", glm::value_ptr(_selectedEntity->GetTransform().Position), 0.1f);
 					ImGui::DragFloat3("Rotation", glm::value_ptr(_selectedEntity->GetTransform().Rotation), 0.1f);
 					ImGui::DragFloat3("Scale",    glm::value_ptr(_selectedEntity->GetTransform().Scale), 0.1f);
+				}
+			}
+			if (ImGui::CollapsingHeader("Asset Manager")) {
+				auto loadedAssets = AssetManager::GetLoadedAssets();
+				for (const auto& [assethandle, asset] : loadedAssets) {
+					AssetMetadata mtd = AssetManager::GetAssetMetadata(assethandle);
+					ImGui::Text("Loaded asset path: %s, type: %s", mtd.FilePath.string().c_str(), AssetTypeToString(mtd.Type).c_str());
 				}
 			}
 		}

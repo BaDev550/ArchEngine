@@ -2,6 +2,7 @@
 #include "Renderer.h"
 #include "RenderAPI.h"
 #include "ArchEngine/Core/Application.h"
+#include "ArchEngine/Scene/Scene.h"
 
 namespace ae::grapichs {
 	struct RenderData {
@@ -88,6 +89,10 @@ namespace ae::grapichs {
 	vk::CommandBuffer Renderer::GetCurrentCommandBuffer() {
 		return g_renderAPI->GetCurrentCommandBuffer();
 	}
+	vk::DescriptorSet Renderer::GetFinalImageOfScene(memory::Ref<Scene>& scene) {
+		return scene->GetRenderer().GetSceneOutputTexture();
+	}
+
 	ShaderLibrary& Renderer::GetShaderLibrary() { return *s_data.ShaderLibrary; }
 	uint32_t Renderer::GetDrawCallCount() { return g_renderAPI->_renderStats.DrawCalls; }
 	uint32_t Renderer::GetFrameIndex() { return g_frameIndex; }

@@ -7,6 +7,7 @@
 
 #include <iostream>
 
+namespace ae { class Scene; }
 namespace ae::grapichs {
 	class Renderer {
 	public:
@@ -25,6 +26,7 @@ namespace ae::grapichs {
 		static void CopyBuffer(memory::Ref<Buffer>& src, memory::Ref<Buffer>& dst, vk::DeviceSize size);
 
 		static memory::Ref<Texture2D>& GetWhiteTexture();
+		static vk::DescriptorSet GetFinalImageOfScene(memory::Ref<Scene>& scene);
 		static vk::CommandBuffer GetCurrentCommandBuffer();
 		static uint32_t GetDrawCallCount();
 		static uint32_t GetFrameIndex();

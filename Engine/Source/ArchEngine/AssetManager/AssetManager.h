@@ -19,12 +19,14 @@ namespace ae {
 			return s_EditorAssetManager->Create<T>(filename, std::forward<Args>(args)...);
 		}
 
-		static const AssetMap GetAllLoadedAssetsWithType(AssetType type) { return s_EditorAssetManager->GetAssetsByType(type); }
+		static AssetMap GetLoadedAssetsWithType(AssetType type) { return s_EditorAssetManager->GetAssetsByType(type); }
+		static AssetMap GetLoadedAssets() { return s_EditorAssetManager->GetLoadedAssets(); }
 		static memory::Ref<Asset> GetMemoryAsset(AssetHandle handle) { return s_EditorAssetManager->GetMemoryAsset(handle); }
 		static bool IsAssetHandleValid(AssetHandle handle) { return s_EditorAssetManager->IsAssetHandleValid(handle); }
 		static bool IsAssetLoaded(AssetHandle handle) { return s_EditorAssetManager->IsAssetLoaded(handle); }
 		static AssetType GetAssetType(AssetHandle handle) { return s_EditorAssetManager->GetAssetType(handle); }
 		static AssetHandle ImportAsset(const std::string& filename) { return s_EditorAssetManager->ImportAsset(filename); }
+		static AssetMetadata GetAssetMetadata(AssetHandle handle) { return s_EditorAssetManager->GetMetadata(handle); }
 
 		template<typename T>
 		static AssetHandle AddMemoryOnlyAsset(memory::Ref<T> asset) {

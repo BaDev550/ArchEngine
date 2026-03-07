@@ -17,7 +17,6 @@ namespace ae {
 		void DestroyEntity(EntityID id);
 		Entity& GetEntity(EntityID id);
 		SceneRenderer& GetRenderer() { return *_sceneRenderer; }
-		vk::DescriptorSet GetSceneOutputTexture() const { return _sceneRenderer->GetSceneOutputTexture(); }
 		std::unordered_map<EntityID, memory::Ref<Entity>>& GetEntities() { return _entities; }
 
 		void OnEditorUpdate(const memory::Ref<grapichs::Camera>& cam, float deltaTime);
