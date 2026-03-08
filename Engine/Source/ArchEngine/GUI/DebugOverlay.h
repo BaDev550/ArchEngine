@@ -17,6 +17,7 @@ namespace ae::GUI {
 		Entity* GetSelectedEntity() { return _selectedEntity; }
 		bool OverlayEnabled() const { return _overlayEnabled; }
 		void ToggleOverlay() { _overlayEnabled = !_overlayEnabled; }
+		void SetSelectedEntity(Entity* selectedEntity) { _selectedEntity = selectedEntity; }
 		void Draw(memory::Ref<Scene>& scene) {
 			if (_overlayEnabled) {
 				ImGuiWindowFlags overlayFlags = ImGuiWindowFlags_NoDecoration |

@@ -13,7 +13,7 @@ namespace ae::grapichs {
         vk::Sampler GetSampler() const { return _imageSampler; }
         virtual vk::DescriptorImageInfo& GetImageDescriptorInfo() override { return _imageInfo; }
 
-        static AssetType GetStaticAssetType() { return AssetType::TextureCube; }
+        static AssetType GetStaticAssetType() { return AssetType::EnviromentMap; }
         virtual AssetType GetAssetType() const override { return GetStaticAssetType(); }
     private:
         void CreateTexture();

@@ -2,6 +2,7 @@
 #include "AssetSerializer_Texture.h"
 
 #include "ArchEngine/Grapichs/Texture.h"
+#include "ArchEngine/Grapichs/Enviroment.h"
 #include "ArchEngine/Grapichs/TextureCube.h"
 #include "ArchEngine/Utilities/Bitmap.h"
 #include "ArchEngine/Utilities/EctCubemap.h"
@@ -16,7 +17,7 @@ namespace ae {
 		return true;
 	}
 
-	bool AssetSerializer_TextureCube::TryLoadData(const AssetMetadata& metadata, memory::Ref<Asset>& asset)
+	bool AssetSerializer_Enviroment::TryLoadData(const AssetMetadata& metadata, memory::Ref<Asset>& asset)
 	{
         int width, height, channels;
         void* data = nullptr;
@@ -39,7 +40,9 @@ namespace ae {
 
             std::vector<Bitmap> cubemapFaces;
             ConvertEquirectangularImageToCubemap(equirectBitmap, cubemapFaces);
-            asset = memory::Ref<grapichs::TextureCube>::Create(specs, cubemapFaces);
+            memory::Ref<grapichs::TextureCube> enviromentMap = memory::Ref<grapichs::TextureCube>::Create(specs, cubemapFaces);
+            asset = memory::Ref<grapichs::Enviroment>::Create(enviromentMap);
+            asset->SetAssetHandle(metadata.Handle);
             stbi_image_free(data);
             return true;
         }

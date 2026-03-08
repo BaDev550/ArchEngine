@@ -131,6 +131,7 @@ public:
 
 	void LoadScene() {
 		ae::SceneSerializer serializer(_defaultScene);
+		_debugOverlay.SetSelectedEntity(nullptr);
 		serializer.Deserialize(_defaultScene->GetName() + ".scene");
 	}
 private:
