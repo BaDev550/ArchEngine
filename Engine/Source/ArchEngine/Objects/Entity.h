@@ -1,9 +1,12 @@
 #pragma once
 #include "ArchEngine/Utilities/UUID.h"
 #include "ArchEngine/Core/Memory.h"
+#include "EntityFactory.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+
+#include <yaml-cpp/yaml.h>
 
 namespace ae {
 	class Scene;
@@ -58,6 +61,8 @@ namespace ae {
 		virtual void OnCreate() {};
 		virtual void OnUpdate(float deltaTime) {};
 		virtual void OnDestroy() {};
+		virtual void OnSerialize(YAML::Emitter& out) {};
+		virtual void OnDeserialize(YAML::Node& data) {};
 
 		void RegisterAsDrawnable();
 		void RegisterAsDrawnable(const std::string& modelPath);

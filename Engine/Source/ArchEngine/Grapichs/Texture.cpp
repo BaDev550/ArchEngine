@@ -6,6 +6,7 @@
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
+#include "TextureCube.h"
 
 namespace ae::grapichs {
 	void Texture2D::LoadTexture(void* data, uint32_t width, uint32_t height, uint32_t channels)
@@ -134,7 +135,6 @@ namespace ae::grapichs {
 	{
 		_specs = specs;
 		LoadTexture(data.Data, _specs.Width, _specs.Height, STBI_rgb_alpha);
-		//data.Release();
 	}
 
 	Texture2D::~Texture2D()

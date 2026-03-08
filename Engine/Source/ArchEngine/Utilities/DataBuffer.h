@@ -12,7 +12,7 @@ namespace ae {
 		DataBuffer() = default;
 		DataBuffer(uint64_t size) { Allocate(size); }
 		DataBuffer(const void* data, uint64_t size) : Data((uint8_t*)data), Size(size) {}
-		DataBuffer(const DataBuffer&) = default;
+		DataBuffer(const DataBuffer& other) = default;
 
 		static DataBuffer Copy(DataBuffer other)
 		{

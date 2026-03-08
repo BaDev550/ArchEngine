@@ -11,6 +11,7 @@ namespace ae {
 		{ ".jpeg", AssetType::Texture },
 		{ ".tga", AssetType::Texture },
 		{ ".bmp", AssetType::Texture },
+		{ ".hdr", AssetType::TextureCube },
 
 		{ ".fbx", AssetType::MeshSource },
 		{ ".obj", AssetType::MeshSource },

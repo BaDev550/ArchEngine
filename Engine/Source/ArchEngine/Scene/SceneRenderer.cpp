@@ -65,6 +65,10 @@ namespace ae {
 		}
 	}
 
+	void SceneRenderer::RemoveAllDrawnables() {
+		_drawnables.clear();
+	}
+
 	RenderHandle SceneRenderer::AddDrawnable(EntityID entityID) {
 		_drawnables.emplace_back(entityID);
 		return RenderHandle{ _drawnables.size() - 1 };
@@ -99,7 +103,9 @@ namespace ae {
 			}
 		}
 
-		DrawDebugScene(cmd);
+		if (_sceneData.DrawDebugShapes)
+			DrawDebugScene(cmd);
+		grapichs::debug::DebugRenderer::Update(Application::Get()->GetDeltaTime());
 		_sceneRenderPass->End();
 	}
 
@@ -128,6 +134,5 @@ namespace ae {
 			);
 			grapichs::Renderer::DrawVertex(cmd, _debugDrawData.LineVertexBuffer, vertexCount);
 		}
-		grapichs::debug::DebugRenderer::Update(Application::Get()->GetDeltaTime());
 	}
 }

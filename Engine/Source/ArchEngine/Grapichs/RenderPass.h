@@ -14,6 +14,7 @@ namespace ae::grapichs {
 
 		void SetInput(std::string_view name, const memory::Ref<Buffer>& buffer);
 		void SetInput(std::string_view name, const memory::Ref<Texture2D>& texture);
+		void SetInput(std::string_view name, const memory::Ref<TextureCube>& texture);
 
 		const memory::Ref<Framebuffer>& GetTargetFramebuffer() const { return _pipeline->GetPipelineData().TargetFramebuffer; }
 		const memory::Ref<Pipeline>& GetPipeline() const { return _pipeline; }

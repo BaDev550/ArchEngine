@@ -308,4 +308,9 @@ namespace ae::grapichs {
 		_descriptorManager->WriteInput(name, texture);
         _descriptorManager->Bake();
 	}
+
+    void RenderPass::SetInput(std::string_view name, const memory::Ref<TextureCube>& texture) {
+        _descriptorManager->WriteInput(name, texture);
+        _descriptorManager->Bake();
+    }
 }

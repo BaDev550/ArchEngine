@@ -1,0 +1,11 @@
+Model Information:
+* title:	PS2 Chair
+* source:	https://sketchfab.com/3d-models/ps2-chair-7183aedaa3ba4777b6d66db9d2534c05
+* author:	zubenko78 (https://sketchfab.com/zubenko78)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "PS2 Chair" (https://sketchfab.com/3d-models/ps2-chair-7183aedaa3ba4777b6d66db9d2534c05) by zubenko78 (https://sketchfab.com/zubenko78) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

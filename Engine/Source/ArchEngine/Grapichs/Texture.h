@@ -27,6 +27,8 @@ namespace ae::grapichs {
 	class Texture : public Asset {
 	public:
 		virtual ~Texture() = default;
+		virtual vk::DescriptorImageInfo& GetImageDescriptorInfo() = 0;
+
 		vk::Format GetFormat() const { return _specs.Format; }
 		vk::Filter GetFilter() const { return _specs.Filter; }
 		vk::SamplerAddressMode GetWrapMode() const { return _specs.Wrap; }
@@ -50,7 +52,7 @@ namespace ae::grapichs {
 		vk::Image GetImage() const { return _image; }
 		vk::ImageView GetImageView() const { return _imageView; }
 		vk::Sampler GetSampler() const { return _imageSampler; }
-		vk::DescriptorImageInfo& GetImageDescriptorInfo() { return _imageInfo; }
+		virtual vk::DescriptorImageInfo& GetImageDescriptorInfo() override { return _imageInfo; }
 	private:
 		void LoadTexture(void* data, uint32_t width, uint32_t height, uint32_t channels);
 		void CreateTexture();

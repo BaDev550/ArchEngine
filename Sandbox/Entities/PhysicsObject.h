@@ -5,6 +5,8 @@
 
 class PhysicsObject : public ae::Entity {
 public:
+	REGISTER_ENTITY(PhysicsObject);
+
 	PhysicsObject() {}
 
 	virtual void OnCreate() override {

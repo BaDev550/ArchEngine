@@ -25,7 +25,7 @@ namespace ae::grapichs {
 		config.ResterizationStateCreateInfo.depthClampEnable = VK_FALSE;
 		config.ResterizationStateCreateInfo.rasterizerDiscardEnable = VK_FALSE;
 		config.ResterizationStateCreateInfo.polygonMode = vk::PolygonMode::eFill;
-		config.ResterizationStateCreateInfo.cullMode =	  vk::CullModeFlagBits::eNone;
+		config.ResterizationStateCreateInfo.cullMode =	  vk::CullModeFlagBits::eBack;
 		config.ResterizationStateCreateInfo.frontFace =	  vk::FrontFace::eClockwise;
 		config.ResterizationStateCreateInfo.lineWidth = 1.0f;
 		config.ResterizationStateCreateInfo.depthBiasEnable = VK_FALSE;
@@ -155,14 +155,15 @@ namespace ae::grapichs {
 		_logicalDevice.bindBufferMemory(buffer, memory, 0);
 	}
 
-	void RenderContext::CreateImage(uint32_t width, uint32_t height, vk::Format format, vk::ImageTiling tiling, vk::ImageUsageFlags usage, vk::MemoryPropertyFlags memoryProperties, vk::Image& image, vk::DeviceMemory& memory) {
+	void RenderContext::CreateImage(uint32_t width, uint32_t height, vk::Format format, vk::ImageTiling tiling, vk::ImageUsageFlags usage, vk::MemoryPropertyFlags memoryProperties, vk::Image& image, vk::DeviceMemory& memory, uint32_t arrayLayers, vk::ImageCreateFlags flags) {
 		vk::ImageCreateInfo createInfo{};
 		createInfo.imageType = vk::ImageType::e2D;
 		createInfo.extent.width = width;
 		createInfo.extent.height = height;
 		createInfo.extent.depth = 1;
 		createInfo.mipLevels = 1;
-		createInfo.arrayLayers = 1;
+		createInfo.flags = flags;
+		createInfo.arrayLayers = arrayLayers;
 		createInfo.tiling = tiling;
 		createInfo.initialLayout = vk::ImageLayout::eUndefined;
 		createInfo.format = format;
@@ -195,7 +196,7 @@ namespace ae::grapichs {
 		EndSingleTimeCommand(cmd);
 	}
 
-	void RenderContext::CopyBufferToImage(vk::Buffer buffer, vk::Image image, uint32_t width, uint32_t height) {
+	void RenderContext::CopyBufferToImage(vk::Buffer buffer, vk::Image image, uint32_t width, uint32_t height, uint32_t layerCount) {
 		vk::CommandBuffer cmd = BeginSingleTimeCommand();
 		vk::BufferImageCopy region{
 			.bufferOffset = 0,
@@ -205,14 +206,14 @@ namespace ae::grapichs {
 		region.imageSubresource.aspectMask = vk::ImageAspectFlagBits::eColor;
 		region.imageSubresource.mipLevel = 0;
 		region.imageSubresource.baseArrayLayer = 0;
-		region.imageSubresource.layerCount = 1;
+		region.imageSubresource.layerCount = layerCount;
 		region.imageOffset = { 0, 0, 0 };
 		region.imageExtent = { width, height, 1 };
 		cmd.copyBufferToImage(buffer, image, vk::ImageLayout::eTransferDstOptimal, 1, &region);
 		EndSingleTimeCommand(cmd);
 	}
 
-	void RenderContext::TransitionImageLayout(vk::Image image, vk::Format format, vk::ImageLayout oldLayout, vk::ImageLayout newLayout) {
+	void RenderContext::TransitionImageLayout(vk::Image image, vk::Format format, vk::ImageLayout oldLayout, vk::ImageLayout newLayout, uint32_t layerCount) {
 		vk::CommandBuffer cmd = BeginSingleTimeCommand();
 		vk::ImageMemoryBarrier barrier{};
 		barrier.oldLayout = oldLayout;
@@ -224,7 +225,7 @@ namespace ae::grapichs {
 		barrier.subresourceRange.baseMipLevel = 0;
 		barrier.subresourceRange.levelCount = 1;
 		barrier.subresourceRange.baseArrayLayer = 0;
-		barrier.subresourceRange.layerCount = 1;
+		barrier.subresourceRange.layerCount = layerCount;
 		vk::PipelineStageFlags sourceStage;
 		vk::PipelineStageFlags dstStage;
 		if (oldLayout == vk::ImageLayout::eUndefined && newLayout == vk::ImageLayout::eTransferDstOptimal) {

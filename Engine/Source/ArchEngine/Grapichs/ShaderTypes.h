@@ -8,6 +8,7 @@ namespace ae::grapichs {
 	enum class ShaderReflectionDataType : uint8_t {
 		None = 0,
 		Sampler2D,
+		SamplerCube,
 		UniformBuffer
 	};
 
@@ -64,6 +65,7 @@ namespace ae::grapichs {
 		case ShaderReflectionDataType::None: return "None";
 		case ShaderReflectionDataType::UniformBuffer: return "UniformBuffer";
 		case ShaderReflectionDataType::Sampler2D: return "Sampler2D";
+		case ShaderReflectionDataType::SamplerCube: return "SamplerCube";
 		default: return "Unknow";
 		}
 	}
@@ -73,6 +75,7 @@ namespace ae::grapichs {
 		{
 		case ShaderReflectionDataType::UniformBuffer: return vk::DescriptorType::eUniformBuffer;
 		case ShaderReflectionDataType::Sampler2D: return vk::DescriptorType::eCombinedImageSampler;
+		case ShaderReflectionDataType::SamplerCube: return vk::DescriptorType::eCombinedImageSampler;
 		default: return vk::DescriptorType::eUniformBuffer;
 		}
 	}

@@ -40,6 +40,12 @@ namespace ae::grapichs {
 			_storedResources[decl->Set][decl->Binding].Set(texture);
 	}
 
+	void DescriptorManager::WriteInput(std::string_view name, memory::Ref<TextureCube> texture) {
+		const RenderPassInputDeclaration* decl = GetInputDeclaration(name);
+		if (decl)
+			_storedResources[decl->Set][decl->Binding].Set(texture);
+	}
+
 	void DescriptorManager::Bake() {
 		for (uint32_t frameIndex = 0; frameIndex < Renderer::MaxFramesInFlight; frameIndex++) {
 			for (auto& [setIndex, bindings] : _storedResources) {
@@ -65,7 +71,17 @@ namespace ae::grapichs {
 						imageWrite.descriptorType = vk::DescriptorType::eCombinedImageSampler;
 						imageWrite.dstBinding = bindingIndex;
 						imageWrite.dstSet = _descriptorSets[frameIndex][setIndex];
-						imageWrite.pImageInfo = &currentData.As<Texture2D>()->GetImageDescriptorInfo();
+						imageWrite.pImageInfo = &currentData.As<Texture>()->GetImageDescriptorInfo();
+						imageWrite.descriptorCount = 1;
+						_writes.push_back(imageWrite);
+						break;
+					}
+					case ShaderReflectionDataType::SamplerCube: {
+						vk::WriteDescriptorSet imageWrite{};
+						imageWrite.descriptorType = vk::DescriptorType::eCombinedImageSampler;
+						imageWrite.dstBinding = bindingIndex;
+						imageWrite.dstSet = _descriptorSets[frameIndex][setIndex];
+						imageWrite.pImageInfo = &currentData.As<Texture>()->GetImageDescriptorInfo();
 						imageWrite.descriptorCount = 1;
 						_writes.push_back(imageWrite);
 						break;

@@ -22,8 +22,8 @@ namespace ae::math {
 	inline static glm::vec3 JoltToGlm(const JPH::Vec3& vec) { return glm::vec3(vec.GetX(), vec.GetY(), vec.GetZ()); }
 	inline static JPH::Vec3 GlmToJolt(const glm::vec3& vec) { return JPH::Vec3(vec.x, vec.y, vec.z); }
 	inline static JPH::Quat GlmVec3ToJoltQuat(const glm::vec3& vec) { 
-		glm::quat q = glm::quat(glm::radians(vec));
-		return JPH::Quat(q.x, q.y, q.z, q.w);
+		glm::vec3 rad = glm::radians(vec);
+		return JPH::Quat::sEulerAngles(JPH::Vec3(rad.x, rad.y, rad.z));
 	}
 	inline static glm::vec3 JoltQuatToGlmVec3(const JPH::Quat& quat) {
 		JPH::Vec3 euler = quat.GetEulerAngles();

@@ -5,6 +5,9 @@
 
 class BasicObject : public ae::Entity {
 public:
+	REGISTER_ENTITY(BasicObject);
+	BasicObject() {}
+
 	virtual void OnCreate() override {
 		SetName("Basic Object");
 		RegisterAsDrawnable("Resources/Models/mario_2/mario_2.obj");

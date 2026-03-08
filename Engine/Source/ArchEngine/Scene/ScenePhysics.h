@@ -60,6 +60,7 @@ namespace ae {
 		~ScenePhysics();
 		PhysicsHandle CreatePhysicsBody(EntityID owner);
 		PhysicsBody& GetPhysicsBody(const PhysicsHandle& handle);
+		void RemoveAllPhysicsBody();
 		void Step(float deltaTime, std::unordered_map<EntityID, memory::Ref<Entity>>& entities);
 	private:
 		Scene* _scene = nullptr;

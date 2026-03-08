@@ -6,6 +6,7 @@
 #include "ArchEngine/Grapichs/Camera.h"
 #include "ArchEngine/Grapichs/RenderPass.h"
 #include "ArchEngine/Grapichs/Framebuffer.h"
+#include "ArchEngine/Grapichs/TextureCube.h"
 #include "ArchEngine/AssetManager/AssetManager.h"
 
 namespace ae {
@@ -31,15 +32,18 @@ namespace ae {
 
 	struct SceneData {
 		CameraData ActiveCameraData;
+		bool DrawDebugShapes = false;
 	};
 
 	class SceneRenderer {
 	public:
 		SceneRenderer();
+		SceneData& GetSceneData() { return _sceneData; }
 		RenderHandle AddDrawnable(EntityID entityID);
 		Drawnable& GetDrawnable(const RenderHandle& handle);
 		size_t GetDrawnableCount() const { return _drawnables.size(); }
 		VkDescriptorSet GetSceneOutputTexture() const { return _sceneOutTextureID; }
+		void RemoveAllDrawnables();
 		void RenderScene(const memory::Ref<grapichs::Camera>& cam, const std::unordered_map<EntityID, memory::Ref<Entity>>& entities);
 	private:
 		std::vector<Drawnable> _drawnables;

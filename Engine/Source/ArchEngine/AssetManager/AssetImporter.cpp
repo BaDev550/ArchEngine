@@ -10,6 +10,7 @@ namespace ae {
 		s_serializers.clear();
 		s_serializers[AssetType::MeshSource] = memory::MakeScope<AssetSerializer_MeshSource>();
 		s_serializers[AssetType::StaticMesh] = memory::MakeScope<AssetSerializer_StaticMesh>();
+		s_serializers[AssetType::TextureCube] = memory::MakeScope<AssetSerializer_TextureCube>();
 		s_serializers[AssetType::Texture] = memory::MakeScope<AssetSerializer_Texture>();
 	}
 	void AssetImporter::Destroy() {

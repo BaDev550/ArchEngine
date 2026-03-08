@@ -16,6 +16,7 @@ namespace ae::grapichs {
 		PipelineConfig::Default(config);
 		config.InputAssembyCreateInfo.topology = _data.RenderData.Topology;
 		config.DepthStencilCreateInfo.depthTestEnable = _data.RenderData.DepthTestEnable ? vk::True : vk::False;
+		config.ResterizationStateCreateInfo.cullMode = _data.RenderData.CullingEnable ? vk::CullModeFlagBits::eBack : vk::CullModeFlagBits::eNone;
 		auto& shader = _data.Shader;
 		auto& compiledData = shader->GetCompiledShaderData();
 

@@ -9,6 +9,7 @@ namespace ae::grapichs {
 	struct PipelineRenderData {
 		vk::PrimitiveTopology Topology = vk::PrimitiveTopology::eTriangleList;
 		bool DepthTestEnable = true;
+		bool CullingEnable = true;
 	};
 
 	struct PipelineData {

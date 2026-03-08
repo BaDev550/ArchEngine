@@ -23,6 +23,10 @@ namespace ae {
 		throw std::runtime_error("Invalid PhysicsHandle");
 	}
 
+	void ScenePhysics::RemoveAllPhysicsBody() {
+		_physicsBodies.clear();
+	}
+
 	void ScenePhysics::Step(float deltaTime, std::unordered_map<EntityID, memory::Ref<Entity>>& entities)
 	{
 		auto& bodyInterface = physics::PhysicsEngine::GetBodyInterface();

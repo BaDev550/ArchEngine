@@ -26,8 +26,9 @@ namespace ae::grapichs {
 		s_data.WhiteTexture = memory::Ref<Texture2D>::Create(whiteTextureSpecs, DataBuffer(&whitePixelData, sizeof(uint32_t)));
 
 		PROFILE_SCOPE("Renderer");
-		Renderer::GetShaderLibrary().AddShader("ForwardShader", "Shaders/forward.vert", "Shaders/forward.frag");
-		Renderer::GetShaderLibrary().AddShader("DebugShader", "Shaders/debug.vert", "Shaders/debug.frag");
+		Renderer::GetShaderLibrary().AddShader("ForwardShader","Shaders/forward.vert", "Shaders/forward.frag");
+		Renderer::GetShaderLibrary().AddShader("DebugShader",  "Shaders/debug.vert", "Shaders/debug.frag");
+		Renderer::GetShaderLibrary().AddShader("SkyboxShader", "Shaders/skybox.vert", "Shaders/skybox.frag");
 
 		debug::DebugRenderer::Init();
 		{

@@ -56,8 +56,12 @@ namespace ae {
         constexpr ShaderReflectionDataType GetResourceType(const SpvReflectDescriptorBinding* binding) {
             switch (binding->descriptor_type)
             {
-            case SPV_REFLECT_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER: return ShaderReflectionDataType::Sampler2D;
-            case SPV_REFLECT_DESCRIPTOR_TYPE_SAMPLED_IMAGE:          return ShaderReflectionDataType::Sampler2D;
+            case SPV_REFLECT_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER:
+            case SPV_REFLECT_DESCRIPTOR_TYPE_SAMPLED_IMAGE:
+                if (binding->image.dim == SpvDimCube) {
+                    return ShaderReflectionDataType::SamplerCube;
+                }
+                return ShaderReflectionDataType::Sampler2D;
             case SPV_REFLECT_DESCRIPTOR_TYPE_UNIFORM_BUFFER:         return ShaderReflectionDataType::UniformBuffer;
             case SPV_REFLECT_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC: return ShaderReflectionDataType::UniformBuffer;
             default: return ShaderReflectionDataType::UniformBuffer;

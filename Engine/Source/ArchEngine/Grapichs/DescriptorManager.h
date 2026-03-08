@@ -4,6 +4,7 @@
 
 #include "Buffer.h"
 #include "Texture.h"
+#include "TextureCube.h"
 #include "Shader.h"
 #include <vector>
 
@@ -23,6 +24,7 @@ namespace ae::grapichs {
 		ResourceBinding() : _data(std::vector<memory::Ref<memory::RefCounted>>(1, nullptr)) {}
 		ResourceBinding(memory::Ref<Buffer> buffer) : _data(std::vector<memory::Ref<memory::RefCounted>>(1, buffer)), _type(ShaderReflectionDataType::UniformBuffer) {}
 		ResourceBinding(memory::Ref<Texture2D> texture) : _data(std::vector<memory::Ref<memory::RefCounted>>(1, texture)), _type(ShaderReflectionDataType::Sampler2D) {}
+		ResourceBinding(memory::Ref<TextureCube> texture) : _data(std::vector<memory::Ref<memory::RefCounted>>(1, texture)), _type(ShaderReflectionDataType::SamplerCube) {}
 
 		void Set(memory::Ref<Buffer> buffer, uint32_t index = 0) {
 			_data[index] = buffer;
@@ -32,8 +34,12 @@ namespace ae::grapichs {
 			_data[index] = texture;
 			_type = ShaderReflectionDataType::Sampler2D;
 		}
+		void Set(memory::Ref<TextureCube> texture, uint32_t index = 0) {
+			_data[index] = texture;
+			_type = ShaderReflectionDataType::SamplerCube;
+		}
 	};
-
+	
 	class DescriptorManager : public memory::RefCounted {
 	public:
 		DescriptorManager() = default;
@@ -42,6 +48,7 @@ namespace ae::grapichs {
 
 		void WriteInput(std::string_view name, memory::Ref<Buffer> buffer);
 		void WriteInput(std::string_view name, memory::Ref<Texture2D> texture);
+		void WriteInput(std::string_view name, memory::Ref<TextureCube> texture);
 
 		void Bake();
 		void BindSets(vk::CommandBuffer cmd, vk::PipelineLayout layout);

@@ -8,6 +8,7 @@ namespace ae {
 	enum class AssetType : uint8_t {
 		Unknown = 0,
 		Texture,
+		TextureCube,
 		MeshSource,
 		StaticMesh,
 		Material,
@@ -19,6 +20,7 @@ namespace ae {
 		case AssetType::Unknown: return "Unknown";
 		case AssetType::Scene: return "Scene";
 		case AssetType::Texture: return "Texture";
+		case AssetType::TextureCube: return "TextureCube";
 		case AssetType::MeshSource: return "MeshSource";
 		case AssetType::StaticMesh: return "StaticMesh";
 		case AssetType::Material: return "Material";
@@ -30,6 +32,7 @@ namespace ae {
 		if (str == "Unknown") return AssetType::Unknown;
 		if (str == "Scene") return AssetType::Scene;
 		if (str == "Texture") return AssetType::Texture;
+		if (str == "TextureCube") return AssetType::TextureCube;
 		if (str == "MeshSource") return AssetType::MeshSource;
 		if (str == "StaticMesh") return AssetType::StaticMesh;
 		if (str == "Material") return AssetType::Material;

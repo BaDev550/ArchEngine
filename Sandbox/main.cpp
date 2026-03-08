@@ -6,12 +6,14 @@
 #include <ArchEngine/Core/EntryPoint.h>
 #include <ArchEngine/Core/Input.h>
 #include <ArchEngine/Scene/Scene.h>
+#include <ArchEngine/Scene/SceneSerializer.h>
 #include <ArchEngine/AssetManager/AssetManager.h>
 
-#include "BasicObject.h"
-#include "PhysicsObject.h"
-#include "Rat.h"
-#include "PropObject.h"
+#include "Entities/BasicObject.h"
+#include "Entities/PhysicsObject.h"
+#include "Entities/Entity_Rat.h"
+#include "Entities/EntityProp_Table.h"
+#include "Entities/EntityProp_Chair.h"
 
 #include <imgui.h>
 #include <glm/gtc/type_ptr.hpp>
@@ -28,9 +30,12 @@ public:
 		_defaultScene = memory::Ref<Scene>::Create();
 
 		_rat = _defaultScene->CreateEntity<Entity_Rat>();
-		_prop_table = _defaultScene->CreateEntity<Entity_Prop>("Resources/Models/table/scene.gltf");
+		_prop_table = _defaultScene->CreateEntity<EntityProp_Table>();
 		_prop_table->SetRotation({ -90.0, 0.0f, 0.0f });
 		_prop_table->SetPosition({ 0.0f, -0.5f, 0.0f });
+
+		_chair_01 = _defaultScene->CreateEntity<EntityProp_Chair>();
+		_chair_02 = _defaultScene->CreateEntity<EntityProp_Chair>();
 	}
 
 	virtual void ApplicationUpdate() override {
@@ -47,9 +52,15 @@ public:
 
 		if (Input::IsKeyJustPressed(key::F1)) {
 			_debugOverlayEnabled = !_debugOverlayEnabled;
+			_defaultScene->GetRenderer().GetSceneData().DrawDebugShapes = _debugOverlayEnabled;
 		}
-		grapichs::debug::DebugRenderer::DrawLine({ 0.0f, 0.0f, 0.0f }, { 0.0f, 10.0f, 0.0f }, { 1.0f, 0.0f, 0.0f });
-		grapichs::debug::DebugRenderer::DrawLine({ 0.0f, 1.0f, 0.0f }, { 0.0f, 15.0f, 0.0f }, { 1.0f, 0.0f, 0.0f });
+
+		if (Input::IsKeyJustPressed(key::F2)) {
+			SaveActiveScene();
+		}
+		if (Input::IsKeyJustPressed(key::F3)) {
+			LoadScene();
+		}
 
 		_defaultScene->OnEditorUpdate(_defaultCamera, _deltaTime);
 
@@ -131,6 +142,16 @@ public:
 		ImGui::End();
 		ImGui::PopStyleVar();
 	}
+
+	void SaveActiveScene() {
+		ae::SceneSerializer serializer(_defaultScene);
+		serializer.Serialize(_defaultScene->GetName() + ".scene");
+	}
+
+	void LoadScene() {
+		ae::SceneSerializer serializer(_defaultScene);
+		serializer.Deserialize(_defaultScene->GetName() + ".scene");
+	}
 private:
 	memory::Ref<grapichs::FreeCamera> _defaultCamera = nullptr;
 
@@ -138,7 +159,9 @@ private:
 	Entity* _selectedEntity = nullptr;
 
 	memory::Ref<Entity_Rat> _rat = nullptr;
-	memory::Ref<Entity_Prop> _prop_table = nullptr;
+	memory::Ref<EntityProp_Chair> _chair_01 = nullptr;
+	memory::Ref<EntityProp_Chair> _chair_02 = nullptr;
+	memory::Ref<EntityProp_Table> _prop_table = nullptr;
 
 	bool _cursorEnabled = false;
 	bool _debugOverlayEnabled = false;

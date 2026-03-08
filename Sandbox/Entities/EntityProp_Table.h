@@ -2,16 +2,18 @@
 
 #include "PhysicsObject.h"
 
-class Entity_Prop : public PhysicsObject {
+class EntityProp_Table : public PhysicsObject {
 public:
-	Entity_Prop(const std::string& path) : _propMeshPath(path) {
+	REGISTER_ENTITY(EntityProp_Table);
+
+	EntityProp_Table() : _propMeshPath("Resources/Models/table/scene.gltf") {
 		_type = ae::PhysicsMotionType::Kinematic;
 		_boxColliderExtent = glm::vec3(2.0f, 0.5f, 2.0f);
 	}
 
 	virtual void OnCreate() override {
 		PhysicsObject::OnCreate();
-		SetName("Prop Object");
+		SetName("Table Object");
 		RegisterAsDrawnable(_propMeshPath);
 	};
 
