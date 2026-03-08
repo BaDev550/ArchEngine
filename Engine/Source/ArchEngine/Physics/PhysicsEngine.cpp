@@ -8,11 +8,14 @@
 #include <Jolt/Core/JobSystemThreadPool.h>
 #include <Jolt/Physics/PhysicsSystem.h>
 
+#include "ArchEngine/Grapichs/DebugRenderer.h"
+
 namespace ae::physics {
 	PhysicsSettings PhysicsEngine::_settings;
 	JPH::PhysicsSystem* PhysicsEngine::_system = nullptr;
 	JPH::TempAllocator* PhysicsEngine::_allocator = nullptr;
 	JPH::JobSystem* PhysicsEngine::_jobSystem = nullptr;
+    debug::PhysicsDebugRenderer* PhysicsEngine::_debugRenderer = nullptr;
     BPLayerInterfaceImpl PhysicsEngine::_broadPhaseLayerInterface;
     ObjectVsBroadPhaseLayerFilterImpl PhysicsEngine::_objectVsBroadPhaseLayerFilter;
     ObjectLayerPairFilterImpl PhysicsEngine::_objectLayerPairFilter;
@@ -25,6 +28,7 @@ namespace ae::physics {
         JPH::RegisterTypes();
 
         _allocator = new JPH::TempAllocatorMalloc();
+        _debugRenderer = new debug::PhysicsDebugRenderer();
         _jobSystem = new JPH::JobSystemThreadPool(
             _settings.MaxPhysicsJobs,
             _settings.MaxPhysicsBarriers,
@@ -46,6 +50,12 @@ namespace ae::physics {
 
     void PhysicsEngine::Update(float deltaTime) {
         _system->Update(deltaTime, _settings.CollisionSteps, _allocator, _jobSystem);
+
+        JPH::BodyManager::DrawSettings drawSettings;
+        drawSettings.mDrawBoundingBox = true;
+        drawSettings.mDrawShape = true;
+        drawSettings.mDrawShapeWireframe = true;
+        _system->DrawBodies(drawSettings, _debugRenderer);
     }
 
 	void PhysicsEngine::Shutdown() {
@@ -54,6 +64,9 @@ namespace ae::physics {
 
         delete _jobSystem;
         _jobSystem = nullptr;
+
+        delete _debugRenderer;
+        _debugRenderer = nullptr;
 
         delete _allocator;
         _allocator = nullptr;

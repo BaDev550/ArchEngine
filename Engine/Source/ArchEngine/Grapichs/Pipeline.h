@@ -6,9 +6,15 @@
 #include "Framebuffer.h"
 
 namespace ae::grapichs {
+	struct PipelineRenderData {
+		vk::PrimitiveTopology Topology = vk::PrimitiveTopology::eTriangleList;
+		bool DepthTestEnable = true;
+	};
+
 	struct PipelineData {
 		memory::Ref<Shader> Shader;
 		memory::Ref<Framebuffer> TargetFramebuffer;
+		PipelineRenderData RenderData; // TODO - look into this mybe consider moving the config into constructer
 	};
 
 	class Pipeline : public memory::RefCounted {

@@ -61,7 +61,7 @@ namespace ae::grapichs {
 		else {
 			char* memOffset = (char*)_data;
 			memOffset += offset;
-			memcpy(memOffset, data, _bufferSize);
+			memcpy(memOffset, data, size);
 		}
 	}
 }

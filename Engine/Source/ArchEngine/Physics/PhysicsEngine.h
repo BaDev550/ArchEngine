@@ -2,6 +2,8 @@
 #include <Jolt/Jolt.h>
 #include <Jolt/Physics/PhysicsSystem.h>
 
+#include "PhysicsDebugRenderer.h"
+
 namespace ae::physics {
 	namespace Layers
 	{
@@ -70,7 +72,7 @@ namespace ae::physics {
 		uint32_t TempAllocatorSize = 10 * 1024 * 1024;
 		uint32_t MaxPhysicsJobs = 1024;
 		uint32_t MaxPhysicsBarriers = 1024;
-		uint32_t CollisionSteps = 10;
+		uint32_t CollisionSteps = 1;
 	};
 
 	class PhysicsEngine {
@@ -86,6 +88,7 @@ namespace ae::physics {
 		static JPH::PhysicsSystem* _system;
 		static JPH::TempAllocator* _allocator;
 		static JPH::JobSystem* _jobSystem;
+		static debug::PhysicsDebugRenderer* _debugRenderer;
 		static BPLayerInterfaceImpl _broadPhaseLayerInterface;
 		static ObjectVsBroadPhaseLayerFilterImpl _objectVsBroadPhaseLayerFilter;
 		static ObjectLayerPairFilterImpl _objectLayerPairFilter;

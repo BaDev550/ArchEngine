@@ -15,6 +15,7 @@ namespace ae::grapichs {
 		void Orbit(float pitchOffset, float yawOffset);
 		void SetFirstMouse() { _FirstMouse = true; }
 		glm::mat4 GetView() const { return _ViewMatrix; }
+		glm::mat4 GetViewProjection() const { return _ViewMatrix * _ProjectionMatrix; }
 		glm::mat4 GetProjection() const { return _ProjectionMatrix; }
 		glm::vec3 GetPosition() const { return _Position; }
 	protected:

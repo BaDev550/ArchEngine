@@ -29,6 +29,7 @@ namespace ae {
 
 		static Application* Get() { return _instance; }
 		Window& GetWindow() { return *_window; }
+		float GetDeltaTime() const { return _deltaTime; }
 	protected:
 		float _deltaTime;
 		Scope<Window> _window = nullptr;

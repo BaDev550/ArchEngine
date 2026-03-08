@@ -48,13 +48,16 @@ public:
 		if (Input::IsKeyJustPressed(key::F1)) {
 			_debugOverlayEnabled = !_debugOverlayEnabled;
 		}
+		grapichs::debug::DebugRenderer::DrawLine({ 0.0f, 0.0f, 0.0f }, { 0.0f, 10.0f, 0.0f }, { 1.0f, 0.0f, 0.0f });
+		grapichs::debug::DebugRenderer::DrawLine({ 0.0f, 1.0f, 0.0f }, { 0.0f, 15.0f, 0.0f }, { 1.0f, 0.0f, 0.0f });
 
 		_defaultScene->OnEditorUpdate(_defaultCamera, _deltaTime);
 
 		Renderer::BeginDefaultRenderPass();
 		DrawViewport();
-		if (_debugOverlayEnabled)
+		if (_debugOverlayEnabled) {
 			DrawDebugOverlay();
+		}
 		Renderer::EndDefaultRenderPass();
 
 		ImGuiRenderer::End();

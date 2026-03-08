@@ -1,6 +1,7 @@
 #include "ArchPch.h"
 #include "Renderer.h"
 #include "RenderAPI.h"
+#include "DebugRenderer.h"
 #include "ArchEngine/Core/Application.h"
 #include "ArchEngine/Scene/Scene.h"
 
@@ -26,7 +27,9 @@ namespace ae::grapichs {
 
 		PROFILE_SCOPE("Renderer");
 		Renderer::GetShaderLibrary().AddShader("ForwardShader", "Shaders/forward.vert", "Shaders/forward.frag");
+		Renderer::GetShaderLibrary().AddShader("DebugShader", "Shaders/debug.vert", "Shaders/debug.frag");
 
+		debug::DebugRenderer::Init();
 		{
 			PipelineData pipelineData{};
 			pipelineData.Shader = Renderer::GetShaderLibrary().GetShader("ForwardShader");
@@ -37,6 +40,7 @@ namespace ae::grapichs {
 	}
 
 	void Renderer::Destroy() {
+		debug::DebugRenderer::Destroy();
 		_defaultRenderPass = nullptr;
 		_defaultPipeline = nullptr;
 		s_data.ShaderLibrary = nullptr;
@@ -94,6 +98,7 @@ namespace ae::grapichs {
 	}
 
 	ShaderLibrary& Renderer::GetShaderLibrary() { return *s_data.ShaderLibrary; }
-	uint32_t Renderer::GetDrawCallCount() { return g_renderAPI->_renderStats.DrawCalls; }
+	uint32_t Renderer::GetDrawCallCount() { return g_renderAPI->GetRenderStats().DrawCalls; }
 	uint32_t Renderer::GetFrameIndex() { return g_frameIndex; }
+	RenderStats& Renderer::GetRenderStats() { return g_renderAPI->GetRenderStats(); }
 }

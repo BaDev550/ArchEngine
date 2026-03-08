@@ -1,11 +1,14 @@
 #include "ArchPch.h"
 #include "SceneRenderer.h"
 #include "ArchEngine/Grapichs/Renderer.h"
+#include "ArchEngine/Grapichs/DebugRenderer.h"
+#include "ArchEngine/Core/Application.h"
 #include <backends/imgui_impl_vulkan.h>
 
 namespace ae {
 	using namespace grapichs;
 	SceneRenderer::SceneRenderer() {
+		// Scene pipeline / renderpass
 		{
 			FramebufferSpecification sceneFramebufferSpecs{};
 			sceneFramebufferSpecs.Attachments = { vk::Format::eR16G16B16A16Sfloat, vk::Format::eD32Sfloat };
@@ -26,6 +29,8 @@ namespace ae {
 				VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
 			);
 		}
+
+		// Scene buffers
 		{
 			_cameraBuffer = memory::Ref<Buffer>::Create(
 				sizeof(CameraData),
@@ -34,6 +39,29 @@ namespace ae {
 			);
 			_cameraBuffer->Map();
 			_sceneRenderPass->SetInput("uCamera", _cameraBuffer);
+		}
+
+		// Debug data buffers / pipeline
+		{
+			_debugDrawData.LineVertexBuffer = memory::Ref<Buffer>::Create(
+				_debugDrawData.MAX_LINES * 2 * sizeof(grapichs::debug::DebugVertex),
+				vk::BufferUsageFlagBits::eVertexBuffer,
+				vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent
+			);
+			_debugDrawData.LineVertexBuffer->Map();
+			_debugDrawData.TriangleVertexBuffer = memory::Ref<Buffer>::Create(
+				_debugDrawData.MAX_TRIANGLES * 3 * sizeof(grapichs::debug::DebugVertex),
+				vk::BufferUsageFlagBits::eVertexBuffer,
+				vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent
+			);
+			_debugDrawData.TriangleVertexBuffer->Map();
+
+			PipelineData data{};
+			data.RenderData.DepthTestEnable = false;
+			data.RenderData.Topology = vk::PrimitiveTopology::eLineList;
+			data.TargetFramebuffer = _sceneFramebuffer;
+			data.Shader = Renderer::GetShaderLibrary().GetShader("DebugShader");
+			_debugDrawData.DebugPipeline = memory::Ref<Pipeline>::Create(data);
 		}
 	}
 
@@ -70,6 +98,36 @@ namespace ae {
 				grapichs::Renderer::DrawEnityWithStaticMesh(_sceneRenderPass, cmd, meshSource, staticMesh, entity->GetTransformMatrix());
 			}
 		}
+
+		DrawDebugScene(cmd);
 		_sceneRenderPass->End();
+	}
+
+	void SceneRenderer::DrawDebugScene(vk::CommandBuffer cmd)
+	{
+		const auto& lineCommands = grapichs::debug::DebugRenderer::GetLineDrawCommands();
+		if (!lineCommands.empty()) {
+			std::vector<grapichs::debug::DebugVertex> lineVertices;
+			lineVertices.reserve(lineCommands.size() * 2);
+
+			for (const auto& lineCmd : lineCommands) {
+				lineVertices.push_back({ lineCmd.Start, lineCmd.Color });
+				lineVertices.push_back({ lineCmd.End, lineCmd.Color });
+			}
+
+			uint32_t vertexCount = static_cast<uint32_t>(lineVertices.size());
+			vk::DeviceSize bufferSize = vertexCount * sizeof(grapichs::debug::DebugVertex);
+			_debugDrawData.LineVertexBuffer->Write(lineVertices.data(), bufferSize);
+
+			glm::mat4 viewProj = _sceneData.ActiveCameraData.Projection * _sceneData.ActiveCameraData.View;
+			cmd.bindPipeline(vk::PipelineBindPoint::eGraphics, _debugDrawData.DebugPipeline->GetPipeline());
+			cmd.pushConstants(
+				_debugDrawData.DebugPipeline->GetPipelineLayout(),
+				vk::ShaderStageFlagBits::eVertex,
+				0, sizeof(glm::mat4), &viewProj
+			);
+			grapichs::Renderer::DrawVertex(cmd, _debugDrawData.LineVertexBuffer, vertexCount);
+		}
+		grapichs::debug::DebugRenderer::Update(Application::Get()->GetDeltaTime());
 	}
 }

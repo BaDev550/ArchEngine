@@ -6,11 +6,12 @@
 #include "Model.h"
 
 namespace ae::grapichs {
+	struct RenderStats {
+		uint32_t DrawCalls;
+	};
+
 	class RenderAPI {
 	public:
-		struct RenderStats {
-			uint32_t DrawCalls;
-		} _renderStats;
 
 		RenderAPI();
 		~RenderAPI();
@@ -21,12 +22,14 @@ namespace ae::grapichs {
 		void DrawStaticMesh(memory::Ref<RenderPass>& renderPass, vk::CommandBuffer cmd, memory::Ref<MeshSource>& meshSource, memory::Ref<StaticMesh>& staticMesh);
 		void DrawEnityWithStaticMesh(memory::Ref<RenderPass>& renderPass, vk::CommandBuffer cmd, memory::Ref<MeshSource>& meshSource, memory::Ref<StaticMesh>& staticMesh, const glm::mat4& transform);
 		vk::CommandBuffer GetCurrentCommandBuffer();
+		RenderStats& GetRenderStats() { return _renderStats; }
 	private:
 		struct FrameContext {
 			vk::CommandPool CommandPool;
 			vk::CommandBuffer CommandBuffer;
 		} _frames[Renderer::MaxFramesInFlight];
 		bool _frameStarted = false;
+		RenderStats _renderStats;
 		RenderContext& _context;
 	};
 }

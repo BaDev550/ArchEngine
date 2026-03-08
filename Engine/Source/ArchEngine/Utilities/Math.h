@@ -5,6 +5,7 @@
 #include <assimp/vector2.h>
 #include <Jolt/Jolt.h>
 #include <Jolt/Math/Vec3.h>
+#include <Jolt/Renderer/DebugRenderer.h>
 
 namespace ae::math {
 	constexpr float PI = 3.14;
@@ -16,6 +17,8 @@ namespace ae::math {
 	inline static glm::vec2 AssimpToGlm(const aiVector2D& vec) { return glm::vec2(vec.x, vec.y); }
 	inline static aiVector2D GlmToAssimp(const glm::vec2& vec) { return aiVector2D(vec.x, vec.y); }
 	
+	inline static glm::vec3 JoltToGLM(const JPH::RVec3& vec) { return glm::vec3(vec.GetX(), vec.GetY(), vec.GetZ()); }
+	inline static glm::vec3 JoltToGLM(JPH::Color c) { return glm::vec3(c.r / 255.0f, c.g / 255.0f, c.b / 255.0f); }
 	inline static glm::vec3 JoltToGlm(const JPH::Vec3& vec) { return glm::vec3(vec.GetX(), vec.GetY(), vec.GetZ()); }
 	inline static JPH::Vec3 GlmToJolt(const glm::vec3& vec) { return JPH::Vec3(vec.x, vec.y, vec.z); }
 	inline static JPH::Quat GlmVec3ToJoltQuat(const glm::vec3& vec) { 

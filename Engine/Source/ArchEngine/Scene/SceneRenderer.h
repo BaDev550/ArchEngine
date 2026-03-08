@@ -2,6 +2,7 @@
 #include "ArchEngine/Objects/Entity.h"
 #include "ArchEngine/Grapichs/Model.h"
 #include "ArchEngine/Core/Memory.h"
+#include "ArchEngine/Grapichs/Buffer.h"
 #include "ArchEngine/Grapichs/Camera.h"
 #include "ArchEngine/Grapichs/RenderPass.h"
 #include "ArchEngine/Grapichs/Framebuffer.h"
@@ -50,5 +51,14 @@ namespace ae {
 		memory::Ref<grapichs::Framebuffer> _sceneFramebuffer = nullptr;
 
 		memory::Ref<grapichs::Buffer> _cameraBuffer = nullptr;
+
+		struct DebugDrawData {
+			memory::Ref<grapichs::Buffer> LineVertexBuffer;
+			memory::Ref<grapichs::Buffer> TriangleVertexBuffer;
+			memory::Ref<grapichs::Pipeline> DebugPipeline;
+			const uint32_t MAX_LINES = 10000;
+			const uint32_t MAX_TRIANGLES = 10000;
+		} _debugDrawData;
+		void DrawDebugScene(vk::CommandBuffer cmd);
 	};
 }

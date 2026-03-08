@@ -9,6 +9,7 @@
 
 namespace ae { class Scene; }
 namespace ae::grapichs {
+	struct RenderStats;
 	class Renderer {
 	public:
 		static inline const uint32_t MaxFramesInFlight = 2;
@@ -30,6 +31,7 @@ namespace ae::grapichs {
 		static vk::CommandBuffer GetCurrentCommandBuffer();
 		static uint32_t GetDrawCallCount();
 		static uint32_t GetFrameIndex();
+		static RenderStats& GetRenderStats();
 		static ShaderLibrary& GetShaderLibrary();
 	};
 }
