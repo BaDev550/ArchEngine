@@ -74,6 +74,24 @@ if(NOT TARGET imgui)
     )
     target_link_libraries(imgui PRIVATE glfw Vulkan::Vulkan)
 endif()
+FetchContent_Declare(
+    imguizmo
+    GIT_REPOSITORY https://github.com/CedricGuillemet/ImGuizmo.git
+    GIT_TAG master
+    SOURCE_DIR ${CMAKE_SOURCE_DIR}/vendor/imguizmo
+)
+FetchContent_MakeAvailable(imguizmo)
+if(NOT TARGET imguizmo)
+    add_library(imguizmo STATIC
+        ${imguizmo_SOURCE_DIR}/ImGuizmo.cpp
+        ${imguizmo_SOURCE_DIR}/ImSequencer.cpp
+        ${imguizmo_SOURCE_DIR}/ImCurveEdit.cpp
+        ${imguizmo_SOURCE_DIR}/ImGradient.cpp
+    )
+    target_include_directories(imguizmo PUBLIC ${imguizmo_SOURCE_DIR})
+    target_include_directories(imguizmo PRIVATE ${imgui_SOURCE_DIR} ${imgui_SOURCE_DIR}/backends)
+    target_link_libraries(imguizmo PRIVATE imgui)
+endif()
 set(YAML_CPP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(YAML_CPP_BUILD_TOOLS OFF CACHE BOOL "" FORCE)
 set(YAML_CPP_BUILD_CONTRIB OFF CACHE BOOL "" FORCE)

@@ -15,6 +15,7 @@ target_include_directories(ArchEngine
         ${CMAKE_SOURCE_DIR}/vendor/glm
         ${CMAKE_SOURCE_DIR}/vendor/stb
         ${joltphysics_SOURCE_DIR}
+        ${imguizmo_SOURCE_DIR}
 )
 
 target_link_libraries(ArchEngine PUBLIC
@@ -23,6 +24,7 @@ target_link_libraries(ArchEngine PUBLIC
     imgui
     Jolt
     yaml-cpp
+    imguizmo
     Vulkan::Vulkan
     ${Vulkan_SHADERC}
     ${Vulkan_SHADERC_UTILS}

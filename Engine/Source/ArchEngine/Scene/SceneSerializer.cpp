@@ -25,7 +25,7 @@ namespace ae {
             out << YAML::Key << "Name" << YAML::Value << entity->GetName();
             out << YAML::Key << "Transform" << YAML::BeginMap;
             out << YAML::Key << "Position" << YAML::Value << entity->GetPosition();
-            out << YAML::Key << "Rotation" << YAML::Value << entity->GetRotation();
+            out << YAML::Key << "Rotation" << YAML::Value << entity->GetEulerRotation();
             out << YAML::Key << "Scale" << YAML::Value << entity->GetScale();
             entity->OnSerialize(out);
             out << YAML::EndMap;

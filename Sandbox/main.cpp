@@ -15,8 +15,12 @@
 #include "Entities/EntityProp_Table.h"
 #include "Entities/EntityProp_Chair.h"
 
+#include "ArchEngine/GUI/DebugOverlay.h"
+
 #include <imgui.h>
+#include <ImGuizmo.h>
 #include <glm/gtc/type_ptr.hpp>
+#include <glm/gtx/matrix_decompose.hpp>
 #include <backends/imgui_impl_vulkan.h>
 
 using namespace ae;
@@ -42,7 +46,7 @@ public:
 		Renderer::BeginFrame();
 		ImGuiRenderer::Begin();
 		_defaultCamera->Update(_deltaTime);
-
+		
 		if (Input::IsKeyJustPressed(key::Tab)) {
 			_cursorEnabled = !_cursorEnabled;
 			_defaultCamera->SetFirstMouse();
@@ -51,8 +55,8 @@ public:
 		}
 
 		if (Input::IsKeyJustPressed(key::F1)) {
-			_debugOverlayEnabled = !_debugOverlayEnabled;
-			_defaultScene->GetRenderer().GetSceneData().DrawDebugShapes = _debugOverlayEnabled;
+			_debugOverlay.ToggleOverlay();
+			_defaultScene->GetRenderer().GetSceneData().DrawDebugShapes = _debugOverlay.OverlayEnabled();
 		}
 
 		if (Input::IsKeyJustPressed(key::F2)) {
@@ -66,9 +70,6 @@ public:
 
 		Renderer::BeginDefaultRenderPass();
 		DrawViewport();
-		if (_debugOverlayEnabled) {
-			DrawDebugOverlay();
-		}
 		Renderer::EndDefaultRenderPass();
 
 		ImGuiRenderer::End();
@@ -90,57 +91,37 @@ public:
 		ImGui::PopStyleVar();
 		ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
 		ImGui::Image((ImTextureID)(VkDescriptorSet)Renderer::GetFinalImageOfScene(_defaultScene), viewportPanelSize);
-		ImGui::End();
-	}
 
-	void DrawDebugOverlay() {
-		ImGuiWindowFlags overlayFlags = ImGuiWindowFlags_NoDecoration |
-			ImGuiWindowFlags_AlwaysAutoResize |
-			ImGuiWindowFlags_NoSavedSettings |
-			ImGuiWindowFlags_NoFocusOnAppearing |
-			ImGuiWindowFlags_NoNav |
-			ImGuiWindowFlags_NoMove;
+		if (_debugOverlay.OverlayEnabled()) {
+			ImGuizmo::SetOrthographic(false);
+			ImGuizmo::SetDrawlist(ImGui::GetWindowDrawList());
+			
+			auto rect = ImGui::GetWindowSize();
+			auto pos = ImGui::GetWindowPos();
+			ImGuizmo::SetRect(pos.x, pos.y, rect.x, rect.y);
 
-		ImGuiViewport* mainViewport = ImGui::GetMainViewport();
-		ImGui::SetNextWindowPos({ mainViewport->WorkPos.x, mainViewport->WorkPos.y }, ImGuiCond_Always, ImVec2(0.0f, 0.0f));
-		ImGui::SetNextWindowSize({ mainViewport->WorkSize.x, mainViewport->WorkSize.y / 2 });
-		ImGui::SetNextWindowBgAlpha(0.0f);
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-		if (ImGui::Begin("Debug Overlay", nullptr, overlayFlags)) {
-			ImGui::Text("ArchEngine Debug Info");
-			ImGui::Separator();
-			ImGui::Text("Cursor Enabled: %s", _cursorEnabled ? "True" : "False");
+			glm::mat4 view = _defaultCamera->GetView();
+			glm::mat4 projection = _defaultCamera->GetProjection();
+			projection[1][1] *= -1;
 
-			if (ImGui::CollapsingHeader("Render stats")) {
-				ImGui::Text("FPS: %.1f", 1.0f / _deltaTime);
-				ImGui::Text("Draw Calls: %d", Renderer::GetDrawCallCount());
-				ImGui::Text("Frame Time: %.3f ms", 1000.0f / ImGui::GetIO().Framerate);
-			}
-			if (ImGui::CollapsingHeader("Scene Hierarchy")) {
-				for (auto& [id, entity] : _defaultScene->GetEntities()) {
-					std::string entityName = entity->GetName() + "##" + entity->GetID().ToString();
-					if (ImGui::Selectable(entityName.c_str(), entity == _selectedEntity)) {
-						_selectedEntity = entity.Get();
-					}
-				}
-				if (_selectedEntity) {
-					ImGui::Separator();
-					ImGui::Text("Entity ID: %d", _selectedEntity->GetID());
-					ImGui::DragFloat3("Position", glm::value_ptr(_selectedEntity->GetTransform().Position), 0.1f);
-					ImGui::DragFloat3("Rotation", glm::value_ptr(_selectedEntity->GetTransform().Rotation), 0.1f);
-					ImGui::DragFloat3("Scale",    glm::value_ptr(_selectedEntity->GetTransform().Scale), 0.1f);
-				}
-			}
-			if (ImGui::CollapsingHeader("Asset Manager")) {
-				auto loadedAssets = AssetManager::GetLoadedAssets();
-				for (const auto& [assethandle, asset] : loadedAssets) {
-					AssetMetadata mtd = AssetManager::GetAssetMetadata(assethandle);
-					ImGui::Text("Loaded asset path: %s, type: %s", mtd.FilePath.string().c_str(), AssetTypeToString(mtd.Type).c_str());
+			if (auto entity = _debugOverlay.GetSelectedEntity()) {
+				glm::mat4 modelTransform = entity->GetTransformMatrix();
+
+				static ImGuizmo::OPERATION currentOp = ImGuizmo::TRANSLATE;
+				if (Input::IsKeyPressed(key::W)) currentOp = ImGuizmo::TRANSLATE;
+				if (Input::IsKeyPressed(key::E)) currentOp = ImGuizmo::ROTATE;
+				if (Input::IsKeyPressed(key::R)) currentOp = ImGuizmo::SCALE;
+
+				ImGuizmo::Manipulate(glm::value_ptr(view), glm::value_ptr(projection), currentOp, ImGuizmo::LOCAL, glm::value_ptr(modelTransform));
+
+				if (ImGuizmo::IsUsing()) {
+					entity->GetTransform().SetTransform(modelTransform);
 				}
 			}
 		}
+		_debugOverlay.Draw(_defaultScene);
+
 		ImGui::End();
-		ImGui::PopStyleVar();
 	}
 
 	void SaveActiveScene() {
@@ -154,9 +135,7 @@ public:
 	}
 private:
 	memory::Ref<grapichs::FreeCamera> _defaultCamera = nullptr;
-
 	memory::Ref<Scene> _defaultScene = nullptr;
-	Entity* _selectedEntity = nullptr;
 
 	memory::Ref<Entity_Rat> _rat = nullptr;
 	memory::Ref<EntityProp_Chair> _chair_01 = nullptr;
@@ -164,7 +143,7 @@ private:
 	memory::Ref<EntityProp_Table> _prop_table = nullptr;
 
 	bool _cursorEnabled = false;
-	bool _debugOverlayEnabled = false;
+	GUI::DebugOverlay _debugOverlay;
 };
 
 ae::Application* CreateApplication() {

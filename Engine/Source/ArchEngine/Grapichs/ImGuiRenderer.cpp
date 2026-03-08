@@ -3,6 +3,7 @@
 
 #include <backends/imgui_impl_vulkan.h>
 #include <backends/imgui_impl_glfw.h>
+#include <ImGuizmo.h>
 
 #include "RenderContext.h"
 #include "ArchEngine/Core/Application.h"
@@ -56,6 +57,7 @@ namespace ae::grapichs {
 		initInfo.PipelineInfoMain = pipelineInfo;
 		ImGui_ImplVulkan_Init(&initInfo);
 		ImGui_ImplVulkan_CreateMainPipeline(&pipelineInfo);
+		ImGuizmo::SetImGuiContext(ImGui::GetCurrentContext());
 	}
 
 	void ImGuiRenderer::Destroy(){
@@ -71,11 +73,12 @@ namespace ae::grapichs {
 		ImGui_ImplVulkan_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
+		ImGuizmo::BeginFrame();
 	}
 
 	void ImGuiRenderer::End() {
 		ImGui::Render();
-
+		
 		auto cmd = Renderer::GetCurrentCommandBuffer();
 		auto& window = Application::Get()->GetWindow();
 		auto& context = window.GetRenderContext();

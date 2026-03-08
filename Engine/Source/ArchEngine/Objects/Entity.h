@@ -1,10 +1,14 @@
 #pragma once
 #include "ArchEngine/Utilities/UUID.h"
+#include "ArchEngine/Utilities/Math.h"
 #include "ArchEngine/Core/Memory.h"
 #include "EntityFactory.h"
 
+
+#define GLM_ENABLE_EXPERIMENTAL
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/quaternion.hpp>
 
 #include <yaml-cpp/yaml.h>
 
@@ -26,17 +30,32 @@ namespace ae {
 
 	struct TransformComponent {
 		glm::vec3 Position = glm::vec3(0.0f);
-		glm::vec3 Rotation = glm::vec3(0.0f);
 		glm::vec3 Scale = glm::vec3(1.0f);
 
 		glm::mat4 Mat4() const {
-			glm::mat4 translation = glm::translate(glm::mat4(1.0f), Position);
-			glm::mat4 rotationX = glm::rotate(glm::mat4(1.0f), glm::radians(Rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-			glm::mat4 rotationY = glm::rotate(glm::mat4(1.0f), glm::radians(Rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-			glm::mat4 rotationZ = glm::rotate(glm::mat4(1.0f), glm::radians(Rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
-			glm::mat4 scale = glm::scale(glm::mat4(1.0f), Scale);
-			return translation * rotationY * rotationX * rotationZ * scale;
+			return glm::translate(glm::mat4(1.0f), Position)
+				* glm::toMat4(Rotation)
+				* glm::scale(glm::mat4(1.0f), Scale);
 		}
+
+		glm::vec3 GetEulerRotation() const { return EulerRotation; }
+		glm::quat GetRotation() const { return Rotation; }
+
+		void SetEulerRotation(const glm::vec3& rotation) {
+			EulerRotation = rotation;
+			Rotation = glm::quat(glm::radians(rotation));
+		}
+		void SetRotation(const glm::quat& quat) {
+			Rotation = quat;
+			EulerRotation = glm::degrees(glm::eulerAngles(quat));
+		}
+		void SetTransform(const glm::mat4& transform) {
+			math::DecomposeTransform(transform, Position, Rotation, Scale);
+			EulerRotation = glm::degrees(glm::eulerAngles(Rotation));
+		}
+	private:
+		glm::quat Rotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
+		glm::vec3 EulerRotation = glm::vec3(0.0f);
 	};
 
 	struct IdentifierComponent {
@@ -50,7 +69,8 @@ namespace ae {
 		Entity(EntityID id) : _id(id) {}
 		EntityID GetID() const { return _id; }
 		const glm::vec3 GetPosition() const { return _transform.Position; }
-		const glm::vec3 GetRotation() const { return _transform.Rotation; }
+		const glm::quat GetRotation() const { return _transform.GetRotation(); }
+		const glm::vec3 GetEulerRotation() const { return _transform.GetEulerRotation(); }
 		const glm::vec3 GetScale() const { return _transform.Scale; }
 		const glm::mat4 GetTransformMatrix() const { return _transform.Mat4(); }
 		const std::string GetName() const { return _identifier.Name; }
@@ -70,6 +90,7 @@ namespace ae {
 		void SetID(EntityID id) { _id = id; }
 		void SetScene(Scene* scene) { _scene = scene; }
 		void SetPosition(const glm::vec3& position);
+		void SetRotation(const glm::quat& quat);
 		void SetRotation(const glm::vec3& rotation);
 		void SetScale(const glm::vec3& scale);
 		void SetName(const std::string& name) { _identifier.Name = name; }

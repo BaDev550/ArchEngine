@@ -30,8 +30,12 @@ namespace ae {
 		_transform.Position = position; 
 	}
 
+	void Entity::SetRotation(const glm::quat& quat) {
+		_transform.SetRotation(quat);
+	}
+
 	void Entity::SetRotation(const glm::vec3& rotation) { 
-		_transform.Rotation = rotation; 
+		_transform.SetEulerRotation(rotation);
 	}
 
 	void Entity::SetScale(const glm::vec3& scale) { 

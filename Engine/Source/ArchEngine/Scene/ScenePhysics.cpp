@@ -43,7 +43,7 @@ namespace ae {
 				bodyInterface.SetPositionAndRotation(
 					body.JoltBodyID, 
 					math::GlmToJolt(entity->GetPosition()), 
-					math::GlmVec3ToJoltQuat(entity->GetRotation()), 
+					math::GlmToJolt(entity->GetRotation()),
 					JPH::EActivation::Activate
 				);
 			}
@@ -62,7 +62,7 @@ namespace ae {
 			if (entityIt != entities.end()) {
 				auto& entity = entityIt->second;
 				entity->SetPosition(math::JoltToGlm(body.GetRigidBody()->GetPosition()));
-				entity->SetRotation(math::JoltQuatToGlmVec3(body.GetRigidBody()->GetRotation()));
+				entity->SetRotation(math::JoltToGlm(body.GetRigidBody()->GetRotation()));
 			}
 		}
 	}
@@ -99,7 +99,7 @@ namespace ae {
 		JPH::BodyCreationSettings settings(
 			_shape,
 			math::GlmToJolt(ownerEntity.GetPosition()),
-			math::GlmVec3ToJoltQuat(ownerEntity.GetRotation()),
+			math::GlmToJolt(ownerEntity.GetRotation()),
 			PhysicsMotionTypeToJoltType(),
 			physics::Layers::MOVING
 		);
