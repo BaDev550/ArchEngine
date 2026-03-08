@@ -8,7 +8,7 @@ public:
 
 	EntityProp_Table() : _propMeshPath("Resources/Models/table/scene.gltf") {
 		_type = ae::PhysicsMotionType::Kinematic;
-		_boxColliderExtent = glm::vec3(2.0f, 0.5f, 2.0f);
+		_boxColliderExtent = glm::vec3(1.0f, 0.5f, 1.0f);
 	}
 
 	virtual void OnCreate() override {

@@ -7,8 +7,8 @@ public:
 	REGISTER_ENTITY(EntityProp_Chair);
 
 	EntityProp_Chair() : _propMeshPath("Resources/Models/chair/scene.gltf") {
-		_type = ae::PhysicsMotionType::Kinematic;
-		_boxColliderExtent = glm::vec3(2.0f, 0.5f, 2.0f);
+		_type = ae::PhysicsMotionType::Static;
+		_boxColliderExtent = glm::vec3(0.3f, 0.3f, 0.5f);
 	}
 
 	virtual void OnCreate() override {
