@@ -12,6 +12,8 @@
 #include <Jolt/Physics/Body/BodyCreationSettings.h>
 #include <Jolt/Physics/Collision/CollideShape.h>
 #include <Jolt/Physics/Collision/Shape/BoxShape.h>
+#include <Jolt/Physics/Collision/Shape/OffsetCenterOfMassShape.h>
+#include <Jolt/Physics/Collision/Shape/RotatedTranslatedShape.h>
 
 namespace ae {
 #define INVALID_JOLT_BODY_ID 0xFFFFFFFF;
@@ -34,12 +36,19 @@ namespace ae {
 
 		JPH::Body* GetRigidBody() { return _rgBody; }
 		bool IsValid() const { return !JoltBodyID.IsInvalid(); }
-		void CreateBoxCollider(const glm::vec3& boxExtent);
+		void CreateBoxCollider(const glm::vec3& boxExtent, const glm::vec3& offset = glm::vec3(0.0f));
 		void CreateSphereCollider();
 		void CreateRigidBody();
+
+		void AddForce(const glm::vec3& force);
+		void SetLinearVelocity(const glm::vec3& velocity);
+		void SetAngularVelocity(const glm::vec3& velocity);
+		glm::vec3 GetVelocity() const;
+		glm::vec3 GetOffset() const { return _shapeOffset; }
 	private:
 		JPH::Body* _rgBody;
 		JPH::Ref<JPH::Shape> _shape;
+		glm::vec3 _shapeOffset = glm::vec3(0.0f);
 		JPH::EMotionType PhysicsMotionTypeToJoltType() {
 			switch (MotionType)
 			{

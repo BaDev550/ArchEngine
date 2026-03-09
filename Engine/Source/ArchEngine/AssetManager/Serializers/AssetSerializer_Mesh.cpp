@@ -95,6 +95,9 @@ namespace ae {
 					AssetHandle texture = AssetManager::AddMemoryOnlyAsset(memory::Ref<grapichs::Texture2D>::Create(specs, texturePath.string()));
 					matAsset->SetAlbedoTexture(texture);
 				}
+				else {
+					matAsset->SetAlbedoTexture(whiteTexture->GetAssetHandle());
+				}
 
 				bool hasNormal = aiMat->GetTexture(aiTextureType_NORMALS, 0, &aiTexturePath) == AI_SUCCESS;
 				if (hasNormal) {

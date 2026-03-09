@@ -19,7 +19,7 @@ namespace ae {
                 return registry[name]();
             return nullptr;
         }
-    private:
+
         static std::unordered_map<std::string, EntityInstantiator>& GetRegistry() {
             static std::unordered_map<std::string, EntityInstantiator> s_Registry;
             return s_Registry;

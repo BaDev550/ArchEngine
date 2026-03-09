@@ -42,6 +42,13 @@ namespace ae::GUI {
 						ImGui::Text("Frame Time: %.3f ms", 1000.0f / ImGui::GetIO().Framerate);
 					}
 					if (ImGui::CollapsingHeader("Scene Hierarchy")) {
+						if (ImGui::CollapsingHeader("Create Entity")) {
+							for (auto& [type, func] : EntityFactory::GetRegistry()) {
+								std::string lable = "Spawn " + type;
+								if (ImGui::Button(lable.c_str()))
+									scene->CreateEntity(type);
+							}
+						}
 						for (auto& [id, entity] : scene->GetEntities()) {
 							std::string entityName = entity->GetName() + "##" + entity->GetID().ToString();
 							if (ImGui::Selectable(entityName.c_str(), entity == _selectedEntity)) {

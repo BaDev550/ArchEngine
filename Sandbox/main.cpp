@@ -14,6 +14,7 @@
 #include "Entities/Entity_Rat.h"
 #include "Entities/EntityProp_Table.h"
 #include "Entities/EntityProp_Chair.h"
+#include "Entities/Entity_Box.h"
 
 #include "ArchEngine/GUI/DebugOverlay.h"
 
@@ -40,6 +41,7 @@ public:
 
 		_chair_01 = _defaultScene->CreateEntity<EntityProp_Chair>();
 		_chair_02 = _defaultScene->CreateEntity<EntityProp_Chair>();
+		_defaultScene->CreateEntity<Entity_Box>();
 	}
 
 	virtual void ApplicationUpdate() override {

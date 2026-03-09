@@ -7,6 +7,7 @@
 #include "ArchEngine/Grapichs/RenderPass.h"
 #include "ArchEngine/Grapichs/Framebuffer.h"
 #include "ArchEngine/Grapichs/TextureCube.h"
+#include "ArchEngine/Grapichs/Enviroment.h"
 #include "ArchEngine/AssetManager/AssetManager.h"
 
 namespace ae {

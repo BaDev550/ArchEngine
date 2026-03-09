@@ -77,12 +77,21 @@ namespace ae {
 		}
 	}
 
-	void PhysicsBody::CreateBoxCollider(const glm::vec3& boxExtent)
+	void PhysicsBody::CreateBoxCollider(const glm::vec3& boxExtent, const glm::vec3& offset)
 	{
-		JPH::BoxShapeSettings settings(math::GlmToJolt(boxExtent));
-		JPH::BoxShapeSettings::ShapeResult result = settings.Create();
-		if (!result.HasError())
-			_shape = result.Get();
+		JPH::BoxShapeSettings boxSettings(math::GlmToJolt(boxExtent));
+		JPH::Shape::ShapeResult boxResult = boxSettings.Create();
+
+		if (boxResult.HasError()) {
+			Logger_app::error("Failed to create box shape: {}", boxResult.GetError().c_str());
+			return;
+		}
+		JPH::RotatedTranslatedShapeSettings settings(math::GlmToJolt(offset), JPH::Quat::sIdentity(), boxResult.Get());
+		JPH::Shape::ShapeResult finalResult = settings.Create();
+		if (!finalResult.HasError()) {
+			_shape = finalResult.Get();
+		}
+		_shapeOffset = offset;
 	}
 
 	void PhysicsBody::CreateSphereCollider()
@@ -111,5 +120,24 @@ namespace ae {
 
 		JoltBodyID = _rgBody->GetID();
 		interface.AddBody(JoltBodyID, JPH::EActivation::Activate);
+	}
+
+	void PhysicsBody::AddForce(const glm::vec3& force) {
+		JPH::BodyInterface& interface = physics::PhysicsEngine::GetBodyInterface();
+		interface.AddForce(JoltBodyID, math::GlmToJolt(force));
+	}
+
+	void PhysicsBody::SetLinearVelocity(const glm::vec3& velocity) {
+		JPH::BodyInterface& interface = physics::PhysicsEngine::GetBodyInterface();
+		interface.SetLinearVelocity(JoltBodyID, math::GlmToJolt(velocity));
+	}
+
+	void PhysicsBody::SetAngularVelocity(const glm::vec3& velocity) {
+		JPH::BodyInterface& interface = physics::PhysicsEngine::GetBodyInterface();
+		interface.SetAngularVelocity(JoltBodyID, math::GlmToJolt(velocity));
+	}
+
+	glm::vec3 PhysicsBody::GetVelocity() const {
+		return math::JoltToGLM(_rgBody->GetLinearVelocity());
 	}
 }

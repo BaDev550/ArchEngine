@@ -22,6 +22,7 @@ namespace ae::grapichs {
 		TextureSpecification whiteTextureSpecs{};
 		whiteTextureSpecs.Width = 1;
 		whiteTextureSpecs.Height = 1;
+		whiteTextureSpecs.Format = vk::Format::eR8G8B8A8Srgb;
 		uint32_t whitePixelData = 0xffffffff;
 		s_data.WhiteTexture = memory::Ref<Texture2D>::Create(whiteTextureSpecs, DataBuffer(&whitePixelData, sizeof(uint32_t)));
 

@@ -13,12 +13,13 @@ public:
 
 	Entity_Rat() {
 		_type = ae::PhysicsMotionType::Dynamic;
-		_boxColliderExtent = glm::vec3(0.3f, 0.1f, 0.3f);
+		_boxColliderExtent = glm::vec3(0.2f, 0.5f, 0.25f);
+		_boxColliderOffset = glm::vec3(0.0f, 0.6f, 0.0f);
 	}
 
 	virtual void OnCreate() override {
 		SetPosition({ 0.0f, 10.0f, 0.0f });
-		SetRotation({ -90.0f, 0.0f, 90.0f });
+		SetRotation({ 90.0f, 90.0f, -180.0f });
 		SetScale({ 0.05f, 0.05f, 0.05f });
 		PhysicsObject::OnCreate();
 		SetName("Rat");
@@ -34,10 +35,23 @@ public:
 		ImGui::Begin("Rat Debug Menu");
 		ImGui::Text("Rat stat: %s", GetRatStatus().c_str());
 		ImGui::End();
+
+		glm::vec3 velocity = GetVelocity();
+		if (ae::Input::IsKeyPressed(ae::key::Up))
+			velocity.x += (_speed * deltaTime);
+		if (ae::Input::IsKeyPressed(ae::key::Down))
+			velocity.x -= (_speed * deltaTime);
+		if (ae::Input::IsKeyPressed(ae::key::Right))
+			velocity.z += (_speed * deltaTime);
+		if (ae::Input::IsKeyPressed(ae::key::Left))
+			velocity.z -= (_speed * deltaTime);
+
+		SetLinearVelocity(velocity);
 	};
 	virtual void OnDestroy() override {};
 private:
 	eRatStatus _ratstat = eRatStatus_Happy;
+	float _speed = 50.0f;
 
 	std::string GetRatStatus() const {
 		switch (_ratstat) {

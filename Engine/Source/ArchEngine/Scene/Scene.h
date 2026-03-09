@@ -30,6 +30,7 @@ namespace ae {
 		SceneRenderer& GetRenderer() { return *_sceneRenderer; }
 		ScenePhysics& GetPhysics() { return *_scenePhysics; }
 		std::unordered_map<EntityID, memory::Ref<Entity>>& GetEntities() { return _entities; }
+		std::unordered_map<EntityID, std::string>& GetEntityTypes() { return _entityTypes; }
 
 		void OnEditorUpdate(const memory::Ref<grapichs::Camera>& cam, float deltaTime);
 		void OnRuntimeUpdate(float deltaTime);
