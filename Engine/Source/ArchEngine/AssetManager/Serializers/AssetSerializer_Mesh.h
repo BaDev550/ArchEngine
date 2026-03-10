@@ -24,7 +24,9 @@ namespace ae {
 	public:
 		MeshSourceImporter(const std::filesystem::path& path);
 		memory::Ref<grapichs::MeshSource> Import();
+		memory::Ref<grapichs::MeshSource> ImportFromMemory(const uint8_t* data, size_t size);
 	private:
+		void LoadData(memory::Ref<grapichs::MeshSource>& meshSource, const aiScene* scene);
 		const std::filesystem::path _path;
 	};
 
@@ -32,12 +34,14 @@ namespace ae {
 	public:
 		virtual void Serialize(const AssetMetadata& metadata, const memory::Ref<Asset>& asset) override {}
 		virtual bool TryLoadData(const AssetMetadata& metadata, memory::Ref<Asset>& asset) override;
+		virtual bool TryLoadFromBuffer(const AssetHandle& handle, const std::vector<uint8_t>& buffer, memory::Ref<Asset>& asset) override;
 	};
 
 	class AssetSerializer_StaticMesh : public AssetSerializer {
 	public:
 		virtual void Serialize(const AssetMetadata& metadata, const memory::Ref<Asset>& asset) override;
 		virtual bool TryLoadData(const AssetMetadata& metadata, memory::Ref<Asset>& asset) override;
+		virtual bool TryLoadFromBuffer(const AssetHandle& handle, const std::vector<uint8_t>& buffer, memory::Ref<Asset>& asset) override;
 	private:
 		std::string SerializeToFile(memory::Ref<grapichs::StaticMesh>& mesh) const;
 		bool TryLoadFromFile(const std::string& filePath, memory::Ref<grapichs::StaticMesh>& mesh);

@@ -15,6 +15,8 @@ namespace ae {
 		virtual bool IsAssetLoaded(AssetHandle handle) const override;
 		virtual AssetType GetAssetType(AssetHandle handle) const override;
 		virtual AssetMap GetLoadedAssets() const override { return _loadedAssets; }
+		virtual AssetHandle AddOnlyMemoryAsset(const memory::Ref<Asset>& asset) override;
+		bool IsMemoryAsset(AssetHandle handle) const;
 	private:
 		PackedAssetMap _packedAssets;
 		AssetMap _loadedAssets;

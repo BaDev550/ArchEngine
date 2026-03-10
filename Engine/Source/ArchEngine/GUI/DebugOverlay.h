@@ -63,6 +63,24 @@ namespace ae::GUI {
 							ImGui::DragFloat3("Position", glm::value_ptr(transform.Position), 0.1f);
 							if (ImGui::DragFloat3("Rotation", glm::value_ptr(euler), 0.5f)) { transform.SetEulerRotation(euler);}
 							ImGui::DragFloat3("Scale", glm::value_ptr(transform.Scale), 0.1f);
+
+							if (_selectedEntity->IsDrawnable()) {
+								auto& drawnable = _selectedEntity->GetDrawnable();
+								ImGui::Text("Mesh Handle: %llu", (uint64_t)drawnable.StaticMeshHandle);
+
+								if (AssetManager::GetAssetManagerType() == AssetManagerType::Editor) {
+									static char pathBuffer[256] = "";
+									ImGui::InputText("Import Path", pathBuffer, sizeof(pathBuffer));
+									if (ImGui::Button("Import & Assign Mesh")) {
+										drawnable.ImportStaticMesh(pathBuffer);
+									}
+								}
+							}
+							else {
+								if (ImGui::Button("Add Drawnable Component")) {
+									_selectedEntity->RegisterAsDrawnable();
+								}
+							}
 						}
 					}
 					if (ImGui::CollapsingHeader("Asset Manager")) {
@@ -72,7 +90,7 @@ namespace ae::GUI {
 							ImGui::Text("Loaded asset path: %s, type: %s", mtd.FilePath.string().c_str(), AssetTypeToString(mtd.Type).c_str());
 						}
 						if (ImGui::Button("Write into an PAK file")) {
-							AssetManager::GetEditorAssetManager()->CompileIntoPakFile("Assets.pak");
+							AssetManager::GetEditorAssetManagerInstance()->CompileIntoPakFile("Assets.pak");
 						}
 					}
 				}

@@ -38,6 +38,9 @@ namespace ae {
 	}
 
 	memory::Ref<Asset> AssetManagerRuntime::GetAsset(AssetHandle handle) {
+		if (IsMemoryAsset(handle))
+			return _memoryAssets[handle];
+
 		if (IsAssetLoaded(handle))
 			return _loadedAssets[handle];
 
@@ -50,13 +53,19 @@ namespace ae {
 			_packFile.seekg(packedAsset.Offset);
 			_packFile.read((char*)buffer.data(), packedAsset.Size);
 
-			//memory::Ref<Asset> asset;
+			memory::Ref<Asset> asset;
+			if (AssetImporter::TryLoadFromBuffer(metadata, buffer, asset)) {
+				_loadedAssets[handle] = asset;
+				return asset;
+			}
 			return nullptr;
 		}
 	}
 
 	memory::Ref<Asset> AssetManagerRuntime::GetMemoryAsset(AssetHandle handle) {
-		return _memoryAssets[handle];
+		if (_memoryAssets.find(handle) != _memoryAssets.end())
+			return _memoryAssets[handle];
+		return nullptr;
 	}
 
 	bool AssetManagerRuntime::IsAssetHandleValid(AssetHandle handle) const {
@@ -74,5 +83,16 @@ namespace ae {
 	AssetType AssetManagerRuntime::GetAssetType(AssetHandle handle) const {
 		if (IsAssetHandleValid(handle))
 			return _packedAssets.at(handle).Type;
+	}
+
+	AssetHandle AssetManagerRuntime::AddOnlyMemoryAsset(const memory::Ref<Asset>& asset) {
+		_memoryAssets[asset->GetAssetHandle()] = asset;
+		return asset->GetAssetHandle();
+	}
+
+	bool AssetManagerRuntime::IsMemoryAsset(AssetHandle handle) const {
+		if (_memoryAssets.find(handle) != _memoryAssets.end())
+			return true;
+		return false;
 	}
 }

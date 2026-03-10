@@ -6,10 +6,10 @@
 #include <filesystem>
 
 namespace ae {
-	class AssetManagerEditor : AssetManagerBase {
+	class AssetManagerEditor : public AssetManagerBase {
 	public:
 		AssetManagerEditor();
-		~AssetManagerEditor();
+		virtual ~AssetManagerEditor();
 		virtual memory::Ref<Asset> GetAsset(AssetHandle handle) override;
 		virtual memory::Ref<Asset> GetMemoryAsset(AssetHandle handle) override;
 		virtual bool IsAssetHandleValid(AssetHandle handle) const override;
@@ -18,6 +18,7 @@ namespace ae {
 		virtual AssetMetadata GetMetadata(AssetHandle handle) const override;
 		AssetMetadata GetMetadata(const std::filesystem::path& path) const;
 		AssetMap GetMemoryAssets() const { return _memoryAssets; }
+		bool ImportAssetWithHandle(const std::filesystem::path& path, AssetHandle handle);
 
 		virtual AssetMap GetLoadedAssets() const override { return _loadedAssets; };
 		virtual AssetMap GetLoadedAssetsWithType(AssetType type) const override;
@@ -32,6 +33,7 @@ namespace ae {
 		template<typename T, typename... Args>
 		memory::Ref<T> Create(const std::filesystem::path& path, Args&&... args) {
 			static_assert(std::is_base_of<Asset, T>::value, "T must be a subclass of Asset");
+			std::string standardizedPath = path.generic_string();
 			if (AssetMetadata loadedMetadata = GetMetadata(path); loadedMetadata.IsValid()) {
 				memory::Ref<Asset> asset = GetAsset(loadedMetadata.Handle);
 				_assetRegistry[loadedMetadata.Handle] = loadedMetadata;
@@ -40,7 +42,7 @@ namespace ae {
 			}
 			AssetMetadata metadata;
 
-			metadata.Handle = UUID();
+			metadata.Handle = ae::HashString(standardizedPath);
 			metadata.FilePath = path;
 			metadata.LoadingState = AssetLoadingState::Loaded;
 			metadata.Type = T::GetStaticAssetType();

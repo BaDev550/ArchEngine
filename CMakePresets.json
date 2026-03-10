@@ -30,12 +30,20 @@
             }
         },
         {
-            "name": "x64-release",
-            "displayName": "x64 Release",
-            "inherits": "x64-debug",
-            "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Release"
-            }
+          "name": "x64-release",
+          "displayName": "x64 Release",
+          "inherits": "x64-debug",
+          "cacheVariables": {
+            "CMAKE_BUILD_TYPE": "Release"
+          }
+        },
+        {
+          "name": "x64-pack",
+          "displayName": "x64 Packaging",
+          "inherits": "x64-release",
+          "cacheVariables": {
+            "CMAKE_BUILD_TYPE": "Packaging"
+          }
         }
     ]
 }

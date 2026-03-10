@@ -82,22 +82,29 @@ namespace ae {
 			return loadedMetadata.Handle;
 		}
 
+		AssetHandle handle = UUID();
+		if (ImportAssetWithHandle(path, handle)) {
+			return handle;
+		}
+		return INVALID_ASSET_HANDLE;
+	}
+
+	bool AssetManagerEditor::ImportAssetWithHandle(const std::filesystem::path& path, AssetHandle handle) {
 		AssetMetadata mtd;
 		memory::Ref<Asset> asset;
-		mtd.Handle = UUID();
+		mtd.Handle = handle;
 		mtd.LoadingState = AssetLoadingState::Loading;
 		mtd.FilePath = path;
 		mtd.Type = s_ExtensionAssetMap[path.extension()];
 		if (AssetImporter::TryLoadData(mtd, asset)) {
 			mtd.LoadingState = AssetLoadingState::Loaded;
-			asset->SetAssetHandle(mtd.Handle);
 			_assetRegistry[mtd.Handle] = mtd;
 			_loadedAssets[mtd.Handle] = asset;
 			SaveAssetRegistry();
 			Logger_app::info("Asset Loaded {}", mtd.FilePath.string());
-			return mtd.Handle;
+			return true;
 		}
-		return 0;
+		return false;
 	}
 
 	bool AssetManagerEditor::IsMemoryAsset(AssetHandle handle) const {
@@ -160,6 +167,7 @@ namespace ae {
 		}
 		Logger_app::info("Asset registry loaded");
 	}
+
 	void AssetManagerEditor::CompileIntoPakFile(const std::filesystem::path& outPath) {
 		std::ofstream pack(outPath, std::ios::binary);
 		uint32_t magic = ARCH_ENGINE_MAGIC;

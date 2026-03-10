@@ -27,6 +27,14 @@ namespace ae {
             out << YAML::Key << "Position" << YAML::Value << entity->GetPosition();
             out << YAML::Key << "Rotation" << YAML::Value << entity->GetEulerRotation();
             out << YAML::Key << "Scale" << YAML::Value << entity->GetScale();
+#if 0
+            if (entity->IsDrawnable()) {
+                out << YAML::Key << "Drawnable" << YAML::BeginMap;
+                out << YAML::Key << "StaticMeshHandle" << YAML::Value << entity->GetDrawnable().StaticMeshHandle;
+                out << YAML::Key << "IsVisible" << YAML::Value << entity->GetDrawnable().IsVisible;
+                out << YAML::EndMap;
+            }
+#endif
             entity->OnSerialize(out);
             out << YAML::EndMap;
             out << YAML::EndMap;
@@ -64,6 +72,16 @@ namespace ae {
                     deserializedEntity->SetPosition({ transform["Position"][0].as<float>(), transform["Position"][1].as<float>(), transform["Position"][2].as<float>() });
                     deserializedEntity->SetRotation({ transform["Rotation"][0].as<float>(), transform["Rotation"][1].as<float>(), transform["Rotation"][2].as<float>() });
                     deserializedEntity->SetScale({ transform["Scale"][0].as<float>(), transform["Scale"][1].as<float>(), transform["Scale"][2].as<float>() });
+
+#if 0
+                    auto drawnable = entityNode["Drawnable"];
+                    if (drawnable) {
+                        AssetHandle handle = drawnable["StaticMeshHandle"].as<uint64_t>();
+                        bool isVisible = drawnable["IsVisible"].as<bool>();
+                        deserializedEntity->RegisterAsDrawnable(handle);
+                        deserializedEntity->GetDrawnable().IsVisible = isVisible;
+                    }
+#endif
                 }
             }
         }

@@ -97,7 +97,7 @@ namespace ae {
 			auto entityIt = entities.find(drawable.OwnerID);
 			if (entityIt != entities.end()) {
 				const auto& entity = entityIt->second;
-				memory::Ref<grapichs::StaticMesh> staticMesh = AssetManager::GetAsset<grapichs::StaticMesh>(drawable.StaticMeshHandle);
+				memory::Ref<grapichs::StaticMesh> staticMesh = drawable.GetMesh();
 				memory::Ref<grapichs::MeshSource> meshSource = AssetManager::GetAsset<grapichs::MeshSource>(staticMesh->GetMeshSource());
 				grapichs::Renderer::DrawEnityWithStaticMesh(_sceneRenderPass, cmd, meshSource, staticMesh, entity->GetTransformMatrix());
 			}

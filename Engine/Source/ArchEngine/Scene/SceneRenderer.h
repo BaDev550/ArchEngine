@@ -17,12 +17,31 @@ namespace ae {
 		bool IsVisible = true;
 
 		Drawnable(EntityID ownerID) : OwnerID(ownerID) {}
+
 		void ImportStaticMesh(const std::string& modelPath) {
-			std::filesystem::path staticMeshPath = modelPath;
-			staticMeshPath.replace_extension(".mesh");
-			AssetHandle sourceMeshHandle = AssetManager::ImportAsset(modelPath);
-			const auto& staticMesh = AssetManager::Create<grapichs::StaticMesh>(staticMeshPath.string(), sourceMeshHandle);
-			StaticMeshHandle = staticMesh->GetAssetHandle();
+			std::string sourcePath = std::filesystem::path(modelPath).generic_string();
+			std::string staticMeshPath = std::filesystem::path(modelPath).replace_extension(".mesh").generic_string();
+
+			uint64_t staticMeshHash = HashString(staticMeshPath);
+
+			if (AssetManager::GetAssetManagerType() == AssetManagerType::Editor) {
+				if (!AssetManager::IsAssetHandleValid(staticMeshHash)) {
+					uint64_t sourceHash = HashString(sourcePath);
+					if (!AssetManager::IsAssetHandleValid(sourceHash)) {
+						AssetManager::GetEditorAssetManagerInstance()->ImportAssetWithHandle(sourcePath, sourceHash);
+					}
+
+					AssetManager::Create<grapichs::StaticMesh>(staticMeshPath, sourceHash);
+					Logger_app::info("Auto-created StaticMesh for {}", staticMeshPath);
+				}
+			}
+			StaticMeshHandle = staticMeshHash;
+		}
+
+		memory::Ref<grapichs::StaticMesh> GetMesh() {
+			if (StaticMeshHandle != INVALID_ASSET_HANDLE)
+				return AssetManager::GetAsset<grapichs::StaticMesh>(StaticMeshHandle);
+			return nullptr;
 		}
 	};
 

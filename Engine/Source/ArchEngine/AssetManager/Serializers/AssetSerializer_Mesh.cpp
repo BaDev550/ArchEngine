@@ -20,7 +20,28 @@ namespace ae {
 		if (!scene) {
 			Logger_renderer::warn(" -Failed to load mesh");
 		}
+		LoadData(meshSource, scene);
+		importer.FreeScene();
+		return meshSource;
+	}
 
+	memory::Ref<grapichs::MeshSource> MeshSourceImporter::ImportFromMemory(const uint8_t* data, size_t size)
+	{
+		memory::Ref<grapichs::MeshSource> meshSource = memory::Ref<grapichs::MeshSource>::Create();
+		Assimp::Importer importer;
+
+		const aiScene* scene = importer.ReadFileFromMemory(data, size, MODEL_IMPORT_FLAGS);
+		if (!scene) {
+			Logger_renderer::error("Failed to load mesh from pack buffer");
+			return nullptr;
+		}
+		LoadData(meshSource, scene);
+		importer.FreeScene();
+		return meshSource;
+	}
+
+	void MeshSourceImporter::LoadData(memory::Ref<grapichs::MeshSource>& meshSource, const aiScene* scene)
+	{
 		if (scene->HasMeshes()) {
 			uint32_t vertexCount = 0;
 			uint32_t indexCount = 0;
@@ -118,8 +139,6 @@ namespace ae {
 
 		meshSource->CreateVertexBuffer();
 		meshSource->CreateIndexBuffer();
-		importer.FreeScene();
-		return meshSource;
 	}
 
 	// SOURCE MESH
@@ -131,6 +150,18 @@ namespace ae {
 			return false;
 		asset = meshSource;
 		asset->SetAssetHandle(metadata.Handle);
+		return true;
+	}
+
+	bool AssetSerializer_MeshSource::TryLoadFromBuffer(const AssetHandle& handle, const std::vector<uint8_t>& buffer, memory::Ref<Asset>& asset)
+	{
+		MeshSourceImporter importer("");
+		memory::Ref<grapichs::MeshSource> meshSource = importer.ImportFromMemory(buffer.data(), buffer.size());
+
+		if (!meshSource) return false;
+
+		asset = meshSource;
+		asset->SetAssetHandle(handle);
 		return true;
 	}
 
@@ -163,6 +194,19 @@ namespace ae {
 			return false;
 
 		mesh->SetAssetHandle(metadata.Handle);
+		asset = mesh;
+		return true;
+	}
+
+	bool AssetSerializer_StaticMesh::TryLoadFromBuffer(const AssetHandle& handle, const std::vector<uint8_t>& buffer, memory::Ref<Asset>& asset)
+	{
+		std::string yamlContent(buffer.begin(), buffer.end());
+
+		memory::Ref<grapichs::StaticMesh> mesh;
+		if (!TryLoadFromFile(yamlContent, mesh))
+			return false;
+
+		mesh->SetAssetHandle(handle);
 		asset = mesh;
 		return true;
 	}

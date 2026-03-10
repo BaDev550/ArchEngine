@@ -15,6 +15,7 @@
 #include "Entities/EntityProp_Table.h"
 #include "Entities/EntityProp_Chair.h"
 #include "Entities/Entity_Box.h"
+#include "Entities/Entity_Mario.h"
 
 #include "ArchEngine/GUI/DebugOverlay.h"
 
@@ -34,6 +35,7 @@ public:
 		_defaultCamera = memory::Ref<FreeCamera>::Create();
 		_defaultScene = memory::Ref<Scene>::Create();
 
+#if 0
 		_rat = _defaultScene->CreateEntity<Entity_Rat>();
 		_prop_table = _defaultScene->CreateEntity<EntityProp_Table>();
 		_prop_table->SetRotation({ -90.0, 0.0f, 0.0f });
@@ -42,6 +44,8 @@ public:
 		_chair_01 = _defaultScene->CreateEntity<EntityProp_Chair>();
 		_chair_02 = _defaultScene->CreateEntity<EntityProp_Chair>();
 		_defaultScene->CreateEntity<Entity_Box>();
+#endif
+		_defaultScene->CreateEntity<Entity_Mario>();
 	}
 
 	virtual void ApplicationUpdate() override {

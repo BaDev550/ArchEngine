@@ -17,6 +17,13 @@ namespace ae {
 		return true;
 	}
 
+    bool AssetSerializer_Texture::TryLoadFromBuffer(const AssetHandle& handle, const std::vector<uint8_t>& buffer, memory::Ref<Asset>& asset)
+    {
+        asset = memory::Ref<grapichs::Texture2D>::Create(grapichs::TextureSpecification(), ae::DataBuffer((void*)buffer.data(), buffer.size()));
+        asset->SetAssetHandle(handle);
+        return true;
+    }
+
 	bool AssetSerializer_Enviroment::TryLoadData(const AssetMetadata& metadata, memory::Ref<Asset>& asset)
 	{
         int width, height, channels;

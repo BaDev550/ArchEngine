@@ -30,4 +30,10 @@ namespace ae {
 		}
 		Logger_app::error("No serializer found for asset type {0}", AssetTypeToString(metadata.Type));
 	}
+	bool AssetImporter::TryLoadFromBuffer(const AssetMetadata& metadata, const std::vector<uint8_t>& buffer, memory::Ref<Asset>& asset) {
+		if (s_serializers.find(metadata.Type) != s_serializers.end()) {
+			return s_serializers[metadata.Type]->TryLoadFromBuffer(metadata.Handle, buffer, asset);
+		}
+		Logger_app::error("No serializer found for asset type {0}", AssetTypeToString(metadata.Type));
+	}
 }

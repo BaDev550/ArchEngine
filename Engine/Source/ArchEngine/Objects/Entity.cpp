@@ -12,6 +12,7 @@ namespace ae {
 	}
 
 	bool Entity::HasPhysicsBody() { return _physicsHandle.IsValid(); }
+	bool Entity::IsDrawnable() { return _renderHandle.IsValid(); }
 
 	void Entity::RegisterAsDrawnable() {
 		SetRenderHandle(GetScene()->GetRenderer().AddDrawnable(GetID()));
