@@ -12,7 +12,7 @@ namespace ae {
 		uint32_t Height;
 		std::string Title;
 
-		WindowSpecifications(uint32_t width = 800, uint32_t height = 800, const std::string& title = "Game Window")
+		WindowSpecifications(uint32_t width = 1240, uint32_t height = 720, const std::string& title = "Game Window")
 			: Width(width), Height(height), Title(title) {}
 	};
 

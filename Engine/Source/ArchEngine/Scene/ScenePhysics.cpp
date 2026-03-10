@@ -103,12 +103,12 @@ namespace ae {
 		if (!_shape)
 			return;
 
-		auto& ownerEntity = _ownerSystem->_scene->GetEntity(OwnerID);
+		auto ownerEntity = _ownerSystem->_scene->GetEntity(OwnerID);
 		JPH::BodyInterface& interface = physics::PhysicsEngine::GetBodyInterface();
 		JPH::BodyCreationSettings settings(
 			_shape,
-			math::GlmToJolt(ownerEntity.GetPosition()),
-			math::GlmToJolt(ownerEntity.GetRotation()),
+			math::GlmToJolt(ownerEntity->GetPosition()),
+			math::GlmToJolt(ownerEntity->GetRotation()),
 			PhysicsMotionTypeToJoltType(),
 			physics::Layers::MOVING
 		);

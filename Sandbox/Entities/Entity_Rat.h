@@ -1,6 +1,7 @@
 #pragma once
 
 #include "PhysicsObject.h"
+#include <ArchEngine/Objects/Entity_Camera.h>
 
 class Entity_Rat : public PhysicsObject {
 public:

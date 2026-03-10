@@ -34,6 +34,9 @@ namespace ae::grapichs {
 		s_descriptorPool = context.GetDevice().createDescriptorPool(descriptorPoolCreateInfo);
 
 		ImGui::CreateContext();
+		ImGui::StyleColorsDark();
+		ImGuiIO& io = ImGui::GetIO();
+		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 		ImGui_ImplGlfw_InitForVulkan(window.GetHandle(), true);
 		ImGui_ImplVulkan_PipelineInfo pipelineInfo{};
 		VkFormat swapchainColorImageFormat = (VkFormat)window.GetSwapchain().GetSwapchainFormat();

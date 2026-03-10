@@ -24,7 +24,7 @@ namespace ae {
 		Entity* CreateEntity(const std::string& typeName, EntityID id = EntityID());
 		void DestroyEntity(EntityID id);
 		void Destroy();
-		Entity& GetEntity(EntityID id);
+		Entity* GetEntity(EntityID id);
 		std::string GetEntityType(EntityID id);
 		std::string GetName() const { return _name; }
 		SceneRenderer& GetRenderer() { return *_sceneRenderer; }
@@ -34,6 +34,16 @@ namespace ae {
 
 		void OnEditorUpdate(const memory::Ref<grapichs::Camera>& cam, float deltaTime);
 		void OnRuntimeUpdate(float deltaTime);
+
+		template<typename T>
+		std::vector<EntityID> Group() const {
+			std::vector<EntityID> result;
+			for (const auto& [handle, e] : _entities) {
+				if (e.As<T>())
+					result.push_back(e->GetID());
+			}
+			return result;
+		}
 	private:
 		std::string _name;
 		std::unordered_map<EntityID, memory::Ref<Entity>> _entities;

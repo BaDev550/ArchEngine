@@ -2,6 +2,8 @@
 #include "Scene.h"
 #include "ArchEngine/Core/Application.h"
 
+#include "ArchEngine/Objects/Entity_Camera.h"
+
 namespace ae {
 	Scene::Scene(const std::string& name) : _name(name) {
 		_sceneRenderer = memory::MakeScope<SceneRenderer>();
@@ -38,10 +40,10 @@ namespace ae {
 		return newEntity.Get();
 	}
 
-	Entity& Scene::GetEntity(EntityID id) {
+	Entity* Scene::GetEntity(EntityID id) {
 		auto it = _entities.find(id);
 		if (it != _entities.end()) {
-			return *it->second;
+			return it->second.Get();
 		}
 		throw std::runtime_error("Entity with ID " + std::to_string(id) + " not found.");
 	}
@@ -62,6 +64,12 @@ namespace ae {
 	}
 
 	void Scene::OnRuntimeUpdate(float deltaTime) {
-		
+		//for (auto& [handle, entity] : _entities)
+		//	entity->OnUpdate(deltaTime);
+		//_scenePhysics->Step(deltaTime, _entities);
+
+		//auto& cameraEntityID = Group<Entity_Camera>()[0];
+		//memory::Ref<grapichs::Camera>& camera = dynamic_cast<Entity_Camera*>(GetEntity(cameraEntityID))->GetHandle();
+		//_sceneRenderer->RenderScene(camera, _entities);
 	}
 }

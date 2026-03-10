@@ -57,10 +57,8 @@ public:
 		}
 
 		if (Input::IsKeyJustPressed(key::F1)) {
-			_debugOverlay.ToggleOverlay();
-			_defaultScene->GetRenderer().GetSceneData().DrawDebugShapes = _debugOverlay.OverlayEnabled();
+			_debugOverlay.Toggle();
 		}
-
 		if (Input::IsKeyJustPressed(key::F2)) {
 			SaveActiveScene();
 		}
@@ -68,6 +66,7 @@ public:
 			LoadScene();
 		}
 
+		_defaultScene->GetRenderer().GetSceneData().DrawDebugShapes = _debugOverlay.DebugDraw();
 		_defaultScene->OnEditorUpdate(_defaultCamera, _deltaTime);
 
 		Renderer::BeginDefaultRenderPass();
@@ -94,31 +93,29 @@ public:
 		ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
 		ImGui::Image((ImTextureID)(VkDescriptorSet)Renderer::GetFinalImageOfScene(_defaultScene), viewportPanelSize);
 
-		if (_debugOverlay.OverlayEnabled()) {
-			ImGuizmo::SetOrthographic(false);
-			ImGuizmo::SetDrawlist(ImGui::GetWindowDrawList());
-			
-			auto rect = ImGui::GetWindowSize();
-			auto pos = ImGui::GetWindowPos();
-			ImGuizmo::SetRect(pos.x, pos.y, rect.x, rect.y);
+		ImGuizmo::SetOrthographic(false);
+		ImGuizmo::SetDrawlist(ImGui::GetWindowDrawList());
 
-			glm::mat4 view = _defaultCamera->GetView();
-			glm::mat4 projection = _defaultCamera->GetProjection();
-			projection[1][1] *= -1;
+		auto rect = ImGui::GetWindowSize();
+		auto pos = ImGui::GetWindowPos();
+		ImGuizmo::SetRect(pos.x, pos.y, rect.x, rect.y);
 
-			if (auto entity = _debugOverlay.GetSelectedEntity()) {
-				glm::mat4 modelTransform = entity->GetTransformMatrix();
+		glm::mat4 view = _defaultCamera->GetView();
+		glm::mat4 projection = _defaultCamera->GetProjection();
+		projection[1][1] *= -1;
 
-				static ImGuizmo::OPERATION currentOp = ImGuizmo::TRANSLATE;
-				if (Input::IsKeyPressed(key::W)) currentOp = ImGuizmo::TRANSLATE;
-				if (Input::IsKeyPressed(key::E)) currentOp = ImGuizmo::ROTATE;
-				if (Input::IsKeyPressed(key::R)) currentOp = ImGuizmo::SCALE;
+		if (auto entity = _debugOverlay.GetSelectedEntity()) {
+			glm::mat4 modelTransform = entity->GetTransformMatrix();
 
-				ImGuizmo::Manipulate(glm::value_ptr(view), glm::value_ptr(projection), currentOp, ImGuizmo::LOCAL, glm::value_ptr(modelTransform));
+			static ImGuizmo::OPERATION currentOp = ImGuizmo::TRANSLATE;
+			if (Input::IsKeyPressed(key::W)) currentOp = ImGuizmo::TRANSLATE;
+			if (Input::IsKeyPressed(key::E)) currentOp = ImGuizmo::ROTATE;
+			if (Input::IsKeyPressed(key::R)) currentOp = ImGuizmo::SCALE;
 
-				if (ImGuizmo::IsUsing()) {
-					entity->GetTransform().SetTransform(modelTransform);
-				}
+			ImGuizmo::Manipulate(glm::value_ptr(view), glm::value_ptr(projection), currentOp, ImGuizmo::LOCAL, glm::value_ptr(modelTransform));
+
+			if (ImGuizmo::IsUsing()) {
+				entity->GetTransform().SetTransform(modelTransform);
 			}
 		}
 		_debugOverlay.Draw(_defaultScene);

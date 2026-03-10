@@ -20,7 +20,7 @@ namespace ae {
 			scenePipelineData.Shader = Renderer::GetShaderLibrary().GetShader("ForwardShader");
 			scenePipelineData.TargetFramebuffer = _sceneFramebuffer;
 			_scenePipeline = memory::Ref<Pipeline>::Create(scenePipelineData);
-
+			
 			_sceneRenderPass = memory::Ref<RenderPass>::Create(_scenePipeline);
 			auto colorAttachment = _sceneFramebuffer->GetAttachmentTexture(0);
 			_sceneOutTextureID = ImGui_ImplVulkan_AddTexture(
