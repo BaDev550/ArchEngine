@@ -71,6 +71,9 @@ namespace ae::GUI {
 							AssetMetadata mtd = AssetManager::GetAssetMetadata(assethandle);
 							ImGui::Text("Loaded asset path: %s, type: %s", mtd.FilePath.string().c_str(), AssetTypeToString(mtd.Type).c_str());
 						}
+						if (ImGui::Button("Write into an PAK file")) {
+							AssetManager::GetEditorAssetManager()->CompileIntoPakFile("Assets.pak");
+						}
 					}
 				}
 				ImGui::End();

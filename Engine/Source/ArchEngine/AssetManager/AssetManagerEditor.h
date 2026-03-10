@@ -15,17 +15,19 @@ namespace ae {
 		virtual bool IsAssetHandleValid(AssetHandle handle) const override;
 		virtual bool IsAssetLoaded(AssetHandle handle) const override;
 		virtual AssetType GetAssetType(AssetHandle handle) const override;
-		AssetMetadata GetMetadata(AssetHandle handle) const;
+		virtual AssetMetadata GetMetadata(AssetHandle handle) const override;
 		AssetMetadata GetMetadata(const std::filesystem::path& path) const;
-		AssetMap GetLoadedAssets() const { return _loadedAssets; }
 		AssetMap GetMemoryAssets() const { return _memoryAssets; }
-		AssetMap GetAssetsByType(AssetType type) const;
-		AssetHandle ImportAsset(const std::filesystem::path& path);
+
+		virtual AssetMap GetLoadedAssets() const override { return _loadedAssets; };
+		virtual AssetMap GetLoadedAssetsWithType(AssetType type) const override;
+		virtual AssetHandle AddOnlyMemoryAsset(const memory::Ref<Asset>& asset) override;
+		virtual AssetHandle ImportAsset(const std::filesystem::path& path) override;
 		bool IsMemoryAsset(AssetHandle handle) const;
-		void AddMemoryAsset(const memory::Ref<Asset>& asset);
 
 		void SaveAssetRegistry();
 		void LoadAssetRegistry();
+		void CompileIntoPakFile(const std::filesystem::path& outPath);
 
 		template<typename T, typename... Args>
 		memory::Ref<T> Create(const std::filesystem::path& path, Args&&... args) {

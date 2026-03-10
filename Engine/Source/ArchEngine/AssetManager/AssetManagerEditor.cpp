@@ -27,7 +27,6 @@ namespace ae {
 			else {
 				if (AssetImporter::TryLoadData(metadata, asset)) {
 					metadata.LoadingState = AssetLoadingState::Loaded;
-					_assetRegistry[metadata.Handle] = metadata;
 					_loadedAssets[metadata.Handle] = asset;
 					SaveAssetRegistry();
 				}
@@ -68,7 +67,7 @@ namespace ae {
 		}
 		return AssetMetadata();
 	}
-	AssetMap AssetManagerEditor::GetAssetsByType(AssetType type) const {
+	AssetMap AssetManagerEditor::GetLoadedAssetsWithType(AssetType type) const {
 		AssetMap resultMap;
 		for (auto& [handle, asset] : _loadedAssets) {
 			if (asset && asset->GetAssetType() == type)
@@ -100,13 +99,16 @@ namespace ae {
 		}
 		return 0;
 	}
+
 	bool AssetManagerEditor::IsMemoryAsset(AssetHandle handle) const {
 		if (_memoryAssets.find(handle) != _memoryAssets.end())
 			return true;
 		return false;
 	}
-	void AssetManagerEditor::AddMemoryAsset(const memory::Ref<Asset>& asset) {
+
+	AssetHandle AssetManagerEditor::AddOnlyMemoryAsset(const memory::Ref<Asset>& asset) {
 		_memoryAssets[asset->GetAssetHandle()] = asset;
+		return asset->GetAssetHandle();
 	}
 
 	void AssetManagerEditor::SaveAssetRegistry(){
@@ -157,5 +159,45 @@ namespace ae {
 			_assetRegistry[metadata.Handle] = metadata;
 		}
 		Logger_app::info("Asset registry loaded");
+	}
+	void AssetManagerEditor::CompileIntoPakFile(const std::filesystem::path& outPath) {
+		std::ofstream pack(outPath, std::ios::binary);
+		uint32_t magic = ARCH_ENGINE_MAGIC;
+		uint32_t assetCount = static_cast<uint32_t>(_assetRegistry.size());
+		pack.write((char*)&magic, sizeof(uint32_t));
+		pack.write((char*)&assetCount, sizeof(uint32_t));
+
+		uint64_t indexStart = pack.tellp();
+		for (auto& [handle, mtd] : _assetRegistry) {
+			uint64_t zero = 0;
+			pack.write((char*)&handle, sizeof(uint64_t));
+			pack.write((char*)&zero, sizeof(uint64_t));
+			pack.write((char*)&zero, sizeof(uint64_t));
+			pack.write((char*)&mtd.Type, sizeof(AssetType));
+		}
+
+		struct TempEntry { uint64_t offset; uint64_t size; };
+		std::map<AssetHandle, TempEntry> finalEntries;
+
+		for (auto& [handle, mtd] : _assetRegistry) {
+			std::ifstream assetFile(mtd.FilePath, std::ios::binary | std::ios::ate);
+			uint64_t size = assetFile.tellg();
+			uint64_t offset = pack.tellp();
+
+			assetFile.seekg(0);
+			std::vector<char> buffer(size);
+			assetFile.read(buffer.data(), size);
+			pack.write(buffer.data(), size);
+			finalEntries[handle] = { offset, size };
+		}
+
+		pack.seekp(indexStart);
+		for (auto& [handle, mtd] : _assetRegistry) {
+			pack.write((char*)&handle, sizeof(uint64_t));
+			pack.write((char*)&finalEntries[handle].offset, sizeof(uint64_t));
+			pack.write((char*)&finalEntries[handle].size, sizeof(uint64_t));
+			pack.write((char*)&mtd.Type, sizeof(AssetType));
+		}
+		Logger_app::info("PAK file created at: {}", outPath.string());
 	}
 }

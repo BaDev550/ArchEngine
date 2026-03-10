@@ -39,6 +39,13 @@ namespace ae {
 		return INVALID_ASSET_TYPE;
 	}
 
+#define ARCH_ENGINE_MAGIC 0x41524348 // ARCH
+	struct PackedAsset {
+		uint64_t Offset;
+		uint64_t Size;
+		AssetType Type;
+	};
+
 	using AssetHandle = UUID;
 	class Asset : public memory::RefCounted {
 	public:
