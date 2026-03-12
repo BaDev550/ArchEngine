@@ -28,8 +28,8 @@ namespace ae::grapichs {
 
 		PROFILE_SCOPE("Renderer");
 		Renderer::GetShaderLibrary().AddShader("ForwardShader","Shaders/forward.vert", "Shaders/forward.frag");
-		Renderer::GetShaderLibrary().AddShader("DebugShader",  "Shaders/debug.vert", "Shaders/debug.frag");
-		Renderer::GetShaderLibrary().AddShader("SkyboxShader", "Shaders/skybox.vert", "Shaders/skybox.frag");
+		Renderer::GetShaderLibrary().AddShader("DebugShader",  "Shaders/debug.vert",   "Shaders/debug.frag");
+		Renderer::GetShaderLibrary().AddShader("SkyboxShader", "Shaders/skybox.vert",  "Shaders/skybox.frag");
 
 		debug::DebugRenderer::Init();
 		{
@@ -79,10 +79,13 @@ namespace ae::grapichs {
 		g_renderAPI->DrawStaticMesh(renderPass, cmd, meshSource, staticMesh);
 	}
 
-	void Renderer::DrawEnityWithStaticMesh(memory::Ref<RenderPass>& renderPass, vk::CommandBuffer cmd, memory::Ref<MeshSource>& meshSource, memory::Ref<StaticMesh>& staticMesh, const glm::mat4& transform) {
-		g_renderAPI->DrawEnityWithStaticMesh(renderPass, cmd, meshSource, staticMesh, transform);
+	void Renderer::DrawStaticMeshEntity(memory::Ref<RenderPass>& renderPass, vk::CommandBuffer cmd, memory::Ref<MeshSource>& meshSource, memory::Ref<StaticMesh>& staticMesh, const glm::mat4& transform){
+		g_renderAPI->DrawStaticMeshEntity(renderPass, cmd, meshSource, staticMesh, transform);
 	}
 
+	void Renderer::DrawStaticMeshEntityWithMaterial(memory::Ref<RenderPass>& renderPass, vk::CommandBuffer cmd, memory::Ref<MeshSource>& meshSource, memory::Ref<StaticMesh>& staticMesh, const glm::mat4& transform) {
+		g_renderAPI->DrawStaticMeshEntityWithMaterial(renderPass, cmd, meshSource, staticMesh, transform);
+	}
 	void Renderer::CopyBuffer(memory::Ref<Buffer>& src, memory::Ref<Buffer>& dst, vk::DeviceSize size) {
 		Application::Get()->GetWindow().GetRenderContext().WaitDeviceIdle();
 		Application::Get()->GetWindow().GetRenderContext().CopyBuffer(src->GetBuffer(), dst->GetBuffer(), size);

@@ -123,7 +123,7 @@ namespace ae {
 				const auto& entity = entityIt->second;
 				memory::Ref<grapichs::StaticMesh> staticMesh = AssetManager::GetAsset<grapichs::StaticMesh>(drawable.StaticMeshHandle);
 				memory::Ref<grapichs::MeshSource> meshSource = AssetManager::GetAsset<grapichs::MeshSource>(staticMesh->GetMeshSource());
-				grapichs::Renderer::DrawEnityWithStaticMesh(_sceneRenderPass, cmd, meshSource, staticMesh, entity->GetTransformMatrix());
+				grapichs::Renderer::DrawStaticMeshEntityWithMaterial(_sceneRenderPass, cmd, meshSource, staticMesh, entity->GetTransformMatrix());
 			}
 		}
 

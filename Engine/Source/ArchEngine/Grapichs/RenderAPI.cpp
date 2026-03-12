@@ -101,10 +101,35 @@ namespace ae::grapichs {
         }
     }
 
-    void RenderAPI::DrawEnityWithStaticMesh(memory::Ref<RenderPass>& renderPass, vk::CommandBuffer cmd, memory::Ref<MeshSource>& meshSource, memory::Ref<StaticMesh>& staticMesh, const glm::mat4& transform)
+    void RenderAPI::DrawStaticMeshEntity(memory::Ref<RenderPass>& renderPass, vk::CommandBuffer cmd, memory::Ref<MeshSource>& meshSource, memory::Ref<StaticMesh>& staticMesh, const glm::mat4& transform)
     {
+        vk::Buffer vertexBuffers[] = { meshSource->GetVertexBuffer()->GetBuffer() };
+        vk::DeviceSize offsets[] = { 0 };
+        cmd.bindVertexBuffers(0, vertexBuffers, offsets);
+        cmd.bindIndexBuffer(meshSource->GetIndexBuffer()->GetBuffer(), 0, vk::IndexType::eUint32);
         cmd.pushConstants(renderPass->GetPipeline()->GetPipelineLayout(), vk::ShaderStageFlagBits::eVertex, 0, sizeof(glm::mat4), &transform);
-		DrawStaticMesh(renderPass, cmd, meshSource, staticMesh);
+
+        for (const auto& submesh : meshSource->GetSubmeshes()) {
+            cmd.drawIndexed(submesh.IndexCount, 1, submesh.IndexOffset, submesh.VertexOffset, 0);
+            _renderStats.DrawCalls++;
+        }
+    }
+
+    void RenderAPI::DrawStaticMeshEntityWithMaterial(memory::Ref<RenderPass>& renderPass, vk::CommandBuffer cmd, memory::Ref<MeshSource>& meshSource, memory::Ref<StaticMesh>& staticMesh, const glm::mat4& transform) {
+        vk::Buffer vertexBuffers[] = { meshSource->GetVertexBuffer()->GetBuffer() };
+        vk::DeviceSize offsets[] = { 0 };
+        cmd.bindVertexBuffers(0, vertexBuffers, offsets);
+        cmd.bindIndexBuffer(meshSource->GetIndexBuffer()->GetBuffer(), 0, vk::IndexType::eUint32);
+        cmd.pushConstants(renderPass->GetPipeline()->GetPipelineLayout(), vk::ShaderStageFlagBits::eVertex, 0, sizeof(glm::mat4), &transform);
+
+        for (const auto& submesh : meshSource->GetSubmeshes()) {
+            memory::Ref<MaterialAsset>& materialAsset = staticMesh->GetMaterialByID(submesh.MaterialIndex);
+            memory::Ref<Material>& material = materialAsset->GetMaterial();
+
+            material->Bind(cmd, renderPass->GetPipeline()->GetPipelineLayout());
+            cmd.drawIndexed(submesh.IndexCount, 1, submesh.IndexOffset, submesh.VertexOffset, 0);
+            _renderStats.DrawCalls++;
+        }
     }
 
     vk::CommandBuffer RenderAPI::GetCurrentCommandBuffer()

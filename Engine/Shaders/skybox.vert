@@ -1,11 +1,7 @@
 #version 460
 layout(location = 0) out vec3 vLocalPos;
 
-layout(set = 0, binding = 0) uniform CameraData {
-    mat4 View;
-    mat4 Proj;
-    vec3 Position;
-} uCamera;
+#include "common/buffers.glslh"
 
 const vec3 cubeVertices[36] = vec3[36](
     vec3(-1.0,  1.0, -1.0), vec3(-1.0, -1.0, -1.0), vec3( 1.0, -1.0, -1.0),
