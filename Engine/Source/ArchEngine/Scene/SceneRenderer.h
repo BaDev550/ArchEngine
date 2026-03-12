@@ -29,16 +29,24 @@ namespace ae {
 	struct CameraData {
 		glm::mat4 View;
 		glm::mat4 Projection;
+		glm::vec3 Position;
+	};
+
+	struct LightEnviromentData {
+		memory::Ref<grapichs::Enviroment> EnviromentMap = nullptr;
+		memory::Ref<grapichs::Pipeline> SkyboxPipeline = nullptr;
 	};
 
 	struct SceneData {
 		CameraData ActiveCameraData;
+		LightEnviromentData SceneLightEnviromentData;
 		bool DrawDebugShapes = false;
 	};
 
+	class Scene;
 	class SceneRenderer {
 	public:
-		SceneRenderer();
+		SceneRenderer(Scene* scene);
 		SceneData& GetSceneData() { return _sceneData; }
 		RenderHandle AddDrawnable(EntityID entityID);
 		Drawnable& GetDrawnable(const RenderHandle& handle);
@@ -65,5 +73,8 @@ namespace ae {
 			const uint32_t MAX_TRIANGLES = 10000;
 		} _debugDrawData;
 		void DrawDebugScene(vk::CommandBuffer cmd);
+		void CollectSceneLightEnviromentData();
+
+		Scene* _scene = nullptr;
 	};
 }

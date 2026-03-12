@@ -4,7 +4,7 @@
 
 namespace ae {
 	Scene::Scene(const std::string& name) : _name(name) {
-		_sceneRenderer = memory::MakeScope<SceneRenderer>();
+		_sceneRenderer = memory::MakeScope<SceneRenderer>(this);
 		_scenePhysics = memory::MakeScope<ScenePhysics>(this);
 	}
 
@@ -38,10 +38,10 @@ namespace ae {
 		return newEntity.Get();
 	}
 
-	Entity& Scene::GetEntity(EntityID id) {
+	Entity* Scene::GetEntity(EntityID id) {
 		auto it = _entities.find(id);
 		if (it != _entities.end()) {
-			return *it->second;
+			return it->second.Get();
 		}
 		throw std::runtime_error("Entity with ID " + std::to_string(id) + " not found.");
 	}

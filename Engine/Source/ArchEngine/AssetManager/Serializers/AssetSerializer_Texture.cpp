@@ -19,6 +19,7 @@ namespace ae {
 
 	bool AssetSerializer_Enviroment::TryLoadData(const AssetMetadata& metadata, memory::Ref<Asset>& asset)
 	{
+        PROFILE_SCOPE("Enviroment texture loading: " + metadata.FilePath.string());
         int width, height, channels;
         void* data = nullptr;
         BitmapFormat format;

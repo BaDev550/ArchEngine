@@ -15,6 +15,8 @@
 #include "Entities/EntityProp_Table.h"
 #include "Entities/EntityProp_Chair.h"
 #include "Entities/Entity_Box.h"
+#include "Entities/Entity_BasicModel.h"
+#include <ArchEngine/Objects/Entity_Skybox.h>
 
 #include "ArchEngine/GUI/DebugOverlay.h"
 
@@ -39,9 +41,10 @@ public:
 		_prop_table->SetRotation({ -90.0, 0.0f, 0.0f });
 		_prop_table->SetPosition({ 0.0f, -0.5f, 0.0f });
 
+		_defaultScene->CreateEntity<Entity_Box>();
 		_chair_01 = _defaultScene->CreateEntity<EntityProp_Chair>();
 		_chair_02 = _defaultScene->CreateEntity<EntityProp_Chair>();
-		_defaultScene->CreateEntity<Entity_Box>();
+		_skybox_01 = _defaultScene->CreateEntity<Entity_Skybox>("Resources/Textures/skybox.hdr");
 	}
 
 	virtual void ApplicationUpdate() override {
@@ -144,6 +147,7 @@ private:
 	memory::Ref<EntityProp_Chair> _chair_01 = nullptr;
 	memory::Ref<EntityProp_Chair> _chair_02 = nullptr;
 	memory::Ref<EntityProp_Table> _prop_table = nullptr;
+	memory::Ref<Entity_Skybox> _skybox_01 = nullptr;
 
 	bool _cursorEnabled = false;
 	GUI::DebugOverlay _debugOverlay;

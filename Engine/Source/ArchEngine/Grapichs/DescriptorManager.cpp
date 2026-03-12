@@ -30,27 +30,40 @@ namespace ae::grapichs {
 
 	void DescriptorManager::WriteInput(std::string_view name, memory::Ref<Buffer> buffer) {
 		const RenderPassInputDeclaration* decl = GetInputDeclaration(name);
-		if (decl)
+		if (decl) {
 			_storedResources[decl->Set][decl->Binding].Set(buffer);
+			std::fill(_dirtyFrames.begin(), _dirtyFrames.end(), true);
+		}
 	}
 
 	void DescriptorManager::WriteInput(std::string_view name, memory::Ref<Texture2D> texture) {
 		const RenderPassInputDeclaration* decl = GetInputDeclaration(name);
-		if (decl)
+		if (decl) {
 			_storedResources[decl->Set][decl->Binding].Set(texture);
+			std::fill(_dirtyFrames.begin(), _dirtyFrames.end(), true);
+		}
 	}
 
 	void DescriptorManager::WriteInput(std::string_view name, memory::Ref<TextureCube> texture) {
 		const RenderPassInputDeclaration* decl = GetInputDeclaration(name);
-		if (decl)
+		if (decl) {
 			_storedResources[decl->Set][decl->Binding].Set(texture);
+			std::fill(_dirtyFrames.begin(), _dirtyFrames.end(), true);
+		}
 	}
 
 	void DescriptorManager::Bake() {
-		for (uint32_t frameIndex = 0; frameIndex < Renderer::MaxFramesInFlight; frameIndex++) {
-			for (auto& [setIndex, bindings] : _storedResources) {
-				_writes.clear();
 
+	}
+
+	void DescriptorManager::BindSets(vk::CommandBuffer cmd, vk::PipelineLayout layout) {
+		uint32_t frameIndex = Renderer::GetFrameIndex();
+
+		bool isDirty = _dirtyFrames.empty() ? true : _dirtyFrames[frameIndex];
+
+		for (auto& [setIndex, bindings] : _storedResources) {
+			if (isDirty) {
+				_writes.clear();
 				for (auto& [bindingIndex, resource] : bindings) {
 					auto& currentData = resource._data[0];
 					if (!currentData) continue;
@@ -71,7 +84,7 @@ namespace ae::grapichs {
 						imageWrite.descriptorType = vk::DescriptorType::eCombinedImageSampler;
 						imageWrite.dstBinding = bindingIndex;
 						imageWrite.dstSet = _descriptorSets[frameIndex][setIndex];
-						imageWrite.pImageInfo = &currentData.As<Texture>()->GetImageDescriptorInfo();
+						imageWrite.pImageInfo = &currentData.As<Texture2D>()->GetImageDescriptorInfo();
 						imageWrite.descriptorCount = 1;
 						_writes.push_back(imageWrite);
 						break;
@@ -81,7 +94,7 @@ namespace ae::grapichs {
 						imageWrite.descriptorType = vk::DescriptorType::eCombinedImageSampler;
 						imageWrite.dstBinding = bindingIndex;
 						imageWrite.dstSet = _descriptorSets[frameIndex][setIndex];
-						imageWrite.pImageInfo = &currentData.As<Texture>()->GetImageDescriptorInfo();
+						imageWrite.pImageInfo = &currentData.As<TextureCube>()->GetImageDescriptorInfo();
 						imageWrite.descriptorCount = 1;
 						_writes.push_back(imageWrite);
 						break;
@@ -93,12 +106,7 @@ namespace ae::grapichs {
 					_context.GetDevice().updateDescriptorSets(static_cast<uint32_t>(_writes.size()), _writes.data(), 0, nullptr);
 				}
 			}
-		}
-	}
 
-	void DescriptorManager::BindSets(vk::CommandBuffer cmd, vk::PipelineLayout layout) {
-		uint32_t frameIndex = Renderer::GetFrameIndex();
-		for (auto& [setIndex, bindings] : _storedResources) {
 			cmd.bindDescriptorSets(
 				vk::PipelineBindPoint::eGraphics,
 				layout,
@@ -107,6 +115,8 @@ namespace ae::grapichs {
 				&_descriptorSets[frameIndex][setIndex],
 				0, nullptr);
 		}
+		if (!_dirtyFrames.empty())
+			_dirtyFrames[frameIndex] = false;
 	}
 
 	void DescriptorManager::Invalidate() {
@@ -150,6 +160,8 @@ namespace ae::grapichs {
 			for (uint32_t i = 0; i < Renderer::MaxFramesInFlight; i++)
 				_descriptorSets[i][set] = Allocate(layout);
 		}
+		_dirtyFrames.clear();
+		_dirtyFrames.resize(Renderer::MaxFramesInFlight, true);
 	}
 
 	vk::DescriptorSet DescriptorManager::Allocate(vk::DescriptorSetLayout layout) {

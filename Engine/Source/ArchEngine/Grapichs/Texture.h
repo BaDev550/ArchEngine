@@ -59,6 +59,7 @@ namespace ae::grapichs {
 		void CreateTextureImageView();
 		void CreateTextureSampler();
 
+		std::string _path;
 		vk::Image _image;
 		vk::DeviceMemory _imageMemory;
 		vk::ImageView _imageView;

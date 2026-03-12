@@ -63,11 +63,13 @@ namespace ae::grapichs {
         _frameStarted = false;
     }
 
-    void RenderAPI::DrawVertex(vk::CommandBuffer cmd, memory::Ref<Buffer>& vertexBuffer, uint32_t vertexCount)
+    void RenderAPI::DrawVertex(vk::CommandBuffer cmd, memory::Ref<Buffer> vertexBuffer, uint32_t vertexCount)
     {
-        vk::Buffer vertexBuffers[] = { vertexBuffer->GetBuffer() };
-        vk::DeviceSize offsets[] = { 0 };
-		cmd.bindVertexBuffers(0, vertexBuffers, offsets);
+        if (vertexBuffer) {
+            vk::Buffer vertexBuffers[] = { vertexBuffer->GetBuffer() };
+            vk::DeviceSize offsets[] = { 0 };
+            cmd.bindVertexBuffers(0, vertexBuffers, offsets);
+        }
         cmd.draw(vertexCount, 1, 0, 0);
         _renderStats.DrawCalls++;
     }

@@ -11,6 +11,7 @@
 namespace ae::grapichs {
 	void Texture2D::LoadTexture(void* data, uint32_t width, uint32_t height, uint32_t channels)
 	{
+		PROFILE_SCOPE("Texture loading: " + _path);
 		_specs.Width = width;
 		_specs.Height = height;
 		uint32_t bytesPerPixel = GetFormatSize(_specs.Format);
@@ -110,7 +111,7 @@ namespace ae::grapichs {
 	}
 
 	Texture2D::Texture2D(const TextureSpecification& specs, const std::filesystem::path& path)
-		: _context(Application::Get()->GetWindow().GetRenderContext())
+		: _context(Application::Get()->GetWindow().GetRenderContext()), _path(path.string())
 	{
 		_specs = specs;
 		int width, height, channels;

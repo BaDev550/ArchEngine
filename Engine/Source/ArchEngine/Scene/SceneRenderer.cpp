@@ -3,11 +3,14 @@
 #include "ArchEngine/Grapichs/Renderer.h"
 #include "ArchEngine/Grapichs/DebugRenderer.h"
 #include "ArchEngine/Core/Application.h"
+#include "ArchEngine/Scene/Scene.h"
 #include <backends/imgui_impl_vulkan.h>
+
+#include "ArchEngine/Objects/Entity_Skybox.h"
 
 namespace ae {
 	using namespace grapichs;
-	SceneRenderer::SceneRenderer() {
+	SceneRenderer::SceneRenderer(Scene* scene) : _scene(scene) {
 		// Scene pipeline / renderpass
 		{
 			FramebufferSpecification sceneFramebufferSpecs{};
@@ -28,6 +31,14 @@ namespace ae {
 				(VkImageView)colorAttachment->GetImageView(),
 				VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
 			);
+		}
+		{
+			PipelineData skyboxPipelineData{};
+			skyboxPipelineData.Shader = Renderer::GetShaderLibrary().GetShader("SkyboxShader");
+			skyboxPipelineData.TargetFramebuffer = _sceneFramebuffer;
+			skyboxPipelineData.RenderData.DepthTestEnable = false;
+			skyboxPipelineData.RenderData.CullingEnable = false;
+			_sceneData.SceneLightEnviromentData.SkyboxPipeline = memory::Ref<grapichs::Pipeline>::Create(skyboxPipelineData);
 		}
 
 		// Scene buffers
@@ -82,12 +93,25 @@ namespace ae {
 	}
 
 	void SceneRenderer::RenderScene(const memory::Ref<grapichs::Camera>& cam, const std::unordered_map<EntityID, memory::Ref<Entity>>& entities) {
+		CollectSceneLightEnviromentData();
+
 		_sceneData.ActiveCameraData.View = cam->GetView();
 		_sceneData.ActiveCameraData.Projection = cam->GetProjection();
+		_sceneData.ActiveCameraData.Position = cam->GetPosition();
 		_cameraBuffer->Write(&_sceneData.ActiveCameraData);
+
+		if (auto& enviromentMap = _sceneData.SceneLightEnviromentData.EnviromentMap->GetEnvironmentMap()) {
+			_sceneRenderPass->SetInput("uSkyboxTexture", enviromentMap);
+		}
 
 		_sceneRenderPass->Begin();
 		vk::CommandBuffer cmd = grapichs::Renderer::GetCurrentCommandBuffer();
+
+		if (_sceneData.SceneLightEnviromentData.EnviromentMap) {
+			cmd.bindPipeline(vk::PipelineBindPoint::eGraphics, _sceneData.SceneLightEnviromentData.SkyboxPipeline->GetPipeline());
+			Renderer::DrawVertex(cmd, nullptr, 36);
+		}
+
 		cmd.bindPipeline(vk::PipelineBindPoint::eGraphics, _sceneRenderPass->GetPipeline()->GetPipeline());
 
 		for (auto& drawable : _drawnables) {
@@ -133,6 +157,21 @@ namespace ae {
 				0, sizeof(glm::mat4), &viewProj
 			);
 			grapichs::Renderer::DrawVertex(cmd, _debugDrawData.LineVertexBuffer, vertexCount);
+		}
+	}
+
+	void SceneRenderer::CollectSceneLightEnviromentData() {
+		{
+			auto skyBoxes = _scene->Group<Entity_Skybox>();
+			for (EntityID id : skyBoxes) {
+				if (Entity_Skybox* entity = dynamic_cast<Entity_Skybox*>(_scene->GetEntity(id))) {
+					memory::Ref<grapichs::Enviroment> map = AssetManager::GetAsset<grapichs::Enviroment>(entity->GetEnviromentMapHandle());
+					if (map) {
+						_sceneData.SceneLightEnviromentData.EnviromentMap = map;
+						break;
+					}
+				}
+			}
 		}
 	}
 }

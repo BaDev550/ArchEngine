@@ -67,7 +67,7 @@ namespace ae::grapichs {
 		_defaultRenderPass->End();
 	}
 
-	void Renderer::DrawVertex(vk::CommandBuffer cmd, memory::Ref<Buffer>& vertexBuffer, uint32_t vertexCount) {
+	void Renderer::DrawVertex(vk::CommandBuffer cmd, memory::Ref<Buffer> vertexBuffer, uint32_t vertexCount) {
 		g_renderAPI->DrawVertex(cmd, vertexBuffer, vertexCount);
 	}
 

@@ -14,8 +14,13 @@ layout(set = 0, binding = 0) uniform CameraData {
 	mat4 Proj;
 } uCamera;
 layout(location = 0) out vec2 vTexCoords;
+layout(location = 1) out vec3 vNormal;
+layout(location = 2) out vec3 vWorldPos;
 
 void main() {
+	vec4 worldPos = uPc.Transform * vec4(aPosition, 1.0);
 	vTexCoords = aTexCoords;
-	gl_Position = uCamera.Proj * uCamera.View * uPc.Transform * vec4(aPosition, 1.0);
+	vNormal = aNormal;
+	vWorldPos = worldPos.xyz;
+	gl_Position = uCamera.Proj * uCamera.View * worldPos;
 } 
