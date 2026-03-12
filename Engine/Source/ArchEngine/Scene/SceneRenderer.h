@@ -51,14 +51,13 @@ namespace ae {
 		RenderHandle AddDrawnable(EntityID entityID);
 		Drawnable& GetDrawnable(const RenderHandle& handle);
 		size_t GetDrawnableCount() const { return _drawnables.size(); }
-		VkDescriptorSet GetSceneOutputTexture() const { return _sceneOutTextureID; }
+		VkDescriptorSet GetSceneOutputTexture() const { return _sceneFramebuffer->GetAttachmentTexture(0)->GetImGuiTexture(); }
 		void RemoveAllDrawnables();
 		void RenderScene(const memory::Ref<grapichs::Camera>& cam, const std::unordered_map<EntityID, memory::Ref<Entity>>& entities);
 	private:
 		std::vector<Drawnable> _drawnables;
 		SceneData _sceneData;
 
-		VkDescriptorSet _sceneOutTextureID = nullptr;
 		memory::Ref<grapichs::Pipeline> _scenePipeline = nullptr;
 		memory::Ref<grapichs::RenderPass> _sceneRenderPass = nullptr;
 		memory::Ref<grapichs::Framebuffer> _sceneFramebuffer = nullptr;

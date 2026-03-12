@@ -7,6 +7,7 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 #include "TextureCube.h"
+#include <backends/imgui_impl_vulkan.h>
 
 namespace ae::grapichs {
 	void Texture2D::LoadTexture(void* data, uint32_t width, uint32_t height, uint32_t channels)
@@ -101,6 +102,13 @@ namespace ae::grapichs {
 			.unnormalizedCoordinates = false
 		};
 		_imageSampler = _context.GetDevice().createSampler(samplerCreateInfo);
+		if (ImGui::GetCurrentContext()) {
+			_imguiImage = ImGui_ImplVulkan_AddTexture(
+				(VkSampler)_imageSampler,
+				(VkImageView)_imageView,
+				VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+			);
+		}
 	}
 
 	Texture2D::Texture2D(const TextureSpecification& specs)

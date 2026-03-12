@@ -25,13 +25,8 @@ namespace ae {
 			_scenePipeline = memory::Ref<Pipeline>::Create(scenePipelineData);
 
 			_sceneRenderPass = memory::Ref<RenderPass>::Create(_scenePipeline);
-			auto colorAttachment = _sceneFramebuffer->GetAttachmentTexture(0);
-			_sceneOutTextureID = ImGui_ImplVulkan_AddTexture(
-				(VkSampler)colorAttachment->GetSampler(),
-				(VkImageView)colorAttachment->GetImageView(),
-				VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
-			);
 		}
+
 		{
 			PipelineData skyboxPipelineData{};
 			skyboxPipelineData.Shader = Renderer::GetShaderLibrary().GetShader("SkyboxShader");

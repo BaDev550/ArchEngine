@@ -170,7 +170,9 @@ namespace ae {
 
         for (const auto& ds : bindings) {
             shaderInfo.ReflectData[ds->set][ds->binding] = { ds->name, utils::GetResourceType(ds), ds->count };
+#ifdef RENDERER_LOG_SHADER_COMPILER
             Logger_renderer::info("Found input/buffer n:{}, b:{}", ds->name, ds->binding);
+#endif
 
 			auto& bufferInfo = shaderInfo.ShaderBuffers[ds->name];
 			bufferInfo.Name = ds->name;
@@ -186,7 +188,9 @@ namespace ae {
                     member.offset
                 );
                 bufferInfo.Uniforms[member.name] = uniform;
+#ifdef RENDERER_LOG_SHADER_COMPILER
                 Logger_renderer::info("Found uniform n:{}, o:{}, s:{}", member.name, member.offset, member.size);
+#endif
 			}
         }
 
@@ -217,7 +221,9 @@ namespace ae {
 
                     shaderInfo.AttribDescriptions.emplace_back(attrib);
                     stride += size;
+#ifdef RENDERER_LOG_SHADER_COMPILER
                     Logger_renderer::info("Found input n:{}, l:{}", input->name, attrib.location);
+#endif
                 }
                 shaderInfo.BindingDescription.binding = 0;
                 shaderInfo.BindingDescription.stride = stride;
