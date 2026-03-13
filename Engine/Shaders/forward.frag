@@ -8,12 +8,48 @@ layout(location = 2) in vec3 vWorldPos;
 #include "common/buffers.glslh"
 #include "common/resources.glslh"
 
+vec3 lightPos = vec3(-2.0f, -4.0f, -1.0f);
+
+float ShadowCalculation(vec4 fragPosLightSpace)
+{
+    vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
+    projCoords = projCoords * 0.5 + 0.5;
+
+    float closestDepth = texture(uShadowMapTexture, projCoords.xy).r; 
+    float currentDepth = projCoords.z;
+
+    vec3 normal = normalize(vNormal);
+    vec3 lightDir = normalize(lightPos - vWorldPos);
+    float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.05);
+
+    float shadow = 0.0;
+    vec2 texelSize = 1.0 / textureSize(uShadowMapTexture, 0);
+    for(int x = -1; x <= 1; ++x)
+    {
+        for(int y = -1; y <= 1; ++y)
+        {
+            float pcfDepth = texture(uShadowMapTexture, projCoords.xy + vec2(x, y) * texelSize).r; 
+            shadow += currentDepth - bias > pcfDepth  ? 1.0 : 0.0;        
+        }    
+    }
+    shadow /= 9.0;
+    
+    if(projCoords.z > 1.0)
+        shadow = 0.0;
+        
+    return shadow;
+}
+
 void main() {
     vec4 albedoColor = texture(uAlbedoTexture, vTexCoords);
-    vec3 viewDir = normalize(vWorldPos - uCamera.Position);
     vec3 normal = normalize(vNormal);
-    vec3 reflectDir = reflect(viewDir, normal);
-    vec4 envColor = texture(uSkyboxTexture, reflectDir);
+    vec3 lightDir = normalize(lightPos - vWorldPos);
+
+    vec4 fragPosLightSpace = uCamera.LightSpaceMatrix * vec4(vWorldPos, 1.0);
+    float shadow = ShadowCalculation(fragPosLightSpace);
+
+    float ambient = 0.02;
+    vec3 finalLighting = (ambient + (1.0 - shadow)) * albedoColor.rgb;
 
     FragColor = albedoColor;
 }

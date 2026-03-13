@@ -9,6 +9,7 @@ namespace ae::grapichs {
 	struct RenderData {
 		memory::Scope<ShaderLibrary> ShaderLibrary = nullptr;
 		memory::Ref<Texture2D> WhiteTexture = nullptr;
+		memory::Ref<Enviroment> BlackEnviroment = nullptr;
 		memory::Ref<TextureCube> BlackCubeMap = nullptr;
 	} s_data;
 	static RenderAPI* g_renderAPI = nullptr;
@@ -37,12 +38,14 @@ namespace ae::grapichs {
 			{DataBuffer(&blackCubemapData, sizeof(uint32_t))}
 		};
 		s_data.BlackCubeMap = memory::Ref<TextureCube>::Create(specs, blackCubeMapData);
+		s_data.BlackEnviroment = memory::Ref<Enviroment>::Create(s_data.BlackCubeMap);
 
 		PROFILE_SCOPE("Renderer");
 		Renderer::GetShaderLibrary().AddShader("ForwardShader","Shaders/forward.vert", "Shaders/forward.frag");
 		Renderer::GetShaderLibrary().AddShader("DebugShader",  "Shaders/debug.vert",   "Shaders/debug.frag");
 		Renderer::GetShaderLibrary().AddShader("SkyboxShader", "Shaders/skybox.vert",  "Shaders/skybox.frag");
-
+		Renderer::GetShaderLibrary().AddShader("ShadowShader", "Shaders/shadow.vert",  "Shaders/shadow.frag");
+		
 		debug::DebugRenderer::Init();
 		{
 			PipelineData pipelineData{};
@@ -59,6 +62,7 @@ namespace ae::grapichs {
 		_defaultPipeline = nullptr;
 		s_data.ShaderLibrary = nullptr;
 		s_data.WhiteTexture = nullptr;
+		s_data.BlackEnviroment = nullptr;
 		s_data.BlackCubeMap = nullptr;
 		delete g_renderAPI;
 	}
@@ -110,6 +114,10 @@ namespace ae::grapichs {
 
 	memory::Ref<TextureCube>& Renderer::GetBlackCubeTexture() {
 		return s_data.BlackCubeMap;
+	}
+
+	memory::Ref<Enviroment>& Renderer::GetBlackEnviroment() {
+		return s_data.BlackEnviroment;
 	}
 
 	vk::CommandBuffer Renderer::GetCurrentCommandBuffer() {

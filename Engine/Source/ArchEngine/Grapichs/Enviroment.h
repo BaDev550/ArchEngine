@@ -9,7 +9,7 @@ namespace ae::grapichs {
 		Enviroment(const memory::Ref<TextureCube>& enviromentMap) : _environmentMap(enviromentMap) {}
 
 		void SetEnviromentMap(memory::Ref<TextureCube>& environmentMap) { _environmentMap = environmentMap; }
-		const memory::Ref<TextureCube>& GetEnvironmentMap() const { return _environmentMap; }
+		memory::Ref<TextureCube>& GetEnvironmentMap() { return _environmentMap; }
 
 		static AssetType GetStaticAssetType() { return AssetType::EnviromentMap; }
 		virtual AssetType GetAssetType() const { return GetStaticAssetType(); }

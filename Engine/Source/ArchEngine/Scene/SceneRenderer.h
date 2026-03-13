@@ -15,6 +15,7 @@ namespace ae {
 		EntityID OwnerID = 0;
 		AssetHandle StaticMeshHandle = INVALID_ASSET_HANDLE;
 		bool IsVisible = true;
+		bool CastShadow = true;
 
 		Drawnable(EntityID ownerID) : OwnerID(ownerID) {}
 		void ImportStaticMesh(const std::string& modelPath) {
@@ -29,6 +30,7 @@ namespace ae {
 	struct CameraData {
 		glm::mat4 View;
 		glm::mat4 Projection;
+		glm::mat4 LightSpace;
 		glm::vec3 Position;
 	};
 
@@ -52,6 +54,7 @@ namespace ae {
 		Drawnable& GetDrawnable(const RenderHandle& handle);
 		size_t GetDrawnableCount() const { return _drawnables.size(); }
 		VkDescriptorSet GetSceneOutputTexture() const { return _sceneFramebuffer->GetAttachmentTexture(0)->GetImGuiTexture(); }
+		memory::Ref<grapichs::Framebuffer>& GetDirectionalLightShadowMapFramebuffer() { return _directionalLightShadowMap.ShadowFramebuffer; }
 		void RemoveAllDrawnables();
 		void RenderScene(const memory::Ref<grapichs::Camera>& cam, const std::unordered_map<EntityID, memory::Ref<Entity>>& entities);
 	private:
@@ -62,6 +65,13 @@ namespace ae {
 		memory::Ref<grapichs::RenderPass> _sceneRenderPass = nullptr;
 		memory::Ref<grapichs::Framebuffer> _sceneFramebuffer = nullptr;
 
+		struct DirectionalLightShadow {
+			memory::Ref<grapichs::Pipeline> ShadowPipeline = nullptr;
+			memory::Ref<grapichs::RenderPass> ShadowRenderPass = nullptr;
+			memory::Ref<grapichs::Framebuffer> ShadowFramebuffer = nullptr;
+			const uint32_t ShadowMapResolution = 1024;
+		} _directionalLightShadowMap;
+
 		memory::Ref<grapichs::Buffer> _cameraBuffer = nullptr;
 
 		struct DebugDrawData {
@@ -71,6 +81,7 @@ namespace ae {
 			const uint32_t MAX_LINES = 10000;
 			const uint32_t MAX_TRIANGLES = 10000;
 		} _debugDrawData;
+		void DrawEntities(vk::CommandBuffer cmd, memory::Ref<grapichs::RenderPass>& pass, const std::unordered_map<EntityID, memory::Ref<Entity>>& entities, bool shadowPass = false);
 		void DrawDebugScene(vk::CommandBuffer cmd);
 		void CollectSceneLightEnviromentData();
 

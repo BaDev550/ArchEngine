@@ -36,10 +36,15 @@ namespace ae::GUI {
 					ImGui::Text("ArchEngine Debug overlay panel");
 					ImGui::Separator();
 
-					if (ImGui::CollapsingHeader("Render stats")) {
+					if (ImGui::CollapsingHeader("Renderer")) {
 						ImGui::Text("FPS: %.1f", 1.0f / Application::Get()->GetDeltaTime());
 						ImGui::Text("Draw Calls: %d", Renderer::GetDrawCallCount());
 						ImGui::Text("Frame Time: %.3f ms", 1000.0f / ImGui::GetIO().Framerate);
+
+						if (ImGui::CollapsingHeader("Shadow map")) {
+							auto image = scene->GetRenderer().GetDirectionalLightShadowMapFramebuffer()->GetDepthTexture()->GetImGuiTexture();
+							ImGui::Image((ImTextureID)(VkDescriptorSet)image, ImVec2(200, 200));
+						}
 					}
 					if (ImGui::CollapsingHeader("Scene Hierarchy")) {
 						if (ImGui::CollapsingHeader("Create Entity")) {
@@ -63,6 +68,11 @@ namespace ae::GUI {
 							ImGui::DragFloat3("Position", glm::value_ptr(transform.Position), 0.1f);
 							if (ImGui::DragFloat3("Rotation", glm::value_ptr(euler), 0.5f)) { transform.SetEulerRotation(euler);}
 							ImGui::DragFloat3("Scale", glm::value_ptr(transform.Scale), 0.1f);
+							if (_selectedEntity->IsDrawnable()) {
+								auto& drawnable = _selectedEntity->GetDrawnable();
+								ImGui::Checkbox("Is Visible", &drawnable.IsVisible);
+								ImGui::Checkbox("Cast Shadow", &drawnable.CastShadow);
+							}
 						}
 					}
 					if (ImGui::CollapsingHeader("Asset Manager")) {

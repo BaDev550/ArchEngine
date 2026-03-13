@@ -27,6 +27,25 @@ namespace ae {
 			_sceneRenderPass = memory::Ref<RenderPass>::Create(_scenePipeline);
 		}
 
+		// Shadow pass + framebuffer
+		{
+			FramebufferSpecification framebufferSpecs{};
+			framebufferSpecs.Attachments = { vk::Format::eD32Sfloat };
+			framebufferSpecs.Width = _directionalLightShadowMap.ShadowMapResolution;
+			framebufferSpecs.Height = _directionalLightShadowMap.ShadowMapResolution;
+			framebufferSpecs.ClearColor = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+			framebufferSpecs.DepthClearValue = 1.0f;
+			_directionalLightShadowMap.ShadowFramebuffer = memory::Ref<Framebuffer>::Create(framebufferSpecs);
+
+			PipelineData pipelineData{};
+			pipelineData.Shader = Renderer::GetShaderLibrary().GetShader("ShadowShader");
+			pipelineData.RenderData.CullingEnable = true;
+			pipelineData.RenderData.DepthTestEnable = true;
+			pipelineData.TargetFramebuffer = _directionalLightShadowMap.ShadowFramebuffer;
+			_directionalLightShadowMap.ShadowPipeline = memory::Ref<Pipeline>::Create(pipelineData);
+			_directionalLightShadowMap.ShadowRenderPass = memory::Ref<RenderPass>::Create(_directionalLightShadowMap.ShadowPipeline);
+		}
+
 		// Skybox pipeline
 		{
 			PipelineData skyboxPipelineData{};
@@ -35,6 +54,7 @@ namespace ae {
 			skyboxPipelineData.RenderData.DepthTestEnable = false;
 			skyboxPipelineData.RenderData.CullingEnable = false;
 			_sceneData.SceneLightEnviromentData.SkyboxPipeline = memory::Ref<grapichs::Pipeline>::Create(skyboxPipelineData);
+			_sceneData.SceneLightEnviromentData.EnviromentMap = Renderer::GetBlackEnviroment();
 		}
 
 		// Scene buffers
@@ -46,6 +66,9 @@ namespace ae {
 			);
 			_cameraBuffer->Map();
 			_sceneRenderPass->SetInput("uCamera", _cameraBuffer);
+			_sceneRenderPass->SetInput("uSkyboxTexture", _sceneData.SceneLightEnviromentData.EnviromentMap->GetEnvironmentMap());
+			_sceneRenderPass->SetInput("uShadowMapTexture", _directionalLightShadowMap.ShadowFramebuffer->GetDepthTexture());
+			_directionalLightShadowMap.ShadowRenderPass->SetInput("uCamera", _cameraBuffer);
 		}
 
 		// Debug data buffers / pipeline
@@ -89,27 +112,43 @@ namespace ae {
 	}
 
 	void SceneRenderer::RenderScene(const memory::Ref<grapichs::Camera>& cam, const std::unordered_map<EntityID, memory::Ref<Entity>>& entities) {
+		vk::CommandBuffer cmd = grapichs::Renderer::GetCurrentCommandBuffer();
+		static glm::vec3 lightPos = glm::vec3(-2.0f, -4.0f, -1.0f);
+
 		CollectSceneLightEnviromentData();
+
+		glm::mat4 lightView = glm::lookAt(lightPos,
+			glm::vec3(0.0f, 0.0f, 0.0f),
+			glm::vec3(0.0f, 1.0f, 0.0f));
+		float near_plane = 1.0f, far_plane = 7.5f;
+		glm::mat4 lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
 
 		_sceneData.ActiveCameraData.View = cam->GetView();
 		_sceneData.ActiveCameraData.Projection = cam->GetProjection();
 		_sceneData.ActiveCameraData.Position = cam->GetPosition();
+		_sceneData.ActiveCameraData.LightSpace = lightProjection * lightView;
 		_cameraBuffer->Write(&_sceneData.ActiveCameraData);
 
-		bool hasEnviromentMap = _sceneData.SceneLightEnviromentData.EnviromentMap;
-		auto& enviromentMap = hasEnviromentMap ? _sceneData.SceneLightEnviromentData.EnviromentMap->GetEnvironmentMap() : Renderer::GetBlackCubeTexture();
-		_sceneRenderPass->SetInput("uSkyboxTexture", enviromentMap);
+		_directionalLightShadowMap.ShadowRenderPass->Begin();
+		DrawEntities(cmd, _directionalLightShadowMap.ShadowRenderPass, entities, true);
+		_directionalLightShadowMap.ShadowRenderPass->End();
 
 		_sceneRenderPass->Begin();
-		vk::CommandBuffer cmd = grapichs::Renderer::GetCurrentCommandBuffer();
 
-		if (hasEnviromentMap) {
-			cmd.bindPipeline(vk::PipelineBindPoint::eGraphics, _sceneData.SceneLightEnviromentData.SkyboxPipeline->GetPipeline());
-			Renderer::DrawVertex(cmd, nullptr, 36);
-		}
+		_sceneRenderPass->SetInput("uSkyboxTexture", _sceneData.SceneLightEnviromentData.EnviromentMap->GetEnvironmentMap());
+		cmd.bindPipeline(vk::PipelineBindPoint::eGraphics, _sceneData.SceneLightEnviromentData.SkyboxPipeline->GetPipeline());
+		Renderer::DrawVertex(cmd, nullptr, 36);
 
-		cmd.bindPipeline(vk::PipelineBindPoint::eGraphics, _sceneRenderPass->GetPipeline()->GetPipeline());
+		DrawEntities(cmd, _sceneRenderPass, entities);
 
+		if (_sceneData.DrawDebugShapes)
+			DrawDebugScene(cmd);
+		grapichs::debug::DebugRenderer::Update(Application::Get()->GetDeltaTime());
+		_sceneRenderPass->End();
+	}
+
+	void SceneRenderer::DrawEntities(vk::CommandBuffer cmd, memory::Ref<grapichs::RenderPass>& pass, const std::unordered_map<EntityID, memory::Ref<Entity>>& entities, bool shadowPass) {
+		cmd.bindPipeline(vk::PipelineBindPoint::eGraphics, pass->GetPipeline()->GetPipeline());
 		for (auto& drawable : _drawnables) {
 			if (!drawable.IsVisible)
 				continue;
@@ -119,14 +158,14 @@ namespace ae {
 				const auto& entity = entityIt->second;
 				memory::Ref<grapichs::StaticMesh> staticMesh = AssetManager::GetAsset<grapichs::StaticMesh>(drawable.StaticMeshHandle);
 				memory::Ref<grapichs::MeshSource> meshSource = AssetManager::GetAsset<grapichs::MeshSource>(staticMesh->GetMeshSource());
-				grapichs::Renderer::DrawStaticMeshEntityWithMaterial(_sceneRenderPass, cmd, meshSource, staticMesh, entity->GetTransformMatrix());
+				if (shadowPass && drawable.CastShadow) {
+					grapichs::Renderer::DrawStaticMeshEntity(pass, cmd, meshSource, staticMesh, entity->GetTransformMatrix());
+				}
+				else if (!shadowPass) {
+					grapichs::Renderer::DrawStaticMeshEntityWithMaterial(pass, cmd, meshSource, staticMesh, entity->GetTransformMatrix());
+				}
 			}
 		}
-
-		if (_sceneData.DrawDebugShapes)
-			DrawDebugScene(cmd);
-		grapichs::debug::DebugRenderer::Update(Application::Get()->GetDeltaTime());
-		_sceneRenderPass->End();
 	}
 
 	void SceneRenderer::DrawDebugScene(vk::CommandBuffer cmd)

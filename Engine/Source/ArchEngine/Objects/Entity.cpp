@@ -17,6 +17,10 @@ namespace ae {
 		SetRenderHandle(GetScene()->GetRenderer().AddDrawnable(GetID()));
 	}
 
+	bool Entity::IsDrawnable() {
+		return _renderHandle.IsValid();
+	}
+
 	void Entity::RegisterAsDrawnable(const std::string& modelPath) {
 		RegisterAsDrawnable();
 		GetDrawnable().ImportStaticMesh(modelPath);

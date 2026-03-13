@@ -204,6 +204,7 @@ namespace ae::grapichs {
 		std::vector<vk::RenderingAttachmentInfo> colorAttachments(activeAttachmentCount);
 		vk::RenderingAttachmentInfo depthAttachments{};
 		vk::Extent2D extent{ framebuffer->GetWidth(), framebuffer->GetHeight() };
+        bool hasColorAttachment = activeAttachmentCount > 0;
 		bool hasDepthBuffer = framebuffer->DoesFramebufferHasDepthAttachment();
 
 		if (hasDepthBuffer) {
@@ -235,8 +236,8 @@ namespace ae::grapichs {
 		vk::RenderingInfo renderingInfo{};
 		renderingInfo.renderArea = vk::Rect2D({0, 0}, extent);
 		renderingInfo.layerCount = 1;
-		renderingInfo.colorAttachmentCount = static_cast<uint32_t>(colorAttachments.size());
-		renderingInfo.pColorAttachments = colorAttachments.data();
+		renderingInfo.colorAttachmentCount = hasColorAttachment ? static_cast<uint32_t>(colorAttachments.size()) : 0;
+		renderingInfo.pColorAttachments = hasColorAttachment ? colorAttachments.data() : nullptr;
 		renderingInfo.pDepthAttachment = hasDepthBuffer ? &depthAttachments : nullptr;
         _descriptorManager->BindSets(cmd, _pipeline->GetPipelineLayout());
         
@@ -292,6 +293,17 @@ namespace ae::grapichs {
                     colorTexture->GetImage(),
                     colorTexture->GetFormat(),
                     vk::ImageLayout::eColorAttachmentOptimal,
+                    vk::ImageLayout::eShaderReadOnlyOptimal,
+                    1
+                );
+            }
+            if (framebuffer->DoesFramebufferHasDepthAttachment()) {
+                const memory::Ref<Texture2D>& depthTexture = framebuffer->GetDepthTexture();
+                Utils::ImageMemBarrier(
+                    cmd,
+                    depthTexture->GetImage(),
+                    depthTexture->GetFormat(),
+                    vk::ImageLayout::eDepthStencilAttachmentOptimal,
                     vk::ImageLayout::eShaderReadOnlyOptimal,
                     1
                 );

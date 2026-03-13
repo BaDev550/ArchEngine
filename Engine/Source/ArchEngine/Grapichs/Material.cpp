@@ -61,8 +61,12 @@ namespace ae::grapichs {
             //for (uint32_t i = 0; i < Renderer::MaxFramesInFlight; i++) {
             //    _descriptorSets[i] = _descriptorManager->Allocate(layout);
             //}
-
+            
             for (const auto& [name, decl] : _descriptorManager->GetInputDeclarations()) {
+                if (decl.Set != MATERIAL_DESCRIPTOR_LAYOUT_SET_INDEX) {
+                    continue;
+                }
+
                 if (decl.Type == ShaderReflectionDataType::Sampler2D) {
                     _descriptorManager->WriteInput(name, Renderer::GetWhiteTexture());
                 }

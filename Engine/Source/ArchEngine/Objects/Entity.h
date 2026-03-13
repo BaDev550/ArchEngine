@@ -77,6 +77,7 @@ namespace ae {
 		Drawnable& GetDrawnable();
 		PhysicsBody& GetPhysicsBody();
 		bool HasPhysicsBody();
+		bool IsDrawnable();
 
 		virtual void OnCreate() {};
 		virtual void OnUpdate(float deltaTime) {};
