@@ -44,6 +44,9 @@ namespace ae {
             memory::Ref<grapichs::TextureCube> enviromentMap = memory::Ref<grapichs::TextureCube>::Create(specs, cubemapFaces);
             asset = memory::Ref<grapichs::Enviroment>::Create(enviromentMap);
             asset->SetAssetHandle(metadata.Handle);
+            for (auto& bitmap : cubemapFaces)
+                bitmap.Release();
+            equirectBitmap.Release();
             stbi_image_free(data);
             return true;
         }

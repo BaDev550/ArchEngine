@@ -9,6 +9,7 @@ namespace ae::grapichs {
 	struct RenderData {
 		memory::Scope<ShaderLibrary> ShaderLibrary = nullptr;
 		memory::Ref<Texture2D> WhiteTexture = nullptr;
+		memory::Ref<TextureCube> BlackCubeMap = nullptr;
 	} s_data;
 	static RenderAPI* g_renderAPI = nullptr;
 	static uint32_t g_frameIndex = 0;
@@ -19,12 +20,23 @@ namespace ae::grapichs {
 		s_data.ShaderLibrary = memory::MakeScope<ShaderLibrary>();
 		g_renderAPI = new RenderAPI();
 
-		TextureSpecification whiteTextureSpecs{};
-		whiteTextureSpecs.Width = 1;
-		whiteTextureSpecs.Height = 1;
-		whiteTextureSpecs.Format = vk::Format::eR8G8B8A8Srgb;
+		TextureSpecification specs{};
+		specs.Width = 1;
+		specs.Height = 1;
+		specs.Format = vk::Format::eR8G8B8A8Unorm;
 		uint32_t whitePixelData = 0xffffffff;
-		s_data.WhiteTexture = memory::Ref<Texture2D>::Create(whiteTextureSpecs, DataBuffer(&whitePixelData, sizeof(uint32_t)));
+		s_data.WhiteTexture = memory::Ref<Texture2D>::Create(specs, DataBuffer(&whitePixelData, sizeof(uint32_t)));
+
+		uint32_t blackCubemapData = 0xff000000;
+		std::vector<Bitmap> blackCubeMapData = {
+			{DataBuffer(&blackCubemapData, sizeof(uint32_t))},
+			{DataBuffer(&blackCubemapData, sizeof(uint32_t))},
+			{DataBuffer(&blackCubemapData, sizeof(uint32_t))}, 
+			{DataBuffer(&blackCubemapData, sizeof(uint32_t))}, 
+			{DataBuffer(&blackCubemapData, sizeof(uint32_t))}, 
+			{DataBuffer(&blackCubemapData, sizeof(uint32_t))}
+		};
+		s_data.BlackCubeMap = memory::Ref<TextureCube>::Create(specs, blackCubeMapData);
 
 		PROFILE_SCOPE("Renderer");
 		Renderer::GetShaderLibrary().AddShader("ForwardShader","Shaders/forward.vert", "Shaders/forward.frag");
@@ -47,6 +59,7 @@ namespace ae::grapichs {
 		_defaultPipeline = nullptr;
 		s_data.ShaderLibrary = nullptr;
 		s_data.WhiteTexture = nullptr;
+		s_data.BlackCubeMap = nullptr;
 		delete g_renderAPI;
 	}
 
@@ -93,6 +106,10 @@ namespace ae::grapichs {
 
 	memory::Ref<Texture2D>& Renderer::GetWhiteTexture() {
 		return s_data.WhiteTexture;
+	}
+
+	memory::Ref<TextureCube>& Renderer::GetBlackCubeTexture() {
+		return s_data.BlackCubeMap;
 	}
 
 	vk::CommandBuffer Renderer::GetCurrentCommandBuffer() {

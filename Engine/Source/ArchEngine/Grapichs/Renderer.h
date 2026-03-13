@@ -27,6 +27,7 @@ namespace ae::grapichs {
 		static void DrawStaticMeshEntityWithMaterial(memory::Ref<RenderPass>& renderPass, vk::CommandBuffer cmd, memory::Ref<MeshSource>& meshSource, memory::Ref<StaticMesh>& staticMesh, const glm::mat4& transform);
 		static void CopyBuffer(memory::Ref<Buffer>& src, memory::Ref<Buffer>& dst, vk::DeviceSize size);
 
+		static memory::Ref<TextureCube>& GetBlackCubeTexture();
 		static memory::Ref<Texture2D>& GetWhiteTexture();
 		static vk::DescriptorSet GetFinalImageOfScene(memory::Ref<Scene>& scene);
 		static vk::CommandBuffer GetCurrentCommandBuffer();

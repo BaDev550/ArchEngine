@@ -27,6 +27,7 @@ namespace ae {
 			_sceneRenderPass = memory::Ref<RenderPass>::Create(_scenePipeline);
 		}
 
+		// Skybox pipeline
 		{
 			PipelineData skyboxPipelineData{};
 			skyboxPipelineData.Shader = Renderer::GetShaderLibrary().GetShader("SkyboxShader");
@@ -95,14 +96,14 @@ namespace ae {
 		_sceneData.ActiveCameraData.Position = cam->GetPosition();
 		_cameraBuffer->Write(&_sceneData.ActiveCameraData);
 
-		if (auto& enviromentMap = _sceneData.SceneLightEnviromentData.EnviromentMap->GetEnvironmentMap()) {
-			_sceneRenderPass->SetInput("uSkyboxTexture", enviromentMap);
-		}
+		bool hasEnviromentMap = _sceneData.SceneLightEnviromentData.EnviromentMap;
+		auto& enviromentMap = hasEnviromentMap ? _sceneData.SceneLightEnviromentData.EnviromentMap->GetEnvironmentMap() : Renderer::GetBlackCubeTexture();
+		_sceneRenderPass->SetInput("uSkyboxTexture", enviromentMap);
 
 		_sceneRenderPass->Begin();
 		vk::CommandBuffer cmd = grapichs::Renderer::GetCurrentCommandBuffer();
 
-		if (_sceneData.SceneLightEnviromentData.EnviromentMap) {
+		if (hasEnviromentMap) {
 			cmd.bindPipeline(vk::PipelineBindPoint::eGraphics, _sceneData.SceneLightEnviromentData.SkyboxPipeline->GetPipeline());
 			Renderer::DrawVertex(cmd, nullptr, 36);
 		}

@@ -63,7 +63,13 @@ namespace ae {
             initGetSetFuncs();
             memcpy(_data.Data, ptr, _data.Size);
         }
-        ~Bitmap() {
+        Bitmap(DataBuffer data) {
+            _data = data;
+            _w = 1;
+            _h = 1;
+            _comp = 4;
+        }
+        void Release() {
             if (_data)
                 _data.Release();
         }
