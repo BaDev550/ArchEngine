@@ -8,6 +8,7 @@
 #include "ArchEngine/Grapichs/Framebuffer.h"
 #include "ArchEngine/Grapichs/TextureCube.h"
 #include "ArchEngine/Grapichs/Enviroment.h"
+#include "ArchEngine/Grapichs/Light.h"
 #include "ArchEngine/AssetManager/AssetManager.h"
 
 namespace ae {
@@ -34,14 +35,25 @@ namespace ae {
 		glm::vec3 Position;
 	};
 
+	struct LightEnviromentUniformData {
+		grapichs::UniformBufferDirectionalLight UniformDirectionalLight;
+		grapichs::UniformBufferPointLights UniformPointLights;
+	};
+
 	struct LightEnviromentData {
+		grapichs::DirectionalLight DirectionalLight;
+		std::vector<grapichs::PointLight> PointLights;
+
 		memory::Ref<grapichs::Enviroment> EnviromentMap = nullptr;
 		memory::Ref<grapichs::Pipeline> SkyboxPipeline = nullptr;
+
+		uint32_t GetPointLightCount() const { return static_cast<uint32_t>(PointLights.size()); }
 	};
 
 	struct SceneData {
 		CameraData ActiveCameraData;
 		LightEnviromentData SceneLightEnviromentData;
+		LightEnviromentUniformData SceneLightUniformData;
 		bool DrawDebugShapes = false;
 	};
 
@@ -69,10 +81,12 @@ namespace ae {
 			memory::Ref<grapichs::Pipeline> ShadowPipeline = nullptr;
 			memory::Ref<grapichs::RenderPass> ShadowRenderPass = nullptr;
 			memory::Ref<grapichs::Framebuffer> ShadowFramebuffer = nullptr;
-			const uint32_t ShadowMapResolution = 1024;
+			const uint32_t ShadowMapResolution = 2048;
 		} _directionalLightShadowMap;
 
 		memory::Ref<grapichs::Buffer> _cameraBuffer = nullptr;
+		memory::Ref<grapichs::Buffer> _pointLightsBuffer = nullptr;
+		memory::Ref<grapichs::Buffer> _directionalLightBuffer = nullptr;
 
 		struct DebugDrawData {
 			memory::Ref<grapichs::Buffer> LineVertexBuffer;

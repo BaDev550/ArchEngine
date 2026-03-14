@@ -17,6 +17,7 @@
 #include "Entities/Entity_Box.h"
 #include "Entities/Entity_BasicModel.h"
 #include <ArchEngine/Objects/Entity_Skybox.h>
+#include <ArchEngine/Objects/Entity_DirectionalLight.h>
 
 #include "ArchEngine/GUI/DebugOverlay.h"
 
@@ -45,6 +46,7 @@ public:
 		_chair_01 = _defaultScene->CreateEntity<EntityProp_Chair>();
 		_chair_02 = _defaultScene->CreateEntity<EntityProp_Chair>();
 		_skybox_01 = _defaultScene->CreateEntity<Entity_Skybox>("Resources/Textures/skybox.hdr");
+		_defaultScene->CreateEntity<Entity_DirectionalLight>();
 	}
 
 	virtual void ApplicationUpdate() override {

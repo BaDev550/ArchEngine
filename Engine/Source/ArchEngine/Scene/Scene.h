@@ -39,7 +39,7 @@ namespace ae {
 		std::vector<EntityID> Group() const {
 			std::vector<EntityID> result;
 			for (const auto& [handle, e] : _entities) {
-				if (e.As<T>())
+				if (dynamic_cast<T*>(e._instance))
 					result.push_back(e->GetID());
 			}
 			return result;

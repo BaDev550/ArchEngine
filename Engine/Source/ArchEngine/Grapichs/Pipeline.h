@@ -8,6 +8,7 @@
 namespace ae::grapichs {
 	struct PipelineRenderData {
 		vk::PrimitiveTopology Topology = vk::PrimitiveTopology::eTriangleList;
+		vk::CullModeFlags CullMode = vk::CullModeFlagBits::eBack;
 		bool DepthTestEnable = true;
 		bool CullingEnable = true;
 	};

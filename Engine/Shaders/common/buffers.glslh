@@ -4,3 +4,30 @@ layout(set = 0, binding = 0) uniform CameraData {
     mat4 LightSpaceMatrix;
     vec3 Position;
 } uCamera;
+
+struct DirectionalLight {
+    vec3 Direction;
+    float Intensity;
+    vec3 Color;
+    float pad;
+};
+
+layout(std140, set = 0, binding = 1) uniform DirectionalLightData {
+    DirectionalLight Light;
+} uDirectionalLight;
+
+struct PointLight {
+	vec3 Position;
+    float pad0;
+    vec3 Color;
+	float Intensity;
+	float Radius;
+	float Falloff;
+    int CastsShadows;
+    float pad1;
+};
+
+layout(std140, set = 0, binding = 2) uniform PointLightData {
+    uint Count;
+    PointLight Lights[1000];
+} uPointLights;

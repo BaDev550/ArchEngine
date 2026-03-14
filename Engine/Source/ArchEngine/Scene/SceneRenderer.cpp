@@ -7,6 +7,7 @@
 #include <backends/imgui_impl_vulkan.h>
 
 #include "ArchEngine/Objects/Entity_Skybox.h"
+#include "ArchEngine/Objects/Entity_DirectionalLight.h"
 
 namespace ae {
 	using namespace grapichs;
@@ -41,6 +42,7 @@ namespace ae {
 			pipelineData.Shader = Renderer::GetShaderLibrary().GetShader("ShadowShader");
 			pipelineData.RenderData.CullingEnable = true;
 			pipelineData.RenderData.DepthTestEnable = true;
+			pipelineData.RenderData.CullMode = vk::CullModeFlagBits::eFront;
 			pipelineData.TargetFramebuffer = _directionalLightShadowMap.ShadowFramebuffer;
 			_directionalLightShadowMap.ShadowPipeline = memory::Ref<Pipeline>::Create(pipelineData);
 			_directionalLightShadowMap.ShadowRenderPass = memory::Ref<RenderPass>::Create(_directionalLightShadowMap.ShadowPipeline);
@@ -69,6 +71,21 @@ namespace ae {
 			_sceneRenderPass->SetInput("uSkyboxTexture", _sceneData.SceneLightEnviromentData.EnviromentMap->GetEnvironmentMap());
 			_sceneRenderPass->SetInput("uShadowMapTexture", _directionalLightShadowMap.ShadowFramebuffer->GetDepthTexture());
 			_directionalLightShadowMap.ShadowRenderPass->SetInput("uCamera", _cameraBuffer);
+
+			_pointLightsBuffer = memory::Ref<Buffer>::Create(
+				sizeof(UniformBufferPointLights),
+				vk::BufferUsageFlagBits::eUniformBuffer,
+				vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent
+			);
+			_pointLightsBuffer->Map();
+			_directionalLightBuffer = memory::Ref<Buffer>::Create(
+				sizeof(UniformBufferDirectionalLight),
+				vk::BufferUsageFlagBits::eUniformBuffer,
+				vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent
+			);
+			_directionalLightBuffer->Map();
+			_sceneRenderPass->SetInput("uPointLights", _pointLightsBuffer);
+			_sceneRenderPass->SetInput("uDirectionalLight", _directionalLightBuffer);
 		}
 
 		// Debug data buffers / pipeline
@@ -113,14 +130,22 @@ namespace ae {
 
 	void SceneRenderer::RenderScene(const memory::Ref<grapichs::Camera>& cam, const std::unordered_map<EntityID, memory::Ref<Entity>>& entities) {
 		vk::CommandBuffer cmd = grapichs::Renderer::GetCurrentCommandBuffer();
-		static glm::vec3 lightPos = glm::vec3(-2.0f, -4.0f, -1.0f);
 
 		CollectSceneLightEnviromentData();
 
-		glm::mat4 lightView = glm::lookAt(lightPos,
-			glm::vec3(0.0f, 0.0f, 0.0f),
-			glm::vec3(0.0f, 1.0f, 0.0f));
-		float near_plane = 1.0f, far_plane = 7.5f;
+		auto& pointLightsUniformData = _sceneData.SceneLightUniformData.UniformPointLights;
+		pointLightsUniformData.Count = _sceneData.SceneLightEnviromentData.GetPointLightCount();
+		if (pointLightsUniformData.Count > 0) {
+			std::memcpy(pointLightsUniformData.PointLights, _sceneData.SceneLightEnviromentData.PointLights.data(), sizeof(PointLight) * pointLightsUniformData.Count);
+			_pointLightsBuffer->Write(&pointLightsUniformData);
+		}
+		_directionalLightBuffer->Write(&_sceneData.SceneLightEnviromentData.DirectionalLight);
+
+		float near_plane = 0.1f, far_plane = 70.0f;
+		float lightDistance = 50.0f;
+		glm::vec3 lightDir = _sceneData.SceneLightEnviromentData.DirectionalLight.Direction;
+		glm::vec3 lightPos =  lightDir * lightDistance;
+		glm::mat4 lightView = glm::lookAt(lightPos, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 		glm::mat4 lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
 
 		_sceneData.ActiveCameraData.View = cam->GetView();
@@ -128,6 +153,7 @@ namespace ae {
 		_sceneData.ActiveCameraData.Position = cam->GetPosition();
 		_sceneData.ActiveCameraData.LightSpace = lightProjection * lightView;
 		_cameraBuffer->Write(&_sceneData.ActiveCameraData);
+		_sceneRenderPass->SetInput("uSkyboxTexture", _sceneData.SceneLightEnviromentData.EnviromentMap->GetEnvironmentMap());
 
 		_directionalLightShadowMap.ShadowRenderPass->Begin();
 		DrawEntities(cmd, _directionalLightShadowMap.ShadowRenderPass, entities, true);
@@ -135,7 +161,6 @@ namespace ae {
 
 		_sceneRenderPass->Begin();
 
-		_sceneRenderPass->SetInput("uSkyboxTexture", _sceneData.SceneLightEnviromentData.EnviromentMap->GetEnvironmentMap());
 		cmd.bindPipeline(vk::PipelineBindPoint::eGraphics, _sceneData.SceneLightEnviromentData.SkyboxPipeline->GetPipeline());
 		Renderer::DrawVertex(cmd, nullptr, 36);
 
@@ -205,6 +230,17 @@ namespace ae {
 						_sceneData.SceneLightEnviromentData.EnviromentMap = map;
 						break;
 					}
+				}
+			}
+		}
+		{
+			auto directionalLights = _scene->Group<Entity_DirectionalLight>();
+			for (EntityID id : directionalLights) {
+				if (auto* entity = dynamic_cast<Entity_DirectionalLight*>(_scene->GetEntity(id))) {
+					auto& lightHandle = entity->GetHandle();
+					lightHandle.Direction = glm::normalize(entity->GetTransform().GetEulerRotation());
+					_sceneData.SceneLightEnviromentData.DirectionalLight = lightHandle;
+					break;
 				}
 			}
 		}

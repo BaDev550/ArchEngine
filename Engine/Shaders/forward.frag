@@ -8,8 +8,6 @@ layout(location = 2) in vec3 vWorldPos;
 #include "common/buffers.glslh"
 #include "common/resources.glslh"
 
-vec3 lightPos = vec3(-2.0f, -4.0f, -1.0f);
-
 float ShadowCalculation(vec4 fragPosLightSpace)
 {
     vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
@@ -19,8 +17,8 @@ float ShadowCalculation(vec4 fragPosLightSpace)
     float currentDepth = projCoords.z;
 
     vec3 normal = normalize(vNormal);
-    vec3 lightDir = normalize(lightPos - vWorldPos);
-    float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.05);
+    vec3 lightDir = normalize(-uDirectionalLight.Light.Direction);
+    float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.005);
 
     float shadow = 0.0;
     vec2 texelSize = 1.0 / textureSize(uShadowMapTexture, 0);
@@ -43,7 +41,7 @@ float ShadowCalculation(vec4 fragPosLightSpace)
 void main() {
     vec4 albedoColor = texture(uAlbedoTexture, vTexCoords);
     vec3 normal = normalize(vNormal);
-    vec3 lightDir = normalize(lightPos - vWorldPos);
+    vec3 lightDir = normalize(uDirectionalLight.Light.Direction);
 
     vec4 fragPosLightSpace = uCamera.LightSpaceMatrix * vec4(vWorldPos, 1.0);
     float shadow = ShadowCalculation(fragPosLightSpace);
@@ -51,5 +49,5 @@ void main() {
     float ambient = 0.02;
     vec3 finalLighting = (ambient + (1.0 - shadow)) * albedoColor.rgb;
 
-    FragColor = albedoColor;
+    FragColor = vec4(finalLighting, albedoColor.a);
 }
