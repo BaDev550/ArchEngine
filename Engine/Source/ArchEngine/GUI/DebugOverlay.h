@@ -46,7 +46,7 @@ namespace ae::GUI {
 						auto shadowMap = scene->GetRenderer().GetDirectionalLightShadowMapFramebuffer()->GetDepthTexture();
 						for (uint32_t i = 0; i < 4; i++) {
 							ImGui::Text("Cascade %d", i);
-							ImGui::Image((ImTextureID)(VkDescriptorSet)shadowMap->GetImGuiTexture(i), ImVec2(256.0f, 256.0f));
+							ImGui::Image((ImTextureID)(VkDescriptorSet)shadowMap->GetImGuiTexture(i), ImVec2(256, 256));
 							if (i % 2 == 0) ImGui::SameLine();
 						}
 

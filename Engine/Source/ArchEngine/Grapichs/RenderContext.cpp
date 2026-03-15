@@ -30,8 +30,8 @@ namespace ae::grapichs {
 		config.ResterizationStateCreateInfo.lineWidth = 1.0f;
 		config.ResterizationStateCreateInfo.depthBiasEnable = VK_FALSE;
 		config.ResterizationStateCreateInfo.depthBiasConstantFactor = 0.0f;
-		config.ResterizationStateCreateInfo.depthBiasClamp = 0.0f;
 		config.ResterizationStateCreateInfo.depthBiasSlopeFactor = 0.0f;
+		config.ResterizationStateCreateInfo.depthBiasClamp = 0.0f;
 
 		config.MultisampleStateCreateInfo = {};
 		config.MultisampleStateCreateInfo.sampleShadingEnable = VK_FALSE;
@@ -64,7 +64,7 @@ namespace ae::grapichs {
 		config.DepthStencilCreateInfo = {};
 		config.DepthStencilCreateInfo.depthTestEnable = VK_TRUE;
 		config.DepthStencilCreateInfo.depthWriteEnable = VK_TRUE;
-		config.DepthStencilCreateInfo.depthCompareOp = vk::CompareOp::eLess;
+		config.DepthStencilCreateInfo.depthCompareOp = vk::CompareOp::eLessOrEqual;
 		config.DepthStencilCreateInfo.depthBoundsTestEnable = VK_FALSE;
 		config.DepthStencilCreateInfo.minDepthBounds = 0.0f;
 		config.DepthStencilCreateInfo.maxDepthBounds = 1.0f;

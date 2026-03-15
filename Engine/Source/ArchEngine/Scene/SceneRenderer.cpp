@@ -9,6 +9,10 @@
 #include "ArchEngine/Objects/Entity_Skybox.h"
 #include "ArchEngine/Objects/Entity_DirectionalLight.h"
 
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
+#define GLM_FORCE_LEFT_HANDED
+#include <glm/glm.hpp>
+
 namespace ae {
 	using namespace grapichs;
 	SceneRenderer::SceneRenderer(Scene* scene) : _scene(scene) {
@@ -150,6 +154,8 @@ namespace ae {
 		_sceneData.ActiveCameraData.View = cam->GetView();
 		_sceneData.ActiveCameraData.Projection = cam->GetProjection();
 		_sceneData.ActiveCameraData.Position = cam->GetPosition();
+		_sceneData.ActiveCameraData.Near = 0.1f;
+		_sceneData.ActiveCameraData.Far = 1000.0f;
 		_cameraBuffer->Write(&_sceneData.ActiveCameraData);
 		_sceneRenderPass->SetInput("uSkyboxTexture", _sceneData.SceneLightEnviromentData.EnviromentMap->GetEnvironmentMap());
 
@@ -257,7 +263,7 @@ namespace ae {
 			for (EntityID id : directionalLights) {
 				if (auto* entity = dynamic_cast<Entity_DirectionalLight*>(_scene->GetEntity(id))) {
 					auto& lightHandle = entity->GetHandle();
-					lightHandle.Direction = glm::normalize(entity->GetTransform().GetEulerRotation());
+					lightHandle.Direction = entity->GetTransform().GetEulerRotation();
 					_sceneData.SceneLightEnviromentData.DirectionalLight = lightHandle;
 					break;
 				}
@@ -334,6 +340,7 @@ namespace ae {
 		}
 
 		glm::mat4 lightOrtho = glm::ortho(minX, maxX, minY, maxY, minZ, maxZ);
+		lightOrtho[1][1] *= -1.0f;
 		return lightOrtho * lightView;
 	}
 

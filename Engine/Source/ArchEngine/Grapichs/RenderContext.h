@@ -95,7 +95,7 @@ namespace ae::grapichs {
 		
 		const std::vector<const char*> _extensions = { vk::KHRSwapchainExtensionName };
 		const std::vector<const char*> _layers = { "VK_LAYER_KHRONOS_validation" };
-#if AE_GRAPICHS_DEBUG_VULKAN_VALIDATION_LAYER
+#if AE_GRAPICHS_DEBUG_VULKAN_VALIDATION_LAYER && defined(_DEBUG)
 		const bool _enableValidationLayer = true;
 #else
 		const bool _enableValidationLayer = false;
