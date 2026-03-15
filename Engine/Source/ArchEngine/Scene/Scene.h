@@ -11,6 +11,7 @@
 namespace ae {
 	static std::string RemoveClassOrStructSubfix(std::string name) {
 		if (name.find("class ") == 0) name.erase(0, 6);
+		if (name.find("class ae::") == 0) name.erase(0, 10);
 		if (name.find("struct ") == 0) name.erase(0, 7);
 		return name;
 	}

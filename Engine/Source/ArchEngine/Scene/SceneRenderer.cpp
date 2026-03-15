@@ -139,6 +139,7 @@ namespace ae {
 
 		CollectSceneLightEnviromentData();
 
+		// Light + Camera data set/write
 		auto& pointLightsUniformData = _sceneData.SceneLightUniformData.UniformPointLights;
 		pointLightsUniformData.Count = _sceneData.SceneLightEnviromentData.GetPointLightCount();
 		if (pointLightsUniformData.Count > 0) {
@@ -146,7 +147,13 @@ namespace ae {
 			_pointLightsBuffer->Write(&pointLightsUniformData);
 		}
 		_directionalLightBuffer->Write(&_sceneData.SceneLightEnviromentData.DirectionalLight);
+		_sceneData.ActiveCameraData.View = cam->GetView();
+		_sceneData.ActiveCameraData.Projection = cam->GetProjection();
+		_sceneData.ActiveCameraData.Position = cam->GetPosition();
+		_cameraBuffer->Write(&_sceneData.ActiveCameraData);
+		_sceneRenderPass->SetInput("uSkyboxTexture", _sceneData.SceneLightEnviromentData.EnviromentMap->GetEnvironmentMap());
 
+		// Shadow pass
 		std::vector<glm::mat4> lightSpaceMatrices = _cascadedDirectionalShadowMap.GetLightSpaceMatrices(
 			_sceneData.ActiveCameraData, 
 			_sceneData.SceneLightEnviromentData.DirectionalLight.Direction
@@ -173,18 +180,11 @@ namespace ae {
 		);
 		_cascadeBuffer->Write(&cascadeData);
 
-		_sceneData.ActiveCameraData.View = cam->GetView();
-		_sceneData.ActiveCameraData.Projection = cam->GetProjection();
-		_sceneData.ActiveCameraData.Position = cam->GetPosition();
-		_cameraBuffer->Write(&_sceneData.ActiveCameraData);
-		_sceneRenderPass->SetInput("uSkyboxTexture", _sceneData.SceneLightEnviromentData.EnviromentMap->GetEnvironmentMap());
+		// Main pass
 		_sceneRenderPass->Begin();
-
 		cmd.bindPipeline(vk::PipelineBindPoint::eGraphics, _sceneData.SceneLightEnviromentData.SkyboxPipeline->GetPipeline());
 		Renderer::DrawVertex(cmd, nullptr, 36);
-
 		DrawEntities(cmd, _sceneRenderPass, entities);
-
 		if (_sceneData.DrawDebugShapes)
 			DrawDebugScene(cmd);
 		grapichs::debug::DebugRenderer::Update(Application::Get()->GetDeltaTime());

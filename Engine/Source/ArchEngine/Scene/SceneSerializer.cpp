@@ -27,15 +27,21 @@ namespace ae {
             out << YAML::Key << "Position" << YAML::Value << entity->GetPosition();
             out << YAML::Key << "Rotation" << YAML::Value << entity->GetEulerRotation();
             out << YAML::Key << "Scale" << YAML::Value << entity->GetScale();
-            entity->OnSerialize(out);
             out << YAML::EndMap;
+            if (entity->IsDrawnable()) {
+                out << YAML::Key << "Drawnable" << YAML::BeginMap;
+                out << YAML::Key << "IsVisible" << YAML::Value << entity->GetDrawnable().IsVisible;
+                out << YAML::Key << "CastShadow" << YAML::Value << entity->GetDrawnable().CastShadow;
+                out << YAML::EndMap;
+            }
+            entity->OnSerialize(out);
             out << YAML::EndMap;
         }
 
         out << YAML::EndSeq;
         out << YAML::EndMap;
 
-        std::ofstream fout(filepath);
+        std::ofstream fout(filepath, std::ios::binary);
         fout << out.c_str();
 	}
 
@@ -43,7 +49,7 @@ namespace ae {
 	{
         _scene->Destroy();
 
-        std::ifstream stream(filepath);
+        std::ifstream stream(filepath, std::ios::binary);
         std::stringstream strStream;
         strStream << stream.rdbuf();
 
@@ -61,12 +67,17 @@ namespace ae {
                     deserializedEntity->SetName(name);
                     deserializedEntity->OnDeserialize(entityNode);
                     auto transform = entityNode["Transform"];
+                    auto drawnable = entityNode["Drawnable"];
                     deserializedEntity->SetPosition({ transform["Position"][0].as<float>(), transform["Position"][1].as<float>(), transform["Position"][2].as<float>() });
                     deserializedEntity->SetRotation({ transform["Rotation"][0].as<float>(), transform["Rotation"][1].as<float>(), transform["Rotation"][2].as<float>() });
                     deserializedEntity->SetScale({ transform["Scale"][0].as<float>(), transform["Scale"][1].as<float>(), transform["Scale"][2].as<float>() });
+                    if (drawnable) {
+                        deserializedEntity->GetDrawnable().IsVisible =  drawnable["IsVisible"].as<bool>();
+                        deserializedEntity->GetDrawnable().CastShadow = drawnable["CastShadow"].as<bool>();
+                    }
                 }
             }
         }
-        return true;
+        return true; // TODO - Make an serialzier and I/O class for serializing in binary
 	}
 }
