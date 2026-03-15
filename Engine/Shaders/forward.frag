@@ -28,7 +28,7 @@ float ShadowCalculation()
     vec4 fragPosLightSpace = uCascadeShadow.LightSpaceMatrices[layer] * vec4(vWorldPos, 1.0);
 
     vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
-    projCoords = projCoords * 0.5 + 0.5;
+    projCoords.xy = projCoords.xy * 0.5 + 0.5;
 
     float currentDepth = projCoords.z;
     if (currentDepth > 1.0f)
@@ -36,9 +36,9 @@ float ShadowCalculation()
 
     vec3 normal = normalize(vNormal);
     vec3 lightDir = normalize(uDirectionalLight.Light.Direction);
-    float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.005);
+    float bias = max(0.005 * (1.0 - dot(normal, lightDir)), 0.005);
 
-    const float biasModifier = 0.5f;
+    const float biasModifier = 0.2f;
     if (layer == CASCADE_COUNT - 1){
         bias *= 1.0f / (uCascadeShadow.CascadeSplits[layer - 1] * biasModifier);
     }else {
