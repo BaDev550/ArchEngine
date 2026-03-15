@@ -19,7 +19,8 @@ namespace ae::grapichs {
 			vk::Format Format, 
 			vk::ImageLayout OldLayout, 
 			vk::ImageLayout NewLayout,
-			int LayerCount
+            uint32_t baseArrayLayer = 0,
+            uint32_t layerCount = 1
 		)
 		{
             vk::ImageMemoryBarrier barrier;
@@ -33,8 +34,8 @@ namespace ae::grapichs {
             barrier.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
             barrier.subresourceRange.baseMipLevel = 0;
             barrier.subresourceRange.levelCount = 1;
-            barrier.subresourceRange.baseArrayLayer = 0;
-            barrier.subresourceRange.layerCount = LayerCount;
+            barrier.subresourceRange.baseArrayLayer = baseArrayLayer;
+            barrier.subresourceRange.layerCount = layerCount;
 
             vk::PipelineStageFlags sourceStage = vk::PipelineStageFlagBits::eNone;
             vk::PipelineStageFlags destinationStage = vk::PipelineStageFlagBits::eNone;
@@ -183,7 +184,7 @@ namespace ae::grapichs {
 		_descriptorManager = nullptr;
 	}
 
-	void RenderPass::Begin() {
+	void RenderPass::Begin(int targetLayer) {
 		vk::CommandBuffer cmd = Renderer::GetCurrentCommandBuffer();
 		PipelineData pipelineData = _pipeline->GetPipelineData();
 		uint32_t frameIndex = Renderer::GetFrameIndex();
@@ -208,16 +209,23 @@ namespace ae::grapichs {
 		bool hasDepthBuffer = framebuffer->DoesFramebufferHasDepthAttachment();
 
 		if (hasDepthBuffer) {
-			const float depthClearColor = fbSpecs.DepthClearValue;
 			const memory::Ref<Texture2D>& depthAttachment = framebuffer->GetDepthTexture();
+			const float depthClearColor = fbSpecs.DepthClearValue;
+            const uint32_t baseLayer = targetLayer >= 0 ? targetLayer : 0;
+            const uint32_t layers = targetLayer >= 0 ? 1 : framebuffer->GetSpecification().Layers;
 			vk::Image fbDepthImage = depthAttachment->GetImage();
 			vk::Format fbDepthFormat = depthAttachment->GetFormat();
-			depthAttachments.imageView = depthAttachment->GetImageView();
+            if (targetLayer >= 0) {
+                depthAttachments.imageView = depthAttachment->GetImageViewFromLayer(targetLayer);
+            }
+            else {
+                depthAttachments.imageView = depthAttachment->GetImageView();
+            }
 			depthAttachments.imageLayout = vk::ImageLayout::eDepthStencilAttachmentOptimal;
 			depthAttachments.loadOp = vk::AttachmentLoadOp::eClear;
 			depthAttachments.storeOp = vk::AttachmentStoreOp::eStore;
 			depthAttachments.clearValue = vk::ClearValue(vk::ClearDepthStencilValue(depthClearColor, 0));
-            Utils::ImageMemBarrier(cmd, fbDepthImage, fbDepthFormat, vk::ImageLayout::eUndefined, vk::ImageLayout::eDepthStencilAttachmentOptimal, 1);
+            Utils::ImageMemBarrier(cmd, fbDepthImage, fbDepthFormat, vk::ImageLayout::eUndefined, vk::ImageLayout::eDepthStencilAttachmentOptimal, baseLayer, layers);
 		}
         
 		for (int i = 0; i < activeAttachmentCount; i++) {
@@ -230,7 +238,7 @@ namespace ae::grapichs {
 			colorAttachments[i].loadOp = vk::AttachmentLoadOp::eClear;
 			colorAttachments[i].storeOp = vk::AttachmentStoreOp::eStore;
 			colorAttachments[i].clearValue = vk::ClearValue({ clearColor.x, clearColor.g, clearColor.b, clearColor.a });
-            Utils::ImageMemBarrier(cmd, fbImage, fbFormat, vk::ImageLayout::eUndefined, vk::ImageLayout::eColorAttachmentOptimal, 1);
+            Utils::ImageMemBarrier(cmd, fbImage, fbFormat, vk::ImageLayout::eUndefined, vk::ImageLayout::eColorAttachmentOptimal);
 		}
 
 		vk::RenderingInfo renderingInfo{};
@@ -251,7 +259,7 @@ namespace ae::grapichs {
 		cmd.setScissor(0, 1, &scissor);
 	}
 
-	void RenderPass::End() {
+	void RenderPass::End(int targetLayer) {
 		vk::CommandBuffer cmd = Renderer::GetCurrentCommandBuffer();
 		cmd.endRendering();
 
@@ -293,19 +301,20 @@ namespace ae::grapichs {
                     colorTexture->GetImage(),
                     colorTexture->GetFormat(),
                     vk::ImageLayout::eColorAttachmentOptimal,
-                    vk::ImageLayout::eShaderReadOnlyOptimal,
-                    1
+                    vk::ImageLayout::eShaderReadOnlyOptimal
                 );
             }
             if (framebuffer->DoesFramebufferHasDepthAttachment()) {
                 const memory::Ref<Texture2D>& depthTexture = framebuffer->GetDepthTexture();
+                const uint32_t baseLayer = targetLayer >= 0 ? targetLayer : 0;
+                const uint32_t layers = targetLayer >= 0 ? 1 : framebuffer->GetSpecification().Layers;
                 Utils::ImageMemBarrier(
                     cmd,
                     depthTexture->GetImage(),
                     depthTexture->GetFormat(),
                     vk::ImageLayout::eDepthStencilAttachmentOptimal,
                     vk::ImageLayout::eShaderReadOnlyOptimal,
-                    1
+                    baseLayer, layers
                 );
             }
         }

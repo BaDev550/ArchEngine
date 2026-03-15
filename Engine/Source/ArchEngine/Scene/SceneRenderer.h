@@ -33,6 +33,8 @@ namespace ae {
 		glm::mat4 Projection;
 		glm::mat4 LightSpace;
 		glm::vec3 Position;
+		float Near;
+		float Far;
 	};
 
 	struct LightEnviromentUniformData {
@@ -66,7 +68,7 @@ namespace ae {
 		Drawnable& GetDrawnable(const RenderHandle& handle);
 		size_t GetDrawnableCount() const { return _drawnables.size(); }
 		VkDescriptorSet GetSceneOutputTexture() const { return _sceneFramebuffer->GetAttachmentTexture(0)->GetImGuiTexture(); }
-		memory::Ref<grapichs::Framebuffer>& GetDirectionalLightShadowMapFramebuffer() { return _directionalLightShadowMap.ShadowFramebuffer; }
+		memory::Ref<grapichs::Framebuffer>& GetDirectionalLightShadowMapFramebuffer() { return _cascadedDirectionalShadowMap.Framebuffer; }
 		void RemoveAllDrawnables();
 		void RenderScene(const memory::Ref<grapichs::Camera>& cam, const std::unordered_map<EntityID, memory::Ref<Entity>>& entities);
 	private:
@@ -77,14 +79,26 @@ namespace ae {
 		memory::Ref<grapichs::RenderPass> _sceneRenderPass = nullptr;
 		memory::Ref<grapichs::Framebuffer> _sceneFramebuffer = nullptr;
 
-		struct DirectionalLightShadow {
-			memory::Ref<grapichs::Pipeline> ShadowPipeline = nullptr;
-			memory::Ref<grapichs::RenderPass> ShadowRenderPass = nullptr;
-			memory::Ref<grapichs::Framebuffer> ShadowFramebuffer = nullptr;
+		struct CascadedDirectionalShadowMap {
+			memory::Ref<grapichs::Pipeline> Pipeline = nullptr;
+			memory::Ref<grapichs::RenderPass> RenderPass = nullptr;
+			memory::Ref<grapichs::Framebuffer> Framebuffer = nullptr;
+			const uint32_t ShadowCascades = 4;
 			const uint32_t ShadowMapResolution = 2048;
-		} _directionalLightShadowMap;
+			const std::vector<float> ShadowCascadeLevels = { 1000.0f / 50.0f, 1000.0f / 25.0f, 1000.0f / 10.0f, 1000.0f / 2.0f };
+
+			std::vector<glm::mat4> GetLightSpaceMatrices(CameraData& cameraData, const glm::vec3& lightDirection);
+			glm::mat4 GetLightSpaceMatrix(CameraData& cameraData, const glm::vec3& lightDirection, float near, float far);
+			std::vector<glm::vec4> GetFrustumCornersWorldSpace(const glm::mat4& view, const glm::mat4& proj);
+
+			struct UniformBufferCascades {
+				glm::mat4 LightSpaceMatrices[4];
+				glm::vec4 CascadeSplits;
+			} UniformBufferData;
+		} _cascadedDirectionalShadowMap;
 
 		memory::Ref<grapichs::Buffer> _cameraBuffer = nullptr;
+		memory::Ref<grapichs::Buffer> _cascadeBuffer = nullptr;
 		memory::Ref<grapichs::Buffer> _pointLightsBuffer = nullptr;
 		memory::Ref<grapichs::Buffer> _directionalLightBuffer = nullptr;
 

@@ -41,10 +41,16 @@ namespace ae::GUI {
 						ImGui::Text("Draw Calls: %d", Renderer::GetDrawCallCount());
 						ImGui::Text("Frame Time: %.3f ms", 1000.0f / ImGui::GetIO().Framerate);
 
-						if (ImGui::CollapsingHeader("Shadow map")) {
-							auto image = scene->GetRenderer().GetDirectionalLightShadowMapFramebuffer()->GetDepthTexture()->GetImGuiTexture();
-							ImGui::Image((ImTextureID)(VkDescriptorSet)image, ImVec2(200, 200));
+						ImGui::Begin("Shadow Cascades Debug");
+
+						auto shadowMap = scene->GetRenderer().GetDirectionalLightShadowMapFramebuffer()->GetDepthTexture();
+						for (uint32_t i = 0; i < 4; i++) {
+							ImGui::Text("Cascade %d", i);
+							ImGui::Image((ImTextureID)(VkDescriptorSet)shadowMap->GetImGuiTexture(i), ImVec2(256.0f, 256.0f));
+							if (i % 2 == 0) ImGui::SameLine();
 						}
+
+						ImGui::End();
 					}
 					if (ImGui::CollapsingHeader("Scene Hierarchy")) {
 						if (ImGui::CollapsingHeader("Create Entity")) {

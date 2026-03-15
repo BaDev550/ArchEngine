@@ -230,6 +230,27 @@ namespace ae {
                 shaderInfo.BindingDescription.inputRate = vk::VertexInputRate::eVertex;
             }
         }
+
+        uint32_t pushConstantCount = 0;
+        spvReflectEnumeratePushConstantBlocks(&module, &pushConstantCount, nullptr);
+        if (pushConstantCount > 0) {
+            std::vector<SpvReflectBlockVariable*> pcbVars(pushConstantCount);
+            spvReflectEnumeratePushConstantBlocks(&module, &pushConstantCount, pcbVars.data());
+
+            for (uint32_t i = 0; i < pushConstantCount; ++i) {
+                vk::PushConstantRange range{};
+                range.offset = pcbVars[i]->offset;
+                range.size = pcbVars[i]->size;
+                range.stageFlags = static_cast<vk::ShaderStageFlagBits>(module.shader_stage);
+
+                shaderInfo.PushConstantRanges.push_back(range);
+
+#ifdef RENDERER_LOG_SHADER_COMPILER
+                Logger_renderer::info("Found Push Constant Block: offset {}, size {}", range.offset, range.size);
+#endif
+            }
+        }
+
         spvReflectDestroyShaderModule(&module);
     }
 

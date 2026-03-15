@@ -8,25 +8,29 @@ layout(location = 2) in vec3 vWorldPos;
 #include "common/buffers.glslh"
 #include "common/resources.glslh"
 
-float ShadowCalculation(vec4 fragPosLightSpace)
+float ShadowCalculation(vec4 fragPosLightSpace, int cascadeIndex)
 {
     vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
     projCoords = projCoords * 0.5 + 0.5;
 
-    float closestDepth = texture(uShadowMapTexture, projCoords.xy).r; 
     float currentDepth = projCoords.z;
 
     vec3 normal = normalize(vNormal);
     vec3 lightDir = normalize(-uDirectionalLight.Light.Direction);
     float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.005);
 
+    if (cascadeIndex > 0) {
+        bias *= (cascadeIndex * 1.5); 
+    }
+
     float shadow = 0.0;
-    vec2 texelSize = 1.0 / textureSize(uShadowMapTexture, 0);
+    vec2 texelSize = 1.0 / textureSize(uShadowMapTexture, 0).xy;
+  
     for(int x = -1; x <= 1; ++x)
     {
         for(int y = -1; y <= 1; ++y)
         {
-            float pcfDepth = texture(uShadowMapTexture, projCoords.xy + vec2(x, y) * texelSize).r; 
+            float pcfDepth = texture(uShadowMapTexture, vec3(projCoords.xy + vec2(x, y) * texelSize, cascadeIndex)).r; 
             shadow += currentDepth - bias > pcfDepth  ? 1.0 : 0.0;        
         }    
     }
@@ -38,13 +42,30 @@ float ShadowCalculation(vec4 fragPosLightSpace)
     return shadow;
 }
 
+vec3 cascadeColors[4] = vec3[4](
+    vec3(1.0, 0.2, 0.2), 
+    vec3(0.2, 1.0, 0.2), 
+    vec3(0.2, 0.2, 1.0), 
+    vec3(1.0, 0.2, 1.0)
+);
+
 void main() {
     vec4 albedoColor = texture(uAlbedoTexture, vTexCoords);
     vec3 normal = normalize(vNormal);
     vec3 lightDir = normalize(uDirectionalLight.Light.Direction);
+    vec4 viewPos = uCamera.View * vec4(vWorldPos, 1.0);
+    float depthValue = abs(viewPos.z);
 
-    vec4 fragPosLightSpace = uCamera.LightSpaceMatrix * vec4(vWorldPos, 1.0);
-    float shadow = ShadowCalculation(fragPosLightSpace);
+    int cascadeIndex = 0;
+    for(int i = 0; i < 3; ++i) {
+        if(depthValue > uCascadeShadow.CascadeSplits[i]) {
+            cascadeIndex = i + 1;
+        }
+    }
+
+    vec4 fragPosLightSpace = uCascadeShadow.LightSpaceMatrices[cascadeIndex] * vec4(vWorldPos, 1.0);
+    float shadow = ShadowCalculation(fragPosLightSpace, cascadeIndex);
+    albedoColor.rgb = mix(albedoColor.rgb, cascadeColors[cascadeIndex], 0.35);
 
     float ambient = 0.02;
     vec3 finalLighting = (ambient + (1.0 - shadow)) * albedoColor.rgb;

@@ -1,9 +1,15 @@
 layout(set = 0, binding = 0) uniform CameraData {
     mat4 View;
     mat4 Proj;
-    mat4 LightSpaceMatrix;
     vec3 Position;
+    float Near;
+    float Far;
 } uCamera;
+
+layout(set = 0, binding = 1) uniform CascadeData {
+    mat4 LightSpaceMatrices[4];
+    vec4 CascadeSplits;
+} uCascadeShadow;
 
 struct DirectionalLight {
     vec3 Direction;
@@ -12,7 +18,7 @@ struct DirectionalLight {
     float pad;
 };
 
-layout(std140, set = 0, binding = 1) uniform DirectionalLightData {
+layout(set = 0, binding = 2) uniform DirectionalLightData {
     DirectionalLight Light;
 } uDirectionalLight;
 
@@ -27,7 +33,7 @@ struct PointLight {
     float pad1;
 };
 
-layout(std140, set = 0, binding = 2) uniform PointLightData {
+layout(set = 0, binding = 3) uniform PointLightData {
     uint Count;
     PointLight Lights[1000];
 } uPointLights;

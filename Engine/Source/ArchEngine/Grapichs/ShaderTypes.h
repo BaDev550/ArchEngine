@@ -57,6 +57,7 @@ namespace ae::grapichs {
 		std::map<uint32_t, std::map<uint32_t, DescriptorInfo>> ReflectData;
 		std::vector<vk::VertexInputAttributeDescription> AttribDescriptions;
 		vk::VertexInputBindingDescription BindingDescription;
+		std::vector<vk::PushConstantRange> PushConstantRanges;
 	};
 
 	static constexpr std::string ShaderReflectionDataTypeToString(ShaderReflectionDataType& type) {

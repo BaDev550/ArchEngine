@@ -32,20 +32,21 @@ namespace ae {
 		{
 			FramebufferSpecification framebufferSpecs{};
 			framebufferSpecs.Attachments = { vk::Format::eD32Sfloat };
-			framebufferSpecs.Width = _directionalLightShadowMap.ShadowMapResolution;
-			framebufferSpecs.Height = _directionalLightShadowMap.ShadowMapResolution;
+			framebufferSpecs.Width =  _cascadedDirectionalShadowMap.ShadowMapResolution;
+			framebufferSpecs.Height = _cascadedDirectionalShadowMap.ShadowMapResolution;
+			framebufferSpecs.Layers = _cascadedDirectionalShadowMap.ShadowCascades;
 			framebufferSpecs.ClearColor = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
 			framebufferSpecs.DepthClearValue = 1.0f;
-			_directionalLightShadowMap.ShadowFramebuffer = memory::Ref<Framebuffer>::Create(framebufferSpecs);
+			_cascadedDirectionalShadowMap.Framebuffer = memory::Ref<Framebuffer>::Create(framebufferSpecs);
 
 			PipelineData pipelineData{};
 			pipelineData.Shader = Renderer::GetShaderLibrary().GetShader("ShadowShader");
 			pipelineData.RenderData.CullingEnable = true;
 			pipelineData.RenderData.DepthTestEnable = true;
 			pipelineData.RenderData.CullMode = vk::CullModeFlagBits::eFront;
-			pipelineData.TargetFramebuffer = _directionalLightShadowMap.ShadowFramebuffer;
-			_directionalLightShadowMap.ShadowPipeline = memory::Ref<Pipeline>::Create(pipelineData);
-			_directionalLightShadowMap.ShadowRenderPass = memory::Ref<RenderPass>::Create(_directionalLightShadowMap.ShadowPipeline);
+			pipelineData.TargetFramebuffer = _cascadedDirectionalShadowMap.Framebuffer;
+			_cascadedDirectionalShadowMap.Pipeline = memory::Ref<Pipeline>::Create(pipelineData);
+			_cascadedDirectionalShadowMap.RenderPass = memory::Ref<RenderPass>::Create(_cascadedDirectionalShadowMap.Pipeline);
 		}
 
 		// Skybox pipeline
@@ -64,27 +65,32 @@ namespace ae {
 			_cameraBuffer = memory::Ref<Buffer>::Create(
 				sizeof(CameraData),
 				vk::BufferUsageFlagBits::eUniformBuffer,
-				vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent
+				vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent,
+				true
 			);
-			_cameraBuffer->Map();
-			_sceneRenderPass->SetInput("uCamera", _cameraBuffer);
-			_sceneRenderPass->SetInput("uSkyboxTexture", _sceneData.SceneLightEnviromentData.EnviromentMap->GetEnvironmentMap());
-			_sceneRenderPass->SetInput("uShadowMapTexture", _directionalLightShadowMap.ShadowFramebuffer->GetDepthTexture());
-			_directionalLightShadowMap.ShadowRenderPass->SetInput("uCamera", _cameraBuffer);
-
 			_pointLightsBuffer = memory::Ref<Buffer>::Create(
 				sizeof(UniformBufferPointLights),
 				vk::BufferUsageFlagBits::eUniformBuffer,
-				vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent
+				vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent,
+				true
 			);
-			_pointLightsBuffer->Map();
 			_directionalLightBuffer = memory::Ref<Buffer>::Create(
 				sizeof(UniformBufferDirectionalLight),
 				vk::BufferUsageFlagBits::eUniformBuffer,
-				vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent
+				vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent,
+				true
 			);
-			_directionalLightBuffer->Map();
-			_sceneRenderPass->SetInput("uPointLights", _pointLightsBuffer);
+			_cascadeBuffer = memory::Ref<Buffer>::Create(
+				sizeof(CascadedDirectionalShadowMap::UniformBufferCascades),
+				vk::BufferUsageFlagBits::eUniformBuffer,
+				vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent,
+				true
+			);
+			_sceneRenderPass->SetInput("uCamera",		    _cameraBuffer);
+			_sceneRenderPass->SetInput("uSkyboxTexture",    _sceneData.SceneLightEnviromentData.EnviromentMap->GetEnvironmentMap());
+			_sceneRenderPass->SetInput("uCascadeShadow",    _cascadeBuffer);
+			_sceneRenderPass->SetInput("uShadowMapTexture", _cascadedDirectionalShadowMap.Framebuffer->GetDepthTexture());
+			_sceneRenderPass->SetInput("uPointLights",		_pointLightsBuffer);
 			_sceneRenderPass->SetInput("uDirectionalLight", _directionalLightBuffer);
 		}
 
@@ -141,24 +147,37 @@ namespace ae {
 		}
 		_directionalLightBuffer->Write(&_sceneData.SceneLightEnviromentData.DirectionalLight);
 
-		float near_plane = 0.1f, far_plane = 70.0f;
-		float lightDistance = 50.0f;
-		glm::vec3 lightDir = _sceneData.SceneLightEnviromentData.DirectionalLight.Direction;
-		glm::vec3 lightPos =  lightDir * lightDistance;
-		glm::mat4 lightView = glm::lookAt(lightPos, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-		glm::mat4 lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
+		std::vector<glm::mat4> lightSpaceMatrices = _cascadedDirectionalShadowMap.GetLightSpaceMatrices(
+			_sceneData.ActiveCameraData, 
+			_sceneData.SceneLightEnviromentData.DirectionalLight.Direction
+		);
+		CascadedDirectionalShadowMap::UniformBufferCascades cascadeData{};
+		for (int i = 0; i < _cascadedDirectionalShadowMap.ShadowCascades; i++) {
+			_cascadedDirectionalShadowMap.RenderPass->Begin(i);
+			cascadeData.LightSpaceMatrices[i] = lightSpaceMatrices[i];
+			cmd.pushConstants(
+				_cascadedDirectionalShadowMap.Pipeline->GetPipelineLayout(),
+				vk::ShaderStageFlagBits::eVertex,
+				sizeof(glm::mat4),
+				sizeof(glm::mat4),
+				&lightSpaceMatrices[i]
+			);
+			DrawEntities(cmd, _cascadedDirectionalShadowMap.RenderPass, entities, true);
+			_cascadedDirectionalShadowMap.RenderPass->End(i);
+		}
+		cascadeData.CascadeSplits = glm::vec4(
+			_cascadedDirectionalShadowMap.ShadowCascadeLevels[0],
+			_cascadedDirectionalShadowMap.ShadowCascadeLevels[1],
+			_cascadedDirectionalShadowMap.ShadowCascadeLevels[2],
+			_cascadedDirectionalShadowMap.ShadowCascadeLevels[3]
+		);
+		_cascadeBuffer->Write(&cascadeData);
 
 		_sceneData.ActiveCameraData.View = cam->GetView();
 		_sceneData.ActiveCameraData.Projection = cam->GetProjection();
 		_sceneData.ActiveCameraData.Position = cam->GetPosition();
-		_sceneData.ActiveCameraData.LightSpace = lightProjection * lightView;
 		_cameraBuffer->Write(&_sceneData.ActiveCameraData);
 		_sceneRenderPass->SetInput("uSkyboxTexture", _sceneData.SceneLightEnviromentData.EnviromentMap->GetEnvironmentMap());
-
-		_directionalLightShadowMap.ShadowRenderPass->Begin();
-		DrawEntities(cmd, _directionalLightShadowMap.ShadowRenderPass, entities, true);
-		_directionalLightShadowMap.ShadowRenderPass->End();
-
 		_sceneRenderPass->Begin();
 
 		cmd.bindPipeline(vk::PipelineBindPoint::eGraphics, _sceneData.SceneLightEnviromentData.SkyboxPipeline->GetPipeline());
@@ -244,5 +263,93 @@ namespace ae {
 				}
 			}
 		}
+	}
+
+	std::vector<glm::vec4> SceneRenderer::CascadedDirectionalShadowMap::GetFrustumCornersWorldSpace(const glm::mat4& view, const glm::mat4& proj) {
+		const auto inv = glm::inverse(proj * view);
+
+		std::vector<glm::vec4> frustumCorners;
+		for (unsigned int x = 0; x < 2; ++x) {
+			for (unsigned int y = 0; y < 2; ++y) {
+				for (unsigned int z = 0; z < 2; ++z) {
+					const glm::vec4 pt = inv * glm::vec4(
+						2.0f * x - 1.0f,
+						2.0f * y - 1.0f,
+						2.0f * z - 1.0f,
+						1.0f);
+					frustumCorners.push_back(pt / pt.w);
+				}
+			}
+		}
+
+		return frustumCorners;
+	}
+
+	glm::mat4 SceneRenderer::CascadedDirectionalShadowMap::GetLightSpaceMatrix(CameraData& cameraData, const glm::vec3& lightDirection, float near, float far) {
+		if (near >= far)
+			std::swap(near, far);
+
+		float aspect = (float)Application::Get()->GetWindow().GetWidth() / (float)Application::Get()->GetWindow().GetHeight();
+		glm::mat4 proj = glm::perspective(glm::radians(45.0f), aspect, near, far);
+		auto cornersWS = GetFrustumCornersWorldSpace(cameraData.View, proj);
+
+		glm::vec3 center(0.0f);
+		for (auto& c : cornersWS)
+			center += glm::vec3(c);
+		center /= float(cornersWS.size());
+
+		glm::vec3 lightDir = glm::normalize(lightDirection);
+		glm::vec3 lightPos = center - lightDir;
+		glm::mat4 lightView = glm::lookAt(lightPos, center, glm::vec3(0.0f, 1.0f, 0.0f));
+
+		float minX = std::numeric_limits<float>::max();
+		float maxX = std::numeric_limits<float>::lowest();
+		float minY = std::numeric_limits<float>::max();
+		float maxY = std::numeric_limits<float>::lowest();
+		float minZ = std::numeric_limits<float>::max();
+		float maxZ = std::numeric_limits<float>::lowest();
+		for (auto& c : cornersWS)
+		{
+			glm::vec4 trf = lightView * c;
+			minX = std::min(minX, trf.x);
+			maxX = std::max(maxX, trf.x);
+			minY = std::min(minY, trf.y);
+			maxY = std::max(maxY, trf.y);
+			minZ = std::min(minZ, trf.z);
+			maxZ = std::max(maxZ, trf.z);
+		}
+
+		constexpr float zMult = 10.0f;
+		if (minZ < 0) {
+			minZ *= zMult;
+		}
+		else {
+			minZ /= zMult;
+		}
+		if (maxZ < 0) {
+			maxZ /= zMult;
+		}
+		else {
+			maxZ *= zMult;
+		}
+
+		glm::mat4 lightOrtho = glm::ortho(minX, maxX, minY, maxY, minZ, maxZ);
+		return lightOrtho * lightView;
+	}
+
+	std::vector<glm::mat4> SceneRenderer::CascadedDirectionalShadowMap::GetLightSpaceMatrices(CameraData& cameraData, const glm::vec3& lightDirection) {
+		std::vector<glm::mat4> result;
+		for (size_t i = 0; i < ShadowCascades + 1; ++i) {
+			if (i == 0) {
+				result.push_back(GetLightSpaceMatrix(cameraData, lightDirection, cameraData.Near, ShadowCascadeLevels[i]));
+			}
+			else if (i < ShadowCascades) {
+				result.push_back(GetLightSpaceMatrix(cameraData, lightDirection, ShadowCascadeLevels[i - 1], ShadowCascadeLevels[i]));
+			}
+			else {
+				result.push_back(GetLightSpaceMatrix(cameraData, lightDirection, ShadowCascadeLevels[i - 1], cameraData.Far));
+			}
+		}
+		return result;
 	}
 }

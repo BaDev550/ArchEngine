@@ -121,7 +121,7 @@ namespace ae::grapichs {
         cmd.bindVertexBuffers(0, vertexBuffers, offsets);
         cmd.bindIndexBuffer(meshSource->GetIndexBuffer()->GetBuffer(), 0, vk::IndexType::eUint32);
         cmd.pushConstants(renderPass->GetPipeline()->GetPipelineLayout(), vk::ShaderStageFlagBits::eVertex, 0, sizeof(glm::mat4), &transform);
-
+        
         for (const auto& submesh : meshSource->GetSubmeshes()) {
             memory::Ref<MaterialAsset>& materialAsset = staticMesh->GetMaterialByID(submesh.MaterialIndex);
             memory::Ref<Material>& material = materialAsset->GetMaterial();

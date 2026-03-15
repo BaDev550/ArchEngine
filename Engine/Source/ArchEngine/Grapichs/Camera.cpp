@@ -27,7 +27,7 @@ namespace ae::grapichs {
 		else { _Right = glm::normalize(glm::cross(_Forward, worldUp)); }
 
 		_ViewMatrix = glm::lookAt(_Position, _Position + _Forward, _Up);
-		_ProjectionMatrix = glm::perspective(glm::radians(45.0f), aspect, 0.1f, 100.0f);
+		_ProjectionMatrix = glm::perspective(glm::radians(45.0f), aspect, 0.1f, 1000.0f);
 	}
 
 	void Camera::AddPitch(float value)

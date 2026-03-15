@@ -40,6 +40,7 @@ namespace ae::grapichs {
 				spec.Format = attachment;
 				spec.Width = _specs.Width;
 				spec.Height = _specs.Height;
+				spec.Layers = _specs.Layers;
 				spec.Attachment = true;
 				if (IsDepthFormat(attachment)) {
 					_depthAttachment = memory::Ref<Texture2D>::Create(spec);

@@ -7,10 +7,9 @@ layout(location = 4) in vec3 aBitangent;
 
 layout(push_constant) uniform pcData {
     mat4 Transform;
+	mat4 LightSpaceMatrix;
 } uPc;
 
-#include "common/buffers.glslh"
-
 void main() {
-	gl_Position = uCamera.LightSpaceMatrix * uPc.Transform * vec4(aPosition, 1.0);
+	gl_Position = uPc.LightSpaceMatrix * uPc.Transform * vec4(aPosition, 1.0);
 } 

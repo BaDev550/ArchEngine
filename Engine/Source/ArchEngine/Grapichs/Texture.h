@@ -19,6 +19,7 @@ namespace ae::grapichs {
 		vk::SamplerAddressMode Wrap = vk::SamplerAddressMode::eClampToEdge;
 		uint32_t Width = 1;
 		uint32_t Height = 1;
+		uint32_t Layers = 1;
 		uint32_t MipMapLevels = 1;
 		bool Attachment = false;
 		bool GenerateMipMap = false;
@@ -48,11 +49,12 @@ namespace ae::grapichs {
 		Texture2D(const TextureSpecification& specs, vk::Image& image, vk::ImageView& imageView);
 		Texture2D(const TextureSpecification& specs, DataBuffer data);
 		~Texture2D();
-
+		
 		vk::Image GetImage() const { return _image; }
 		vk::ImageView GetImageView() const { return _imageView; }
+		vk::ImageView GetImageViewFromLayer(uint32_t layer) const { return _layerImageViews[layer]; }
 		vk::Sampler GetSampler() const { return _imageSampler; }
-		vk::DescriptorSet GetImGuiTexture() { return _imguiImage; }
+		vk::DescriptorSet GetImGuiTexture(uint32_t layer = 0) { return _imguiImages[layer]; }
 		virtual vk::DescriptorImageInfo& GetImageDescriptorInfo() override { return _imageInfo; }
 	private:
 		void LoadTexture(void* data, uint32_t width, uint32_t height, uint32_t channels);
@@ -65,8 +67,9 @@ namespace ae::grapichs {
 		vk::DeviceMemory _imageMemory;
 		vk::ImageView _imageView;
 		vk::Sampler _imageSampler;
-		vk::DescriptorSet _imguiImage;
 		vk::DescriptorImageInfo _imageInfo;
+		std::vector<vk::ImageView> _layerImageViews;
+		std::vector<vk::DescriptorSet> _imguiImages;
 		bool _ownsResources = true;
 
 		RenderContext& _context;

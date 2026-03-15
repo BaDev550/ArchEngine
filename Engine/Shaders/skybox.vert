@@ -18,6 +18,10 @@ const vec3 cubeVertices[36] = vec3[36](
     vec3( 1.0, -1.0, -1.0), vec3(-1.0, -1.0,  1.0), vec3( 1.0, -1.0,  1.0)
 );
 
+layout(push_constant) uniform pcData {
+    mat4 Transform;
+} uPc;
+
 void main() {
     vLocalPos = cubeVertices[gl_VertexIndex];
     

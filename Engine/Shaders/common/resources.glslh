@@ -1,5 +1,5 @@
 layout(set = 1, binding = 0) uniform sampler2D uAlbedoTexture;
 layout(set = 1, binding = 1) uniform sampler2D uNormTexture;
 
-layout(set = 0, binding = 3) uniform samplerCube uSkyboxTexture;
-layout(set = 0, binding = 4) uniform sampler2D uShadowMapTexture;
+layout(set = 0, binding = 4) uniform samplerCube uSkyboxTexture;
+layout(set = 0, binding = 5) uniform sampler2DArray uShadowMapTexture;

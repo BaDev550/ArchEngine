@@ -8,9 +8,9 @@ namespace ae::grapichs {
 	public:
 		RenderPass(memory::Ref<Pipeline>& pipeline);
 		~RenderPass();
-
-		void Begin();
-		void End();
+		
+		void Begin(int targetLayer = -1);
+		void End(int targetLayer = -1);
 
 		void SetInput(std::string_view name, const memory::Ref<Buffer>& buffer);
 		void SetInput(std::string_view name, const memory::Ref<Texture2D>& texture);

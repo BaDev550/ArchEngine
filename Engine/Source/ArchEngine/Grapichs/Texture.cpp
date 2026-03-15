@@ -57,7 +57,8 @@ namespace ae::grapichs {
 			usage,
 			vk::MemoryPropertyFlagBits::eDeviceLocal,
 			_image,
-			_imageMemory
+			_imageMemory,
+			_specs.Layers
 		);
 		CreateTextureImageView();
 		CreateTextureSampler();
@@ -72,15 +73,26 @@ namespace ae::grapichs {
 	{
 		vk::ImageViewCreateInfo viewCreateInfo{
 			.image = _image,
-			.viewType = vk::ImageViewType::e2D,
+			.viewType = _specs.Layers > 1 ? vk::ImageViewType::e2DArray : vk::ImageViewType::e2D,
 			.format = _specs.Format
 		};
 		viewCreateInfo.subresourceRange.aspectMask = TextureFormatToAspectFlags(_specs.Format);
 		viewCreateInfo.subresourceRange.baseMipLevel = 0;
 		viewCreateInfo.subresourceRange.levelCount = 1;
 		viewCreateInfo.subresourceRange.baseArrayLayer = 0;
-		viewCreateInfo.subresourceRange.layerCount = 1;
+		viewCreateInfo.subresourceRange.layerCount = _specs.Layers;
 		_imageView = _context.GetDevice().createImageView(viewCreateInfo);
+
+		if (_specs.Layers > 1) {
+			_layerImageViews.resize(_specs.Layers);
+			for (uint32_t i = 0; i < _specs.Layers; i++) {
+				vk::ImageViewCreateInfo layerViewInfo = viewCreateInfo;
+				layerViewInfo.viewType = vk::ImageViewType::e2D;
+				layerViewInfo.subresourceRange.baseArrayLayer = i;
+				layerViewInfo.subresourceRange.layerCount = 1;
+				_layerImageViews[i] = _context.GetDevice().createImageView(layerViewInfo);
+			}
+		}
 	}
 
 	void Texture2D::CreateTextureSampler()
@@ -103,11 +115,23 @@ namespace ae::grapichs {
 		};
 		_imageSampler = _context.GetDevice().createSampler(samplerCreateInfo);
 		if (ImGui::GetCurrentContext()) {
-			_imguiImage = ImGui_ImplVulkan_AddTexture(
-				(VkSampler)_imageSampler,
-				(VkImageView)_imageView,
-				VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
-			);
+			if (_specs.Layers > 1) {
+				_imguiImages.resize(_specs.Layers);
+				for (uint32_t i = 0; i < _specs.Layers; i++) {
+					_imguiImages[i] = ImGui_ImplVulkan_AddTexture(
+						(VkSampler)_imageSampler,
+						(VkImageView)_layerImageViews[i],
+						VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+					);
+				}
+			}
+			else {
+				_imguiImages.push_back(ImGui_ImplVulkan_AddTexture(
+					(VkSampler)_imageSampler,
+					(VkImageView)_imageView,
+					VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+				));
+			}
 		}
 	}
 
@@ -151,6 +175,10 @@ namespace ae::grapichs {
 		if (_imageSampler)
 			_context.GetDevice().destroySampler(_imageSampler);
 		if (_ownsResources) {
+			for (auto view : _layerImageViews) {
+				_context.GetDevice().destroyImageView(view);
+			}
+
 			_context.GetDevice().destroyImageView(_imageView);
 			_context.GetDevice().destroyImage(_image);
 			_context.GetDevice().freeMemory(_imageMemory);

@@ -20,6 +20,7 @@ namespace ae::grapichs {
 		config.ResterizationStateCreateInfo.cullMode = _data.RenderData.CullingEnable ? _data.RenderData.CullMode : vk::CullModeFlagBits::eNone;
 		auto& shader = _data.Shader;
 		auto& compiledData = shader->GetCompiledShaderData();
+		const auto& pushConstants = compiledData.PushConstantRanges;
 
 		const vk::PipelineVertexInputStateCreateInfo vertexInputInfo{
 			.vertexBindingDescriptionCount = 1,
@@ -45,17 +46,11 @@ namespace ae::grapichs {
 		for (const auto& [set, layout] : layoutMap)
 			layouts.push_back(layout);
 
-		vk::PushConstantRange pushConstant{
-			.stageFlags = vk::ShaderStageFlagBits::eVertex,
-			.offset = 0,
-			.size = sizeof(glm::mat4)
-		};
-
 		vk::PipelineLayoutCreateInfo layoutCreateInfo{
 			.setLayoutCount = static_cast<uint32_t>(layouts.size()),
 			.pSetLayouts = layouts.data(),
-			.pushConstantRangeCount = 1,
-			.pPushConstantRanges = &pushConstant
+			.pushConstantRangeCount = static_cast<uint32_t>(pushConstants.size()),
+			.pPushConstantRanges = pushConstants.data()
 		};
 		_pipelineLayout = _context.GetDevice().createPipelineLayout(layoutCreateInfo);
 
