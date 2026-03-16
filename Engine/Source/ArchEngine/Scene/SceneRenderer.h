@@ -9,22 +9,37 @@
 #include "ArchEngine/Grapichs/TextureCube.h"
 #include "ArchEngine/Grapichs/Enviroment.h"
 #include "ArchEngine/Grapichs/Light.h"
+#include "ArchEngine/Grapichs/Animator.h"
 #include "ArchEngine/AssetManager/AssetManager.h"
 
 namespace ae {
 	struct Drawnable {
 		EntityID OwnerID = 0;
-		AssetHandle StaticMeshHandle = INVALID_ASSET_HANDLE;
+		AssetHandle MeshHandle = INVALID_ASSET_HANDLE;
+		grapichs::Animator* AnimatorInstance = nullptr;
 		bool IsVisible = true;
+		bool IsSkinned = false;
 		bool CastShadow = true;
 
 		Drawnable(EntityID ownerID) : OwnerID(ownerID) {}
-		void ImportStaticMesh(const std::string& modelPath) {
-			std::filesystem::path staticMeshPath = modelPath;
-			staticMeshPath.replace_extension(".mesh");
+		void ImportMesh(const std::string& modelPath) {
 			AssetHandle sourceMeshHandle = AssetManager::ImportAsset(modelPath);
-			const auto& staticMesh = AssetManager::Create<grapichs::StaticMesh>(staticMeshPath.string(), sourceMeshHandle);
-			StaticMeshHandle = staticMesh->GetAssetHandle();
+			const memory::Ref<grapichs::MeshSource>& meshSource = AssetManager::GetAsset<grapichs::MeshSource>(sourceMeshHandle);
+
+			if (meshSource->isSkinned()) {
+				std::filesystem::path skeletalMeshPath = modelPath;
+				skeletalMeshPath.replace_extension(".skmesh");
+				const auto& skeletalMesh = AssetManager::Create<grapichs::SkeletalMesh>(skeletalMeshPath.string(), sourceMeshHandle);
+				MeshHandle = skeletalMesh->GetAssetHandle();
+				IsSkinned = true;
+			}
+			else {
+				std::filesystem::path staticMeshPath = modelPath;
+				staticMeshPath.replace_extension(".mesh");
+				const auto& staticMesh = AssetManager::Create<grapichs::StaticMesh>(staticMeshPath.string(), sourceMeshHandle);
+				MeshHandle = staticMesh->GetAssetHandle();
+				IsSkinned = false;
+			}
 		}
 	};
 
@@ -108,7 +123,8 @@ namespace ae {
 			const uint32_t MAX_LINES = 10000;
 			const uint32_t MAX_TRIANGLES = 10000;
 		} _debugDrawData;
-		void DrawEntities(vk::CommandBuffer cmd, memory::Ref<grapichs::RenderPass>& pass, const std::unordered_map<EntityID, memory::Ref<Entity>>& entities, bool shadowPass = false);
+		void DrawEntitiesToMainPass(vk::CommandBuffer cmd, const std::unordered_map<EntityID, memory::Ref<Entity>>& entities);
+		void DrawEntitiesToShadowPass(vk::CommandBuffer cmd, const std::unordered_map<EntityID, memory::Ref<Entity>>& entities, const glm::mat4& lightSpaceMatrix);
 		void DrawDebugScene(vk::CommandBuffer cmd);
 		void CollectSceneLightEnviromentData();
 

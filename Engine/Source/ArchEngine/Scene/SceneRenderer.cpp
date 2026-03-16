@@ -168,14 +168,7 @@ namespace ae {
 		for (int i = 0; i < _cascadedDirectionalShadowMap.ShadowCascades; i++) {
 			_cascadedDirectionalShadowMap.RenderPass->Begin(i);
 			cascadeData.LightSpaceMatrices[i] = lightSpaceMatrices[i];
-			cmd.pushConstants(
-				_cascadedDirectionalShadowMap.Pipeline->GetPipelineLayout(),
-				vk::ShaderStageFlagBits::eVertex,
-				sizeof(glm::mat4),
-				sizeof(glm::mat4),
-				&lightSpaceMatrices[i]
-			);
-			DrawEntities(cmd, _cascadedDirectionalShadowMap.RenderPass, entities, true);
+			DrawEntitiesToShadowPass(cmd, entities, lightSpaceMatrices[i]);
 			_cascadedDirectionalShadowMap.RenderPass->End(i);
 		}
 		cascadeData.CascadeSplits = glm::vec4(
@@ -190,15 +183,15 @@ namespace ae {
 		_sceneRenderPass->Begin();
 		cmd.bindPipeline(vk::PipelineBindPoint::eGraphics, _sceneData.SceneLightEnviromentData.SkyboxPipeline->GetPipeline());
 		Renderer::DrawVertex(cmd, nullptr, 36);
-		DrawEntities(cmd, _sceneRenderPass, entities);
+		DrawEntitiesToMainPass(cmd, entities);
 		if (_sceneData.DrawDebugShapes)
 			DrawDebugScene(cmd);
 		grapichs::debug::DebugRenderer::Update(Application::Get()->GetDeltaTime());
 		_sceneRenderPass->End();
 	}
 
-	void SceneRenderer::DrawEntities(vk::CommandBuffer cmd, memory::Ref<grapichs::RenderPass>& pass, const std::unordered_map<EntityID, memory::Ref<Entity>>& entities, bool shadowPass) {
-		cmd.bindPipeline(vk::PipelineBindPoint::eGraphics, pass->GetPipeline()->GetPipeline());
+	void SceneRenderer::DrawEntitiesToMainPass(vk::CommandBuffer cmd, const std::unordered_map<EntityID, memory::Ref<Entity>>& entities) {
+		cmd.bindPipeline(vk::PipelineBindPoint::eGraphics, _scenePipeline->GetPipeline());
 		for (auto& drawable : _drawnables) {
 			if (!drawable.IsVisible)
 				continue;
@@ -206,13 +199,63 @@ namespace ae {
 			auto entityIt = entities.find(drawable.OwnerID);
 			if (entityIt != entities.end()) {
 				const auto& entity = entityIt->second;
-				memory::Ref<grapichs::StaticMesh> staticMesh = AssetManager::GetAsset<grapichs::StaticMesh>(drawable.StaticMeshHandle);
-				memory::Ref<grapichs::MeshSource> meshSource = AssetManager::GetAsset<grapichs::MeshSource>(staticMesh->GetMeshSource());
-				if (shadowPass && drawable.CastShadow) {
-					grapichs::Renderer::DrawStaticMeshEntity(pass, cmd, meshSource, staticMesh, entity->GetTransformMatrix());
+
+				ModelPushConstantData pcData{};
+				pcData.Transform = entity->GetTransformMatrix();
+				pcData.IsSkinned = drawable.IsSkinned;
+				cmd.pushConstants(_scenePipeline->GetPipelineLayout(), vk::ShaderStageFlagBits::eVertex, 0, sizeof(ModelPushConstantData), &pcData);
+
+				if (drawable.IsSkinned) {
+					memory::Ref<grapichs::SkeletalMesh> skeletalMesh = AssetManager::GetAsset<grapichs::SkeletalMesh>(drawable.MeshHandle);
+					memory::Ref<grapichs::MeshSource> meshSource = AssetManager::GetAsset<grapichs::MeshSource>(skeletalMesh->GetMeshSource());
+					if (drawable.AnimatorInstance) {
+						drawable.AnimatorInstance->Update(Application::Get()->GetDeltaTime());
+						std::vector<glm::mat4> finalBoneMatrices = drawable.AnimatorInstance->GetFinalBoneMatrices();
+
+						auto& skeletonUniformBuffer = skeletalMesh->GetSkeletonUniformBuffer();
+						skeletonUniformBuffer->Write(finalBoneMatrices.data(), finalBoneMatrices.size());
+						_sceneRenderPass->SetInput("uBones", skeletonUniformBuffer);
+					}
+					grapichs::Renderer::DrawSkeletalMeshWithMaterial(_sceneRenderPass, cmd, meshSource, skeletalMesh);
 				}
-				else if (!shadowPass) {
-					grapichs::Renderer::DrawStaticMeshEntityWithMaterial(pass, cmd, meshSource, staticMesh, entity->GetTransformMatrix());
+				else {
+					memory::Ref<grapichs::StaticMesh> staticMesh = AssetManager::GetAsset<grapichs::StaticMesh>(drawable.MeshHandle);
+					memory::Ref<grapichs::MeshSource> meshSource = AssetManager::GetAsset<grapichs::MeshSource>(staticMesh->GetMeshSource());
+					grapichs::Renderer::DrawStaticMeshWithMaterial(_sceneRenderPass, cmd, meshSource, staticMesh);
+				}
+			}
+		}
+	}
+
+	void SceneRenderer::DrawEntitiesToShadowPass(vk::CommandBuffer cmd, const std::unordered_map<EntityID, memory::Ref<Entity>>& entities, const glm::mat4& lightSpaceMatrix)
+	{
+		cmd.bindPipeline(vk::PipelineBindPoint::eGraphics, _cascadedDirectionalShadowMap.Pipeline->GetPipeline());
+		for (auto& drawable : _drawnables) {
+			if (!drawable.IsVisible)
+				continue;
+
+			auto entityIt = entities.find(drawable.OwnerID);
+			if (entityIt != entities.end()) {
+				const auto& entity = entityIt->second;
+
+				struct ShadowPassPushConstantData {
+					glm::mat4 Transform;
+					glm::mat4 LightSpaceMatrix;
+				} pcData;
+				pcData.Transform = entity->GetTransformMatrix();
+				pcData.LightSpaceMatrix = lightSpaceMatrix;
+
+				cmd.pushConstants(_cascadedDirectionalShadowMap.Pipeline->GetPipelineLayout(), vk::ShaderStageFlagBits::eVertex, 0, sizeof(ShadowPassPushConstantData), &pcData);
+
+				if (drawable.IsSkinned) {
+
+				}
+				else {
+					memory::Ref<grapichs::StaticMesh> staticMesh = AssetManager::GetAsset<grapichs::StaticMesh>(drawable.MeshHandle);
+					memory::Ref<grapichs::MeshSource> meshSource = AssetManager::GetAsset<grapichs::MeshSource>(staticMesh->GetMeshSource());
+					if (drawable.CastShadow) {
+						grapichs::Renderer::DrawStaticMesh(_cascadedDirectionalShadowMap.RenderPass, cmd, meshSource, staticMesh);
+					}
 				}
 			}
 		}

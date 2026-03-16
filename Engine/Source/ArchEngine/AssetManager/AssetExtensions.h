@@ -18,6 +18,7 @@ namespace ae {
 		{ ".gltf", AssetType::MeshSource },
 		{ ".dae", AssetType::MeshSource },
 
+		{ ".skmesh", AssetType::SkeletalMesh },
 		{ ".mesh", AssetType::StaticMesh },
 		{ ".mat", AssetType::Material }
 	};

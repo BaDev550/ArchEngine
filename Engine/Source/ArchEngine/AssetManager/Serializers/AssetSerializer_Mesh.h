@@ -18,6 +18,7 @@ namespace ae {
 		aiProcess_GlobalScale |
 		aiProcess_JoinIdenticalVertices |
 		aiProcess_ImproveCacheLocality |
+		aiProcess_LimitBoneWeights |
 		aiProcess_CalcTangentSpace;
 
 	class MeshSourceImporter {
@@ -45,7 +46,10 @@ namespace ae {
 
 	class AssetSerializer_SkeletalMesh : public AssetSerializer {
 	public:
-		virtual void Serialize(const AssetMetadata& metadata, const memory::Ref<Asset>& asset) override {}
-		virtual bool TryLoadData(const AssetMetadata& metadata, memory::Ref<Asset>& asset) override {}
+		virtual void Serialize(const AssetMetadata& metadata, const memory::Ref<Asset>& asset) override;
+		virtual bool TryLoadData(const AssetMetadata& metadata, memory::Ref<Asset>& asset) override;
+	private:
+		std::string SerializeToFile(memory::Ref<grapichs::SkeletalMesh>& mesh) const;
+		bool TryLoadFromFile(const std::string& filePath, memory::Ref<grapichs::SkeletalMesh>& mesh);
 	};
 }

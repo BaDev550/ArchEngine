@@ -66,7 +66,7 @@ namespace ae {
 					}
 				}
 
-				if (scene->HasSkeletons()) {
+				if (mesh->HasBones()) {
 					meshSource->SetSkinned(true);
 
 					for (uint32_t i = 0; i < mesh->mNumBones; i++) {
@@ -82,7 +82,6 @@ namespace ae {
 
 							boneID = meshSource->GetBoneCount();
 							meshSource->AddBone(boneName, newBone);
-							Logger_app::info("Found bone: {}", boneName);
 						}
 						else {
 							boneID = meshSource->GetBone(boneName).Index;
@@ -146,6 +145,12 @@ namespace ae {
 				AssetHandle materialHandle = AssetManager::AddMemoryOnlyAsset(matAsset);
 				meshSource->GetMaterials()[i] = materialHandle;
 			}
+		}
+
+		if (meshSource->isSkinned()) {
+			grapichs::SkeletonNode rootNode;
+			grapichs::SkeletonNode::ReadHierarchyData(rootNode, scene->mRootNode);
+			meshSource->SetRootNode(rootNode);
 		}
 
 		meshSource->CreateVertexBuffer();
@@ -227,6 +232,67 @@ namespace ae {
 
 		AssetHandle meshSource = rootNode["MeshSource"].as<uint64_t>();
 		mesh = memory::Ref<grapichs::StaticMesh>::Create(meshSource);
+		return true;
+	}
+
+	void AssetSerializer_SkeletalMesh::Serialize(const AssetMetadata& metadata, const memory::Ref<Asset>& asset)
+	{
+		memory::Ref<grapichs::SkeletalMesh> mesh = asset.As<grapichs::SkeletalMesh>();
+
+		std::string yamlString = SerializeToFile(mesh);
+		std::filesystem::path serializePath = metadata.FilePath;
+		std::ofstream fout(serializePath);
+
+		if (!fout.is_open())
+			return;
+
+		fout << yamlString;
+		fout.flush();
+		fout.close();
+	}
+
+	bool AssetSerializer_SkeletalMesh::TryLoadData(const AssetMetadata& metadata, memory::Ref<Asset>& asset)
+	{
+		std::ifstream stream(metadata.FilePath);
+		std::stringstream strStream;
+		strStream << stream.rdbuf();
+		memory::Ref<grapichs::SkeletalMesh> mesh;
+
+		bool serialized = TryLoadFromFile(strStream.str(), mesh);
+		if (!serialized)
+			return false;
+
+		mesh->SetAssetHandle(metadata.Handle);
+		asset = mesh;
+		return true;
+	}
+
+	std::string AssetSerializer_SkeletalMesh::SerializeToFile(memory::Ref<grapichs::SkeletalMesh>& mesh) const {
+		YAML::Emitter out;
+		out << YAML::BeginMap;
+		out << YAML::Key << "SkeletalMesh";
+		{
+			out << YAML::BeginMap;
+			out << YAML::Key << "MeshSource";
+			out << YAML::Value << mesh->GetMeshSource();
+			out << YAML::EndMap;
+		}
+		out << YAML::EndMap;
+
+		return std::string(out.c_str());
+	}
+
+	bool AssetSerializer_SkeletalMesh::TryLoadFromFile(const std::string& filePath, memory::Ref<grapichs::SkeletalMesh>& mesh) {
+		YAML::Node data = YAML::Load(filePath);
+		if (!data["SkeletalMesh"])
+			return false;
+
+		YAML::Node rootNode = data["SkeletalMesh"];
+		if (!rootNode["MeshSource"] && !rootNode["MeshAsset"])
+			return false;
+
+		AssetHandle meshSource = rootNode["MeshSource"].as<uint64_t>();
+		mesh = memory::Ref<grapichs::SkeletalMesh>::Create(meshSource);
 		return true;
 	}
 }

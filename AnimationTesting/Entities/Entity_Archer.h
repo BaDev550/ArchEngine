@@ -2,6 +2,7 @@
 
 #include <ArchEngine/Objects/Entity.h>
 #include <ArchEngine/Scene/Scene.h>
+#include <ArchEngine/Grapichs/Animator.h>
 
 class Entity_Archer : public ae::Entity {
 public:
@@ -11,7 +12,7 @@ public:
 
 	virtual void OnCreate() override {
 		SetName("EntityArcher");
-		RegisterAsDrawnable("Resources/Models/figure/RiggedFigure.gltf");
+		RegisterAsDrawnable("Resources/Models/robot/ElyByKAtienza.dae");
 	};
 
 	virtual void OnUpdate(float deltaTime) override {};

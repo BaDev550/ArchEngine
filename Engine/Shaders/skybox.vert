@@ -20,6 +20,7 @@ const vec3 cubeVertices[36] = vec3[36](
 
 layout(push_constant) uniform pcData {
     mat4 Transform;
+	int IsSkinned;
 } uPc;
 
 void main() {

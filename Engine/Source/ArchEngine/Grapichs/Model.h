@@ -30,6 +30,11 @@ namespace ae::grapichs {
 		uint32_t MaterialIndex;
 	};
 
+	struct ModelPushConstantData {
+		glm::mat4 Transform;
+		int IsSkinned;
+	};
+
 	class MeshSource : public Asset {
 	public:
 		std::vector<Submesh>& GetSubmeshes() { return _submeshes; }
@@ -42,7 +47,10 @@ namespace ae::grapichs {
 		Bone& GetBone(std::string name) { return _bones[name]; }
 		bool HasBone(std::string name) const;
 		uint32_t GetBoneCount() const { return _boneCount; }
+		bool isSkinned() const { return _skinned; }
 		void SetSkinned(bool skinned) { _skinned = skinned; }
+		void SetRootNode(SkeletonNode node) { _rootNode = node; }
+		SkeletonNode& GetRootNode() { return _rootNode; }
 		void CreateVertexBuffer();
 		void CreateIndexBuffer();
 		void AddBone(std::string name, Bone bone);
@@ -59,6 +67,7 @@ namespace ae::grapichs {
 		memory::Ref<Buffer> _indexBuffer = nullptr;
 		std::unordered_map<std::string, Bone> _bones;
 		uint32_t _boneCount;
+		SkeletonNode _rootNode;
 		bool _skinned = false;
 	};
 
@@ -78,11 +87,23 @@ namespace ae::grapichs {
 
 	class SkeletalMesh : public Asset {
 	public:
+		SkeletalMesh(AssetHandle meshSource);
 
+		memory::Ref<Buffer>& GetSkeletonUniformBuffer() { return _skeletonUniformBuffer; }
+		std::unordered_map<std::string, Bone>& GetBones() { return _bones; }
+		bool HasBone(std::string name) const { return _bones.find(name) != _bones.end(); }
+		Bone& GetBone(std::string name) { return _bones[name]; }
+		uint32_t GetBoneCount() const { return static_cast<uint32_t>(_bones.size()); }
+		SkeletonNode& GetRootNode() { return _rootNode; }
+		memory::Ref<MaterialAsset>& GetMaterialByID(uint32_t id) { return _materials[id]; }
+		AssetHandle GetMeshSource() const { return _meshSource; }
 		static AssetType GetStaticAssetType() { return AssetType::SkeletalMesh; }
 		virtual AssetType GetAssetType() const override { return GetStaticAssetType(); }
 	private:
 		AssetHandle _meshSource = INVALID_ASSET_HANDLE;
-		std::vector<Bone> _bones;
+		std::unordered_map<std::string, Bone> _bones;
+		std::unordered_map<uint32_t, memory::Ref<MaterialAsset>> _materials;
+		memory::Ref<Buffer> _skeletonUniformBuffer = nullptr;
+		SkeletonNode _rootNode;
 	};
 }

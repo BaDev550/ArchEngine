@@ -71,4 +71,22 @@ namespace ae::grapichs {
 			}
 		}
 	}
+
+	SkeletalMesh::SkeletalMesh(AssetHandle meshSource) : _meshSource(meshSource)
+	{
+		if (auto meshSourceAsset = AssetManager::GetAsset<MeshSource>(meshSource); meshSourceAsset) {
+			const std::vector<AssetHandle>& meshMaterials = meshSourceAsset->GetMaterials();
+			for (size_t i = 0; i < meshMaterials.size(); i++) {
+				_materials[(uint32_t)i] = AssetManager::GetAsset<MaterialAsset>(meshMaterials[i]);
+			}
+			_bones = meshSourceAsset->GetBones();
+			_rootNode = meshSourceAsset->GetRootNode();
+		}
+		_skeletonUniformBuffer = memory::Ref<Buffer>::Create(
+			sizeof(glm::mat4) * MAX_BONES,
+			vk::BufferUsageFlagBits::eTransferSrc,
+			vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent
+		);
+		_skeletonUniformBuffer->Map();
+	}
 }

@@ -11,6 +11,7 @@ namespace ae {
 		MeshSource,
 		StaticMesh,
 		SkeletalMesh,
+		Animation,
 		Material,
 		EnviromentMap,
 		Scene
@@ -25,6 +26,7 @@ namespace ae {
 		case AssetType::MeshSource: return "MeshSource";
 		case AssetType::StaticMesh: return "StaticMesh";
 		case AssetType::SkeletalMesh: return "SkeletalMesh";
+		case AssetType::Animation: return "Animation";
 		case AssetType::Material: return "Material";
 		default: return "Unknown";
 		}
@@ -38,6 +40,7 @@ namespace ae {
 		if (str == "MeshSource") return AssetType::MeshSource;
 		if (str == "StaticMesh") return AssetType::StaticMesh;
 		if (str == "SkeletalMesh") return AssetType::SkeletalMesh;
+		if (str == "Animation") return AssetType::Animation;
 		if (str == "Material") return AssetType::Material;
 		return INVALID_ASSET_TYPE;
 	}

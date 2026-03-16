@@ -23,7 +23,7 @@ namespace ae {
 
 	void Entity::RegisterAsDrawnable(const std::string& modelPath) {
 		RegisterAsDrawnable();
-		GetDrawnable().ImportStaticMesh(modelPath);
+		GetDrawnable().ImportMesh(modelPath);
 	}
 
 	void Entity::RegisterAsPhysicsBody() {
