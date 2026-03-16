@@ -2,7 +2,10 @@
 
 namespace ae::grapichs {
     memory::Ref<Shader>& ShaderLibrary::AddShader(std::string_view name, const std::string& vertexPath, const std::string& fragmentPath) {
-        return _shaders[name.data()] = memory::Ref<Shader>::Create(vertexPath, fragmentPath);
+        return _shaders[name.data()] = memory::Ref<Shader>::Create(
+            (AE_ENGINE_SHADERS_PATH + vertexPath), 
+            (AE_ENGINE_SHADERS_PATH + fragmentPath)
+        );
     }
 
     memory::Ref<Shader>& ShaderLibrary::GetShader(std::string_view name)

@@ -41,10 +41,10 @@ namespace ae::grapichs {
 		s_data.BlackEnviroment = memory::Ref<Enviroment>::Create(s_data.BlackCubeMap);
 
 		PROFILE_SCOPE("Renderer");
-		Renderer::GetShaderLibrary().AddShader("ForwardShader","Shaders/forward.vert", "Shaders/forward.frag");
-		Renderer::GetShaderLibrary().AddShader("DebugShader",  "Shaders/debug.vert",   "Shaders/debug.frag");
-		Renderer::GetShaderLibrary().AddShader("SkyboxShader", "Shaders/skybox.vert",  "Shaders/skybox.frag");
-		Renderer::GetShaderLibrary().AddShader("ShadowShader", "Shaders/shadow.vert",  "Shaders/shadow.frag");
+		Renderer::GetShaderLibrary().AddShader("ForwardShader","forward.vert", "forward.frag");
+		Renderer::GetShaderLibrary().AddShader("DebugShader",  "debug.vert",   "debug.frag");
+		Renderer::GetShaderLibrary().AddShader("SkyboxShader", "skybox.vert",  "skybox.frag");
+		Renderer::GetShaderLibrary().AddShader("ShadowShader", "shadow.vert",  "shadow.frag");
 		
 		debug::DebugRenderer::Init();
 		{

@@ -17,6 +17,10 @@ target_include_directories(ArchEngine
         ${joltphysics_SOURCE_DIR}
         ${imguizmo_SOURCE_DIR}
 )
+target_compile_definitions(ArchEngine PUBLIC 
+    AE_ENGINE_RESOURCES_PATH="${CMAKE_CURRENT_SOURCE_DIR}/Resources/"
+    AE_ENGINE_SHADERS_PATH="${CMAKE_CURRENT_SOURCE_DIR}/Shaders/"
+)
 
 target_link_libraries(ArchEngine PUBLIC
     glfw
