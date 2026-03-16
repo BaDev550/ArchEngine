@@ -41,6 +41,28 @@ namespace ae::grapichs {
 		Renderer::CopyBuffer(stagingBuffer, _indexBuffer, bufferSize);
 	}
 
+	void MeshSource::AddBone(std::string name, Bone bone)
+	{
+		_bones[name] = bone;
+		_boneCount++;
+	}
+	
+	void MeshSource::AddBoneToVertex(Vertex& vertex, int boneID, float weight)
+	{
+		for (int i = 0; i < MAX_BONE_INFLUENCE; i++) {
+			if (vertex.BoneIDs[i] < 0) {
+				vertex.BoneIDs[i] = boneID;
+				vertex.BoneWeights[i] = weight;
+				break;
+			}
+		}
+	}
+
+	bool MeshSource::HasBone(std::string name) const
+	{
+		return _bones.find(name) != _bones.end();
+	}
+
 	StaticMesh::StaticMesh(AssetHandle meshSource) : _meshSource(meshSource) {
 		if (auto meshSourceAsset = AssetManager::GetAsset<MeshSource>(meshSource); meshSourceAsset) {
 			const std::vector<AssetHandle>& meshMaterials = meshSourceAsset->GetMaterials();

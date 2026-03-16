@@ -96,6 +96,7 @@ namespace ae::grapichs {
 		case vk::Format::eR32G32Sfloat: return 8;
 		case vk::Format::eR32G32B32Sfloat: return 12;
 		case vk::Format::eR32G32B32A32Sfloat: return 16;
+		case vk::Format::eR32G32B32A32Sint: return 16;
 		}
 	}
 

@@ -5,7 +5,8 @@
 
 namespace ae {
 	Application* Application::_instance = nullptr;
-	Application::Application()
+	Application::Application(const ApplicationSpecifications& specs)
+		: _specs(specs)
 	{
 		if (_instance)
 			return;
@@ -13,7 +14,11 @@ namespace ae {
 		profiler::Profiler::Init();
 		Logger_app::info("Application Created!");
 		
-		_window = MakeScope<Window>(WindowSpecifications());
+		WindowSpecifications windowSpecs{};
+		windowSpecs.Width = _specs.Width;
+		windowSpecs.Height = _specs.Height;
+		windowSpecs.Title = _specs.Title;
+		_window = MakeScope<Window>(windowSpecs);
 		_window->CreateDefaultSwapchainFramebuffer();
 		_window->SetCursor(false);
 

@@ -5,6 +5,7 @@
 #include <glm/gtx/matrix_decompose.hpp>
 #include <assimp/vector3.h>
 #include <assimp/vector2.h>
+#include <assimp/matrix4x4.h>
 #include <Jolt/Jolt.h>
 #include <Jolt/Math/Vec3.h>
 #include <Jolt/Renderer/DebugRenderer.h>
@@ -18,7 +19,15 @@ namespace ae::math {
 	inline static aiVector3D GlmToAssimp(const glm::vec3& vec) { return aiVector3D(vec.x, vec.y, vec.z); }
 	inline static glm::vec2 AssimpToGlm(const aiVector2D& vec) { return glm::vec2(vec.x, vec.y); }
 	inline static aiVector2D GlmToAssimp(const glm::vec2& vec) { return aiVector2D(vec.x, vec.y); }
-	
+	inline static glm::mat4 AssimpToGlm(const aiMatrix4x4& mat) {
+		return glm::mat4(
+			mat.a1, mat.b1, mat.c1, mat.d1,
+			mat.a2, mat.b2, mat.c2, mat.d2,
+			mat.a3, mat.b3, mat.c3, mat.d3,
+			mat.a4, mat.b4, mat.c4, mat.d4
+		);
+	}
+
 	inline static glm::vec3 JoltToGLM(JPH::Color c) { return glm::vec3(c.r / 255.0f, c.g / 255.0f, c.b / 255.0f); }
 	inline static glm::vec3 JoltToGLM(const JPH::RVec3& vec) { return glm::vec3(vec.GetX(), vec.GetY(), vec.GetZ()); }
 	inline static glm::vec3 JoltToGlm(const JPH::Vec3& vec) { return glm::vec3(vec.GetX(), vec.GetY(), vec.GetZ()); }

@@ -4,6 +4,7 @@
 #include "ArchEngine/Grapichs/Renderer.h"
 #include "ArchEngine/AssetManager/AssetManager.h"
 #include "ArchEngine/Utilities/Math.h"
+#include "ArchEngine/Grapichs/Animation.h"
 
 #include <yaml-cpp/yaml.h>
 
@@ -13,7 +14,7 @@ namespace ae {
 	memory::Ref<grapichs::MeshSource> MeshSourceImporter::Import() {
 		memory::Ref<grapichs::MeshSource> meshSource = memory::Ref<grapichs::MeshSource>::Create();
 		Logger_app::info("Loading mesh source: {}", _path.string());
-
+		
 		PROFILE_SCOPE("Source mesh loading: " + _path.string());
 		Assimp::Importer importer;
 		const aiScene* scene = importer.ReadFile(_path.string(), MODEL_IMPORT_FLAGS);
@@ -62,6 +63,37 @@ namespace ae {
 					aiFace face = mesh->mFaces[i];
 					for (uint32_t j = 0; j < face.mNumIndices; j++) {
 						meshSource->GetIndices().push_back(face.mIndices[j]);
+					}
+				}
+
+				if (scene->HasSkeletons()) {
+					meshSource->SetSkinned(true);
+
+					for (uint32_t i = 0; i < mesh->mNumBones; i++) {
+						aiBone* bone = mesh->mBones[i];
+						std::string boneName = bone->mName.C_Str();
+						int boneID;
+
+						if (!meshSource->HasBone(boneName)) {
+							grapichs::Bone newBone{};
+							newBone.Name = boneName;
+							newBone.Index = meshSource->GetBoneCount();
+							newBone.OffsetMatrix = math::AssimpToGlm(bone->mOffsetMatrix);
+
+							boneID = meshSource->GetBoneCount();
+							meshSource->AddBone(boneName, newBone);
+							Logger_app::info("Found bone: {}", boneName);
+						}
+						else {
+							boneID = meshSource->GetBone(boneName).Index;
+						}
+
+						for (uint32_t w = 0; w < bone->mNumWeights; w++) {
+							uint32_t globalVertexId = submesh.VertexOffset + bone->mWeights[w].mVertexId;
+							float weight = bone->mWeights[w].mWeight;
+							grapichs::Vertex& vertexToEffect = meshSource->GetVertices()[globalVertexId];
+							meshSource->AddBoneToVertex(vertexToEffect, boneID, weight);
+						}
 					}
 				}
 			}

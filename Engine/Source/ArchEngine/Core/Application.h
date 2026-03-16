@@ -20,7 +20,7 @@ namespace ae {
 
 	class Application {
 	public:
-		Application();
+		Application(const ApplicationSpecifications& specs);
 		virtual ~Application();
 
 		void Run();
@@ -32,6 +32,7 @@ namespace ae {
 		float GetDeltaTime() const { return _deltaTime; }
 	protected:
 		float _deltaTime;
+		ApplicationSpecifications _specs;
 		Scope<Window> _window = nullptr;
 	private:
 		static Application* _instance;

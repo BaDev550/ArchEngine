@@ -42,4 +42,10 @@ namespace ae {
 		std::string SerializeToFile(memory::Ref<grapichs::StaticMesh>& mesh) const;
 		bool TryLoadFromFile(const std::string& filePath, memory::Ref<grapichs::StaticMesh>& mesh);
 	};
+
+	class AssetSerializer_SkeletalMesh : public AssetSerializer {
+	public:
+		virtual void Serialize(const AssetMetadata& metadata, const memory::Ref<Asset>& asset) override {}
+		virtual bool TryLoadData(const AssetMetadata& metadata, memory::Ref<Asset>& asset) override {}
+	};
 }

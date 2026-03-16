@@ -16,6 +16,7 @@ namespace ae {
 		{ ".fbx", AssetType::MeshSource },
 		{ ".obj", AssetType::MeshSource },
 		{ ".gltf", AssetType::MeshSource },
+		{ ".dae", AssetType::MeshSource },
 
 		{ ".mesh", AssetType::StaticMesh },
 		{ ".mat", AssetType::Material }

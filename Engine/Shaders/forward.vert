@@ -4,6 +4,8 @@ layout(location = 1) in vec3 aNormal;
 layout(location = 2) in vec2 aTexCoords;
 layout(location = 3) in vec3 aTangent;
 layout(location = 4) in vec3 aBitangent;
+layout(location = 5) in ivec4 aBoneIDs;
+layout(location = 6) in vec4  aBoneWeights;
 
 layout(location = 0) out vec2 vTexCoords;
 layout(location = 1) out vec3 vNormal;

@@ -10,6 +10,7 @@ namespace ae {
 		Texture,
 		MeshSource,
 		StaticMesh,
+		SkeletalMesh,
 		Material,
 		EnviromentMap,
 		Scene
@@ -23,6 +24,7 @@ namespace ae {
 		case AssetType::EnviromentMap: return "EnviromentMap";
 		case AssetType::MeshSource: return "MeshSource";
 		case AssetType::StaticMesh: return "StaticMesh";
+		case AssetType::SkeletalMesh: return "SkeletalMesh";
 		case AssetType::Material: return "Material";
 		default: return "Unknown";
 		}
@@ -35,6 +37,7 @@ namespace ae {
 		if (str == "EnviromentMap") return AssetType::EnviromentMap;
 		if (str == "MeshSource") return AssetType::MeshSource;
 		if (str == "StaticMesh") return AssetType::StaticMesh;
+		if (str == "SkeletalMesh") return AssetType::SkeletalMesh;
 		if (str == "Material") return AssetType::Material;
 		return INVALID_ASSET_TYPE;
 	}
