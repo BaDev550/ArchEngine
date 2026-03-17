@@ -155,7 +155,7 @@ namespace ae {
 		_sceneData.ActiveCameraData.Projection = cam->GetProjection();
 		_sceneData.ActiveCameraData.Position = cam->GetPosition();
 		_sceneData.ActiveCameraData.Near = 0.1f;
-		_sceneData.ActiveCameraData.Far = 1000.0f;
+		_sceneData.ActiveCameraData.Far = 500.0f;
 		_cameraBuffer->Write(&_sceneData.ActiveCameraData);
 		_sceneRenderPass->SetInput("uSkyboxTexture", _sceneData.SceneLightEnviromentData.EnviromentMap->GetEnvironmentMap());
 
@@ -205,12 +205,13 @@ namespace ae {
 					memory::Ref<grapichs::SkeletalMesh> skeletalMesh = AssetManager::GetAsset<grapichs::SkeletalMesh>(drawable.MeshHandle);
 					memory::Ref<grapichs::MeshSource> meshSource = AssetManager::GetAsset<grapichs::MeshSource>(skeletalMesh->GetMeshSource());
 					memory::Ref<grapichs::Skeleton> skeleton = meshSource->GetSkeleton();
-					drawable.AnimatorInstance->UpdateAnimation(Application::Get()->GetDeltaTime(), skeleton);
+					if (drawable.AnimatorInstance) {
+						drawable.AnimatorInstance->UpdateAnimation(Application::Get()->GetDeltaTime(), skeleton);
 
-					auto finalBones = drawable.AnimatorInstance->GetFinalBoneMatrices();
-					skeletalMesh->GetBonesBuffer()->Write(finalBones.data(), finalBones.size() * sizeof(glm::mat4));
-					_sceneRenderPass->SetInput("uBones", skeletalMesh->GetBonesBuffer());
-
+						auto finalBones = drawable.AnimatorInstance->GetFinalBoneMatrices();
+						skeletalMesh->GetBonesBuffer()->Write(finalBones.data(), finalBones.size() * sizeof(glm::mat4));
+						_sceneRenderPass->SetInput("uBones", skeletalMesh->GetBonesBuffer());
+					}
 					grapichs::Renderer::DrawSkeletalMeshEntityWithMaterial(_sceneRenderPass, cmd, meshSource, skeletalMesh, entity->GetTransformMatrix());
 				}
 				else {
@@ -245,10 +246,8 @@ namespace ae {
 					memory::Ref<grapichs::SkeletalMesh> skeletalMesh = AssetManager::GetAsset<grapichs::SkeletalMesh>(drawable.MeshHandle);
 					memory::Ref<grapichs::MeshSource> meshSource = AssetManager::GetAsset<grapichs::MeshSource>(skeletalMesh->GetMeshSource());
 					memory::Ref<grapichs::Skeleton> skeleton = meshSource->GetSkeleton();
-					//
 					//auto finalBones = drawable.AnimatorInstance->GetFinalBoneMatrices();
 					//skeletalMesh->GetBonesBuffer()->Write(finalBones.data(), finalBones.size() * sizeof(glm::mat4));
-					//
 					//_cascadedDirectionalShadowMap.RenderPass->SetInput("uBones", skeletalMesh->GetBonesBuffer());
 					grapichs::Renderer::DrawSkeletalMeshEntity(_cascadedDirectionalShadowMap.RenderPass, cmd, meshSource, skeletalMesh, entity->GetTransformMatrix());
 				}
@@ -383,7 +382,7 @@ namespace ae {
 		}
 
 		glm::mat4 lightOrtho = glm::ortho(minX, maxX, minY, maxY, minZ, maxZ);
-		lightOrtho[1][1] *= -1.0f;
+		lightOrtho[1][1] *= -1;
 		return lightOrtho * lightView;
 	}
 

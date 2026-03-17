@@ -38,7 +38,7 @@ float ShadowCalculation()
     vec3 lightDir = normalize(uDirectionalLight.Light.Direction);
     float bias = max(0.005 * (1.0 - dot(normal, lightDir)), 0.005);
 
-    const float biasModifier = 0.2f;
+    const float biasModifier = 0.25f;
     if (layer == CASCADE_COUNT - 1){
         bias *= 1.0f / (uCascadeShadow.CascadeSplits[layer - 1] * biasModifier);
     }else {

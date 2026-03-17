@@ -341,6 +341,9 @@ namespace ae::grapichs {
 			.dynamicRendering = VK_TRUE
 		};
 
+		vk::PhysicalDeviceFeatures deviceFeatures{};
+		deviceFeatures.depthClamp = VK_FALSE;
+
 		const vk::DeviceCreateInfo createInfo{
 			.pNext = &dynamicRenderingFeatures,
 			.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size()),
@@ -349,6 +352,7 @@ namespace ae::grapichs {
 			.ppEnabledLayerNames = _layers.data(),
 			.enabledExtensionCount = static_cast<uint32_t>(_extensions.size()),
 			.ppEnabledExtensionNames = _extensions.data(),
+			.pEnabledFeatures = &deviceFeatures,
 		};
 		
 		_logicalDevice = _physicalDevice.createDevice(createInfo);

@@ -114,7 +114,7 @@ namespace ae {
 			memory::Ref<grapichs::Framebuffer> Framebuffer = nullptr;
 			const uint32_t ShadowCascades = 4;
 			const uint32_t ShadowMapResolution = 2048;
-			const std::vector<float> ShadowCascadeLevels = { 1000.0f / 50.0f, 1000.0f / 25.0f, 1000.0f / 10.0f, 1000.0f / 2.0f };
+			const std::vector<float> ShadowCascadeLevels = { 500.0f / 50.0f, 500.0f / 25.0f, 500.0f / 10.0f, 500.0f / 2.0f };
 
 			std::vector<glm::mat4> GetLightSpaceMatrices(CameraData& cameraData, const glm::vec3& lightDirection);
 			glm::mat4 GetLightSpaceMatrix(CameraData& cameraData, const glm::vec3& lightDirection, float near, float far);

@@ -57,6 +57,10 @@ namespace ae {
 	}
 
 	void Scene::OnEditorUpdate(const memory::Ref<grapichs::Camera>& cam, float deltaTime) {
+		for (auto& [handle, entity] : _entities) {
+			entity->OnUpdate(deltaTime);
+		}
+		_scenePhysics->Step(deltaTime, _entities);
 		_sceneRenderer->RenderScene(cam, _entities);
 	}
 
