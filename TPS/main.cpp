@@ -14,9 +14,9 @@ using namespace ae::key;
 using namespace ae::memory;
 using namespace ae::grapichs;
 
-class FPS : public Application {
+class TPS : public Application {
 public:
-	FPS(const ApplicationSpecifications& specs) : Application(specs) {}
+	TPS(const ApplicationSpecifications& specs) : Application(specs) {}
 	virtual void ApplicationStarted() override {
 		_mainScene = Ref<Scene>::Create("MainScene");
 		_mainScene->CreateEntity<Entity_Skybox>(GetResourcePath("Textures/Skybox_01.hdr"));
@@ -102,5 +102,5 @@ Application* CreateApplication() {
 	specs.Title = "FPS";
 	specs.Width = 1250;
 	specs.Height = 720;
-	return new FPS(specs);
+	return new TPS(specs);
 }

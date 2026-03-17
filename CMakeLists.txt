@@ -118,6 +118,4 @@ FetchContent_MakeAvailable(joltphysics)
 set(SPIRV_REFLECT_SOURCE "${CMAKE_SOURCE_DIR}/vendor/SPIRV-Reflect/spirv_reflect.c")
 
 add_subdirectory(Engine)
-add_subdirectory(FPS)
-add_subdirectory(AnimationTesting)
-add_subdirectory(GrapichsAndGameplayTesting)
+add_subdirectory(TPS)
