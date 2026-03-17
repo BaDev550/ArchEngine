@@ -76,7 +76,7 @@ namespace ae {
 		}
 		return resultMap;
 	}
-	AssetHandle AssetManagerEditor::ImportAsset(const std::filesystem::path& path) {
+	AssetHandle AssetManagerEditor::ImportAsset(const std::filesystem::path& path, AssetType type) {
 		if (AssetMetadata loadedMetadata = GetMetadata(path); loadedMetadata.IsValid()) {
 			memory::Ref<Asset> asset = GetAsset(loadedMetadata.Handle);
 			_loadedAssets[loadedMetadata.Handle] = asset;
@@ -88,7 +88,9 @@ namespace ae {
 		mtd.Handle = UUID();
 		mtd.LoadingState = AssetLoadingState::Loading;
 		mtd.FilePath = path;
-		mtd.Type = s_ExtensionAssetMap[path.extension()];
+		mtd.Type = type;
+		if (type == AssetType::Unknown)
+			mtd.Type = s_ExtensionAssetMap[path.extension()];
 		if (AssetImporter::TryLoadData(mtd, asset)) {
 			mtd.LoadingState = AssetLoadingState::Loaded;
 			asset->SetAssetHandle(mtd.Handle);

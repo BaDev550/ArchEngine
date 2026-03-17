@@ -28,6 +28,14 @@ namespace ae {
 		const std::filesystem::path _path;
 	};
 
+	class AnimationImporter {
+	public:
+		AnimationImporter(const std::filesystem::path& path);
+		memory::Ref<grapichs::Animation> Import();
+	private:
+		const std::filesystem::path _path;
+	};
+
 	class AssetSerializer_MeshSource : public AssetSerializer {
 	public:
 		virtual void Serialize(const AssetMetadata& metadata, const memory::Ref<Asset>& asset) override {}
@@ -45,7 +53,28 @@ namespace ae {
 
 	class AssetSerializer_SkeletalMesh : public AssetSerializer {
 	public:
-		virtual void Serialize(const AssetMetadata& metadata, const memory::Ref<Asset>& asset) override {}
-		virtual bool TryLoadData(const AssetMetadata& metadata, memory::Ref<Asset>& asset) override {}
+		virtual void Serialize(const AssetMetadata& metadata, const memory::Ref<Asset>& asset) override;
+		virtual bool TryLoadData(const AssetMetadata& metadata, memory::Ref<Asset>& asset) override;
+	private:
+		std::string SerializeToFile(memory::Ref<grapichs::SkeletalMesh>& mesh) const;
+		bool TryLoadFromFile(const std::string& filePath, memory::Ref<grapichs::SkeletalMesh>& mesh);
+	};
+
+	class AssetSerializer_Skeleton : public AssetSerializer {
+	public:
+		virtual void Serialize(const AssetMetadata& metadata, const memory::Ref<Asset>& asset) override;
+		virtual bool TryLoadData(const AssetMetadata& metadata, memory::Ref<Asset>& asset) override;
+	private:
+		std::string SerializeToFile(memory::Ref<grapichs::Skeleton>& skeleton) const;
+		bool TryLoadFromFile(const std::string& filePath, memory::Ref<grapichs::Skeleton>& skeleton); // TODO: remove duplicate code !!!
+	};
+
+	class AssetSerializer_Animation : public AssetSerializer {
+	public:
+		virtual void Serialize(const AssetMetadata& metadata, const memory::Ref<Asset>& asset) override;
+		virtual bool TryLoadData(const AssetMetadata& metadata, memory::Ref<Asset>& asset) override;
+	private:
+		std::string SerializeToFile(memory::Ref<grapichs::Animation>& animation) const;
+		bool TryLoadFromFile(const std::string& filePath, memory::Ref<grapichs::Animation>& animation);
 	};
 }

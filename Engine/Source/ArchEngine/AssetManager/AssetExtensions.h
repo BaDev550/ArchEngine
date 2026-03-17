@@ -19,6 +19,8 @@ namespace ae {
 		{ ".dae", AssetType::MeshSource },
 
 		{ ".mesh", AssetType::StaticMesh },
+		{ ".skmesh", AssetType::SkeletalMesh },
+		{ ".skeleton", AssetType::Skeleton },
 		{ ".mat", AssetType::Material }
 	};
 }

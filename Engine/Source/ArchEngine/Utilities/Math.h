@@ -6,6 +6,7 @@
 #include <assimp/vector3.h>
 #include <assimp/vector2.h>
 #include <assimp/matrix4x4.h>
+#include <assimp/quaternion.h>
 #include <Jolt/Jolt.h>
 #include <Jolt/Math/Vec3.h>
 #include <Jolt/Renderer/DebugRenderer.h>
@@ -19,13 +20,14 @@ namespace ae::math {
 	inline static aiVector3D GlmToAssimp(const glm::vec3& vec) { return aiVector3D(vec.x, vec.y, vec.z); }
 	inline static glm::vec2 AssimpToGlm(const aiVector2D& vec) { return glm::vec2(vec.x, vec.y); }
 	inline static aiVector2D GlmToAssimp(const glm::vec2& vec) { return aiVector2D(vec.x, vec.y); }
-	inline static glm::mat4 AssimpToGlm(const aiMatrix4x4& mat) {
-		return glm::mat4(
-			mat.a1, mat.b1, mat.c1, mat.d1,
-			mat.a2, mat.b2, mat.c2, mat.d2,
-			mat.a3, mat.b3, mat.c3, mat.d3,
-			mat.a4, mat.b4, mat.c4, mat.d4
-		);
+	inline static glm::quat AssimpToGlm(const aiQuaternion& quat) { return glm::quat(quat.w, quat.x, quat.y, quat.z); }
+	inline glm::mat4 AssimpToGlm(const aiMatrix4x4& from) {
+		glm::mat4 to;
+		to[0][0] = from.a1; to[1][0] = from.a2; to[2][0] = from.a3; to[3][0] = from.a4;
+		to[0][1] = from.b1; to[1][1] = from.b2; to[2][1] = from.b3; to[3][1] = from.b4;
+		to[0][2] = from.c1; to[1][2] = from.c2; to[2][2] = from.c3; to[3][2] = from.c4;
+		to[0][3] = from.d1; to[1][3] = from.d2; to[2][3] = from.d3; to[3][3] = from.d4;
+		return to;
 	}
 
 	inline static glm::vec3 JoltToGLM(JPH::Color c) { return glm::vec3(c.r / 255.0f, c.g / 255.0f, c.b / 255.0f); }

@@ -37,6 +37,8 @@ public:
 		_skybox_01 = _defaultScene->CreateEntity<Entity_Skybox>("Resources/Textures/skybox.hdr");
 		_defaultScene->CreateEntity<Entity_DirectionalLight>();
 		_defaultScene->CreateEntity<Entity_Box>();
+		_defaultScene->CreateEntity<Entity_BasicModel>("Resources/Models/barrel/barrel.gltf");
+		_defaultScene->CreateEntity<Entity_BasicModel>("Resources/Models/barrel/barrel.gltf");
 		_archer = _defaultScene->CreateEntity<Entity_Archer>();
 	}
 

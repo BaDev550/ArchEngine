@@ -25,7 +25,7 @@ namespace ae {
 		static bool IsAssetHandleValid(AssetHandle handle) { return s_EditorAssetManager->IsAssetHandleValid(handle); }
 		static bool IsAssetLoaded(AssetHandle handle) { return s_EditorAssetManager->IsAssetLoaded(handle); }
 		static AssetType GetAssetType(AssetHandle handle) { return s_EditorAssetManager->GetAssetType(handle); }
-		static AssetHandle ImportAsset(const std::string& filename) { return s_EditorAssetManager->ImportAsset(filename); }
+		static AssetHandle ImportAsset(const std::string& filename, AssetType type = AssetType::Unknown) { return s_EditorAssetManager->ImportAsset(filename, type); }
 		static AssetMetadata GetAssetMetadata(AssetHandle handle) { return s_EditorAssetManager->GetMetadata(handle); }
 
 		template<typename T>

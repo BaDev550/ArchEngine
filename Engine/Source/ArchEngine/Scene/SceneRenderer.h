@@ -9,22 +9,52 @@
 #include "ArchEngine/Grapichs/TextureCube.h"
 #include "ArchEngine/Grapichs/Enviroment.h"
 #include "ArchEngine/Grapichs/Light.h"
+#include "ArchEngine/Grapichs/Animator.h"
 #include "ArchEngine/AssetManager/AssetManager.h"
 
 namespace ae {
 	struct Drawnable {
 		EntityID OwnerID = 0;
-		AssetHandle StaticMeshHandle = INVALID_ASSET_HANDLE;
+		AssetHandle MeshHandle = INVALID_ASSET_HANDLE;
+		memory::Ref<grapichs::Animator> AnimatorInstance;
 		bool IsVisible = true;
+		bool IsRigged = false;
 		bool CastShadow = true;
 
 		Drawnable(EntityID ownerID) : OwnerID(ownerID) {}
 		void ImportStaticMesh(const std::string& modelPath) {
-			std::filesystem::path staticMeshPath = modelPath;
-			staticMeshPath.replace_extension(".mesh");
 			AssetHandle sourceMeshHandle = AssetManager::ImportAsset(modelPath);
-			const auto& staticMesh = AssetManager::Create<grapichs::StaticMesh>(staticMeshPath.string(), sourceMeshHandle);
-			StaticMeshHandle = staticMesh->GetAssetHandle();
+			memory::Ref<grapichs::MeshSource> meshSource = AssetManager::GetAsset<grapichs::MeshSource>(sourceMeshHandle);
+
+			if (meshSource->IsRigged()) {
+				IsRigged = true;
+				std::filesystem::path skeletalMeshPath = modelPath;
+				skeletalMeshPath.replace_extension(".skmesh");
+				const auto& skeletalMesh = AssetManager::Create<grapichs::SkeletalMesh>(skeletalMeshPath.string(), sourceMeshHandle);
+				MeshHandle = skeletalMesh->GetAssetHandle();
+			}
+			else {
+				IsRigged = false;
+				std::filesystem::path staticMeshPath = modelPath;
+				staticMeshPath.replace_extension(".mesh");
+				const auto& staticMesh = AssetManager::Create<grapichs::StaticMesh>(staticMeshPath.string(), sourceMeshHandle);
+				MeshHandle = staticMesh->GetAssetHandle();
+			}
+		}
+
+		grapichs::Animation* ImportAnimation(const std::string& animationPath) {
+			if (!IsRigged)
+				return nullptr;
+
+			std::filesystem::path animFilePath = animationPath;
+			animFilePath.replace_extension(".anim");
+
+			AssetHandle animHandle = AssetManager::ImportAsset(animationPath, AssetType::Animation);
+			memory::Ref<grapichs::Animation> animation = AssetManager::GetAsset<grapichs::Animation>(animHandle);
+			memory::Ref<grapichs::SkeletalMesh> skeletalMesh = AssetManager::GetAsset<grapichs::SkeletalMesh>(MeshHandle);
+			memory::Ref<grapichs::MeshSource> meshSource = AssetManager::GetAsset<grapichs::MeshSource>(skeletalMesh->GetMeshSource());
+			meshSource->AddAnimation(animation.Get());
+			return animation.Get();
 		}
 	};
 
@@ -47,7 +77,7 @@ namespace ae {
 
 		memory::Ref<grapichs::Enviroment> EnviromentMap = nullptr;
 		memory::Ref<grapichs::Pipeline> SkyboxPipeline = nullptr;
-
+		
 		uint32_t GetPointLightCount() const { return static_cast<uint32_t>(PointLights.size()); }
 	};
 
@@ -108,7 +138,8 @@ namespace ae {
 			const uint32_t MAX_LINES = 10000;
 			const uint32_t MAX_TRIANGLES = 10000;
 		} _debugDrawData;
-		void DrawEntities(vk::CommandBuffer cmd, memory::Ref<grapichs::RenderPass>& pass, const std::unordered_map<EntityID, memory::Ref<Entity>>& entities, bool shadowPass = false);
+		void DrawEntitiesToMainPass(vk::CommandBuffer cmd, const std::unordered_map<EntityID, memory::Ref<Entity>>& entities);
+		void DrawEntitiesToShadowPass(vk::CommandBuffer cmd, const std::unordered_map<EntityID, memory::Ref<Entity>>& entities, const glm::mat4& lightSpaceMatrix);
 		void DrawDebugScene(vk::CommandBuffer cmd);
 		void CollectSceneLightEnviromentData();
 

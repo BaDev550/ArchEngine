@@ -22,6 +22,8 @@ namespace ae::grapichs {
 		void DrawStaticMesh(memory::Ref<RenderPass>& renderPass, vk::CommandBuffer cmd, memory::Ref<MeshSource>& meshSource, memory::Ref<StaticMesh>& staticMesh);
 		void DrawStaticMeshEntity(memory::Ref<RenderPass>& renderPass, vk::CommandBuffer cmd, memory::Ref<MeshSource>& meshSource, memory::Ref<StaticMesh>& staticMesh, const glm::mat4& transform);
 		void DrawStaticMeshEntityWithMaterial(memory::Ref<RenderPass>& renderPass, vk::CommandBuffer cmd, memory::Ref<MeshSource>& meshSource, memory::Ref<StaticMesh>& staticMesh, const glm::mat4& transform);
+		void DrawSkeletalMeshEntityWithMaterial(memory::Ref<RenderPass>& renderPass, vk::CommandBuffer cmd, memory::Ref<MeshSource>& meshSource, memory::Ref<SkeletalMesh>& skeletalMesh, const glm::mat4& transform);
+		void DrawSkeletalMeshEntity(memory::Ref<RenderPass>& renderPass, vk::CommandBuffer cmd, memory::Ref<MeshSource>& meshSource, memory::Ref<SkeletalMesh>& skeletalMesh, const glm::mat4& transform);
 		vk::CommandBuffer GetCurrentCommandBuffer();
 		RenderStats& GetRenderStats() { return _renderStats; }
 	private:

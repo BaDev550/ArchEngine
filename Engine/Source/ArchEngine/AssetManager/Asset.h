@@ -13,7 +13,9 @@ namespace ae {
 		SkeletalMesh,
 		Material,
 		EnviromentMap,
-		Scene
+		Scene,
+		Skeleton,
+		Animation
 	};
 
 	static std::string AssetTypeToString(AssetType type) {
@@ -26,6 +28,8 @@ namespace ae {
 		case AssetType::StaticMesh: return "StaticMesh";
 		case AssetType::SkeletalMesh: return "SkeletalMesh";
 		case AssetType::Material: return "Material";
+		case AssetType::Skeleton: return "Skeleton";
+		case AssetType::Animation: return "Animation";
 		default: return "Unknown";
 		}
 	}
@@ -39,6 +43,8 @@ namespace ae {
 		if (str == "StaticMesh") return AssetType::StaticMesh;
 		if (str == "SkeletalMesh") return AssetType::SkeletalMesh;
 		if (str == "Material") return AssetType::Material;
+		if (str == "Skeleton") return AssetType::Skeleton;
+		if (str == "Animation") return AssetType::Animation;
 		return INVALID_ASSET_TYPE;
 	}
 

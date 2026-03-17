@@ -7,6 +7,7 @@
 #include "Buffer.h"
 #include "Animation.h"
 #include "Material.h"
+#include "Skeleton.h"
 
 namespace ae::grapichs {
 #define MAX_BONE_INFLUENCE 4
@@ -17,8 +18,8 @@ namespace ae::grapichs {
 		glm::vec2 TexCoords;
 		glm::vec3 Tangent;
 		glm::vec3 Bitangent;
-		glm::ivec4 BoneIDs = { -1, -1, -1, -1 };
-		glm::vec4 BoneWeights = { 0.0f, 0.0f, 0.0f, 0.0f };
+		int BoneIDs[MAX_BONE_INFLUENCE] = {-1, -1, -1, -1};
+		float BoneWeights[MAX_BONE_INFLUENCE] = {0.0f, 0.0f, 0.0f, 0.0f};
 	};
 
 	struct Submesh {
@@ -38,15 +39,16 @@ namespace ae::grapichs {
 		std::vector<uint32_t>& GetIndices() { return _indices; }
 		memory::Ref<Buffer>& GetVertexBuffer() { return _vertexBuffer; }
 		memory::Ref<Buffer>& GetIndexBuffer() { return _indexBuffer; }
-		std::unordered_map<std::string, Bone>& GetBones() { return _bones; }
-		Bone& GetBone(std::string name) { return _bones[name]; }
-		bool HasBone(std::string name) const;
-		uint32_t GetBoneCount() const { return _boneCount; }
-		void SetSkinned(bool skinned) { _skinned = skinned; }
+		memory::Ref<Skeleton>& GetSkeleton() { return _skeleton; }
 		void CreateVertexBuffer();
 		void CreateIndexBuffer();
-		void AddBone(std::string name, Bone bone);
-		void AddBoneToVertex(Vertex& vertex, int boneID, float weight);
+		void SetSkeleton(const memory::Ref<Skeleton>& skeleton) { _skeleton = skeleton; }
+		bool HasSkeleton() const { return _skeleton; }
+		void AddAnimation(Animation* animation) { _animations.push_back(animation); }
+		bool HasAnimations() const { return !_animations.empty(); }
+		bool IsRigged() { return _isRigged; }
+		void SetIsRigged(bool rigged) { _isRigged = rigged; }
+		const std::vector<Animation*>& GetAnimations() const { return _animations; }
 		static AssetType GetStaticAssetType() { return AssetType::MeshSource; }
 		virtual AssetType GetAssetType() const override { return GetStaticAssetType(); }
 	private:
@@ -55,11 +57,11 @@ namespace ae::grapichs {
 		std::vector<uint32_t> _indices;
 		std::vector<Submesh> _submeshes;
 		std::vector<AssetHandle> _materials;
+		std::vector<Animation*> _animations;
+		memory::Ref<Skeleton> _skeleton = nullptr;
 		memory::Ref<Buffer> _vertexBuffer = nullptr;
 		memory::Ref<Buffer> _indexBuffer = nullptr;
-		std::unordered_map<std::string, Bone> _bones;
-		uint32_t _boneCount;
-		bool _skinned = false;
+		bool _isRigged = false;
 	};
 
 	class StaticMesh : public Asset {
@@ -78,11 +80,16 @@ namespace ae::grapichs {
 
 	class SkeletalMesh : public Asset {
 	public:
-
+		SkeletalMesh(AssetHandle meshSource);
+		memory::Ref<MaterialAsset>& GetMaterialByID(uint32_t id) { return _materials[id]; }
+		memory::Ref<Buffer>& GetBonesBuffer() { return _bonesBuffer; }
+		AssetHandle GetMeshSource() const { return _meshSource; }
 		static AssetType GetStaticAssetType() { return AssetType::SkeletalMesh; }
 		virtual AssetType GetAssetType() const override { return GetStaticAssetType(); }
 	private:
 		AssetHandle _meshSource = INVALID_ASSET_HANDLE;
-		std::vector<Bone> _bones;
+		memory::Ref<Buffer> _bonesBuffer = nullptr;
+		std::unordered_map<std::string, Bone> _bones;
+		std::unordered_map<uint32_t, memory::Ref<MaterialAsset>> _materials;
 	};
 }

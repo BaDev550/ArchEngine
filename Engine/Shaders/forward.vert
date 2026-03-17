@@ -18,9 +18,38 @@ layout(push_constant) uniform pcData {
 #include "common/buffers.glslh"
 
 void main() {
-	vec4 worldPos = uPc.Transform * vec4(aPosition, 1.0);
-	vTexCoords = aTexCoords;
-	vNormal = aNormal;
-	vWorldPos = worldPos.xyz;
-	gl_Position = uCamera.Proj * uCamera.View * worldPos;
+vec4 totalLocalPos = vec4(0.0);
+    vec3 totalNormal = vec3(0.0);
+
+    if (aBoneIDs[0] == -1) {
+        totalLocalPos = vec4(aPosition, 1.0);
+        totalNormal = aNormal;
+    } else {
+        for(int i = 0 ; i < MAX_BONE_INFLUENCE ; i++) {
+            if(aBoneIDs[i] == -1) 
+                continue;
+              
+            if(aBoneIDs[i] >= MAX_BONES) {
+                totalLocalPos = vec4(aPosition, 1.0);
+                totalNormal = aNormal;
+                break;
+            }
+
+            mat4 boneMat = uBones.Bones[aBoneIDs[i]];
+            float weight = aBoneWeights[i];
+
+            vec4 localPosition = boneMat * vec4(aPosition, 1.0);
+            totalLocalPos += localPosition * weight;
+
+            vec3 localNormal = mat3(boneMat) * aNormal; 
+            totalNormal += localNormal * weight;
+        }
+    }
+
+    vec4 worldPos = uPc.Transform * totalLocalPos;
+    
+    vTexCoords = aTexCoords;
+    vNormal = totalNormal; 
+    vWorldPos = worldPos.xyz;
+    gl_Position = uCamera.Proj * uCamera.View * worldPos;
 } 

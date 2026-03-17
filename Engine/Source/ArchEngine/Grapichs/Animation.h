@@ -1,30 +1,42 @@
 #pragma once
+#include "ArchEngine/AssetManager/Asset.h"
 #include <vector>
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
 
 namespace ae::grapichs {
-	struct Keyframe {
+	struct VectorKeyframe {
 		float Time;
 		glm::vec3 Value;
 	};
 
-	struct BoneAnimationTrack {
-		int BoneIndex;
-		std::vector<Keyframe> Position;
-		std::vector<Keyframe> Rotation;
-		std::vector<Keyframe> Scale;
+	struct QuatKeyframe {
+		float Time;
+		glm::quat Value;
 	};
 
-	struct Animation {
-		std::string Name;
-		float Duration;
-		std::vector<BoneAnimationTrack> Tracks;
+	struct AnimationChannel {
+		std::string BoneName;
+		std::vector<VectorKeyframe> Position;
+		std::vector<QuatKeyframe> Rotation;
+		std::vector<VectorKeyframe> Scale;
 	};
 
-	struct Bone {
-		std::string Name;
-		glm::mat4 OffsetMatrix;
-		int Index;
+	class Animation : public Asset {
+	public:
+		Animation(const std::string& name, float duration, float ticksPerSecond) 
+			: _name(name), _duration(duration), _ticksPerSecond(ticksPerSecond) {}
+
+		float GetDuration() const { return _duration; }
+		float GetTicksPerSecond() const { return _ticksPerSecond; }
+		const std::string& GetName() const { return _name; }
+		std::vector<AnimationChannel>& GetChannels() { return _channels; }
+		static AssetType GetStaticAssetType() { return AssetType::Animation; }
+		virtual AssetType GetAssetType() const override { return GetStaticAssetType(); }
+	private:
+		std::string _name;
+		float _duration;
+		float _ticksPerSecond;
+		std::vector<AnimationChannel> _channels;
 	};
 }

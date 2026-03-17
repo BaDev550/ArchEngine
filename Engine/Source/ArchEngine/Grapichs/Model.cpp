@@ -41,6 +41,7 @@ namespace ae::grapichs {
 		Renderer::CopyBuffer(stagingBuffer, _indexBuffer, bufferSize);
 	}
 
+#if 0
 	void MeshSource::AddBone(std::string name, Bone bone)
 	{
 		_bones[name] = bone;
@@ -62,6 +63,7 @@ namespace ae::grapichs {
 	{
 		return _bones.find(name) != _bones.end();
 	}
+#endif
 
 	StaticMesh::StaticMesh(AssetHandle meshSource) : _meshSource(meshSource) {
 		if (auto meshSourceAsset = AssetManager::GetAsset<MeshSource>(meshSource); meshSourceAsset) {
@@ -69,6 +71,25 @@ namespace ae::grapichs {
 			for (size_t i = 0; i < meshMaterials.size(); i++) {
 				_materials[(uint32_t)i] = AssetManager::GetAsset<MaterialAsset>(meshMaterials[i]);
 			}
+		}
+	}
+
+	SkeletalMesh::SkeletalMesh(AssetHandle meshSource)
+		: _meshSource(meshSource)
+	{
+		if (auto meshSourceAsset = AssetManager::GetAsset<MeshSource>(meshSource); meshSourceAsset) {
+			const std::vector<AssetHandle>& meshMaterials = meshSourceAsset->GetMaterials();
+			for (size_t i = 0; i < meshMaterials.size(); i++) {
+				_materials[(uint32_t)i] = AssetManager::GetAsset<MaterialAsset>(meshMaterials[i]);
+			}
+			auto& skeleton = meshSourceAsset->GetSkeleton();
+			_bones = skeleton->GetBones();
+			_bonesBuffer = memory::Ref<Buffer>::Create(
+				sizeof(glm::mat4) * MAX_BONES, 
+				vk::BufferUsageFlagBits::eUniformBuffer,
+				vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent,
+				true
+			);
 		}
 	}
 }

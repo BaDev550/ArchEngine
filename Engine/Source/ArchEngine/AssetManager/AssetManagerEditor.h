@@ -20,7 +20,7 @@ namespace ae {
 		AssetMap GetLoadedAssets() const { return _loadedAssets; }
 		AssetMap GetMemoryAssets() const { return _memoryAssets; }
 		AssetMap GetAssetsByType(AssetType type) const;
-		AssetHandle ImportAsset(const std::filesystem::path& path);
+		AssetHandle ImportAsset(const std::filesystem::path& path, AssetType type);
 		bool IsMemoryAsset(AssetHandle handle) const;
 		void AddMemoryAsset(const memory::Ref<Asset>& asset);
 

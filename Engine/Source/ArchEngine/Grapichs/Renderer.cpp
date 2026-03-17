@@ -103,6 +103,12 @@ namespace ae::grapichs {
 	void Renderer::DrawStaticMeshEntityWithMaterial(memory::Ref<RenderPass>& renderPass, vk::CommandBuffer cmd, memory::Ref<MeshSource>& meshSource, memory::Ref<StaticMesh>& staticMesh, const glm::mat4& transform) {
 		g_renderAPI->DrawStaticMeshEntityWithMaterial(renderPass, cmd, meshSource, staticMesh, transform);
 	}
+	void Renderer::DrawSkeletalMeshEntityWithMaterial(memory::Ref<RenderPass>& renderPass, vk::CommandBuffer cmd, memory::Ref<MeshSource>& meshSource, memory::Ref<SkeletalMesh>& skeletalMesh, const glm::mat4& transform){
+		g_renderAPI->DrawSkeletalMeshEntityWithMaterial(renderPass, cmd, meshSource, skeletalMesh, transform);
+	}
+	void Renderer::DrawSkeletalMeshEntity(memory::Ref<RenderPass>& renderPass, vk::CommandBuffer cmd, memory::Ref<MeshSource>& meshSource, memory::Ref<SkeletalMesh>& skeletalMesh, const glm::mat4& transform) {
+		g_renderAPI->DrawSkeletalMeshEntity(renderPass, cmd, meshSource, skeletalMesh, transform);
+	}
 	void Renderer::CopyBuffer(memory::Ref<Buffer>& src, memory::Ref<Buffer>& dst, vk::DeviceSize size) {
 		Application::Get()->GetWindow().GetRenderContext().WaitDeviceIdle();
 		Application::Get()->GetWindow().GetRenderContext().CopyBuffer(src->GetBuffer(), dst->GetBuffer(), size);

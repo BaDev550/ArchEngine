@@ -14,7 +14,7 @@ public:
 
 	virtual void OnCreate() override {
 		SetName("Basic Entity Model");
-		RegisterAsDrawnable(_path);
+		RegisterAsDrawnable(_path.empty() ? "Resources/Models/barrel/barrel.gltf" : _path);
 	};
 
 	virtual void OnUpdate(float deltaTime) override {};

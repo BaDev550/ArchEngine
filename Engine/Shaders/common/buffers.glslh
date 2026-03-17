@@ -1,3 +1,7 @@
+const int MAX_BONES = 256;
+const int MAX_BONE_INFLUENCE = 4;
+const int MAX_POINT_LIGHTS = 1000;
+
 layout(set = 0, binding = 0) uniform CameraData {
     mat4 View;
     mat4 Proj;
@@ -35,5 +39,9 @@ struct PointLight {
 
 layout(set = 0, binding = 3) uniform PointLightData {
     uint Count;
-    PointLight Lights[1000];
+    PointLight Lights[MAX_POINT_LIGHTS];
 } uPointLights;
+
+layout(set = 0, binding = 4) uniform BoneData {
+    mat4 Bones[MAX_BONES];
+} uBones;
