@@ -13,6 +13,8 @@ namespace ae::grapichs {
 	}
 
 	void Animator::PlayAnimation(memory::Ref<Animation> animation) {
+		if (_currentAnimation == animation)
+			return;
 		_currentAnimation = animation;
 		_currentTime = 0.0f;
 	}

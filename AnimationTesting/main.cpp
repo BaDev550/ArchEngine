@@ -13,6 +13,8 @@
 #include "Entities/Entity_Box.h"
 #include "Entities/Entity_BasicModel.h"
 #include "Entities/Entity_Archer.h"
+#include "Entities/Entity_TPCamera.h"
+#include <ArchEngine/Objects/Entity_Camera.h>
 #include <ArchEngine/Objects/Entity_Skybox.h>
 #include <ArchEngine/Objects/Entity_DirectionalLight.h>
 
@@ -40,6 +42,8 @@ public:
 		_defaultScene->CreateEntity<Entity_BasicModel>("Resources/Models/barrel/barrel.gltf");
 		_defaultScene->CreateEntity<Entity_BasicModel>("Resources/Models/barrel/barrel.gltf");
 		_archer = _defaultScene->CreateEntity<Entity_Archer>();
+		_tpCamera = _defaultScene->CreateEntity<Entity_TPCamera>();
+		_tpCamera->SetTarget(_archer->GetID());
 	}
 
 	virtual void ApplicationUpdate() override {
@@ -66,7 +70,8 @@ public:
 			LoadScene();
 		}
 
-		_defaultScene->OnEditorUpdate(_defaultCamera, _deltaTime);
+		_defaultScene->OnRuntimeUpdate(_deltaTime);
+		//_defaultScene->OnEditorUpdate(_defaultCamera, _deltaTime);
 
 		Renderer::BeginDefaultRenderPass();
 		DrawViewport();
@@ -139,6 +144,7 @@ private:
 	memory::Ref<Scene> _defaultScene = nullptr;
 
 	memory::Ref<Entity_Archer> _archer = nullptr;
+	memory::Ref<Entity_TPCamera> _tpCamera = nullptr;
 	memory::Ref<Entity_Skybox> _skybox_01 = nullptr;
 
 	bool _cursorEnabled = false;

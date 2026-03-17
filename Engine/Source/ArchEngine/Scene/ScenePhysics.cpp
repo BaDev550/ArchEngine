@@ -140,4 +140,10 @@ namespace ae {
 	glm::vec3 PhysicsBody::GetVelocity() const {
 		return math::JoltToGLM(_rgBody->GetLinearVelocity());
 	}
+
+	void PhysicsBody::SetPhysicsRotation(const glm::quat& rotation) {
+		if (!IsValid()) return;
+		JPH::BodyInterface& interface = physics::PhysicsEngine::GetBodyInterface();
+		interface.SetRotation(JoltBodyID, math::GlmToJolt(rotation), JPH::EActivation::Activate);
+	}
 }

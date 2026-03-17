@@ -40,6 +40,8 @@ namespace ae {
 
 	void Entity::SetRotation(const glm::vec3& rotation) { 
 		_transform.SetEulerRotation(rotation);
+		if (HasPhysicsBody())
+			GetPhysicsBody().SetPhysicsRotation(_transform.GetRotation());
 	}
 
 	void Entity::SetScale(const glm::vec3& scale) { 

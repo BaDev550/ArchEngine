@@ -242,15 +242,15 @@ namespace ae {
 				const auto& entity = entityIt->second;
 
 				if (drawable.IsRigged) {
-					//memory::Ref<grapichs::SkeletalMesh> skeletalMesh = AssetManager::GetAsset<grapichs::SkeletalMesh>(drawable.MeshHandle);
-					//memory::Ref<grapichs::MeshSource> meshSource = AssetManager::GetAsset<grapichs::MeshSource>(skeletalMesh->GetMeshSource());
-					//memory::Ref<grapichs::Skeleton> skeleton = meshSource->GetSkeleton();
+					memory::Ref<grapichs::SkeletalMesh> skeletalMesh = AssetManager::GetAsset<grapichs::SkeletalMesh>(drawable.MeshHandle);
+					memory::Ref<grapichs::MeshSource> meshSource = AssetManager::GetAsset<grapichs::MeshSource>(skeletalMesh->GetMeshSource());
+					memory::Ref<grapichs::Skeleton> skeleton = meshSource->GetSkeleton();
 					//
 					//auto finalBones = drawable.AnimatorInstance->GetFinalBoneMatrices();
 					//skeletalMesh->GetBonesBuffer()->Write(finalBones.data(), finalBones.size() * sizeof(glm::mat4));
 					//
 					//_cascadedDirectionalShadowMap.RenderPass->SetInput("uBones", skeletalMesh->GetBonesBuffer());
-					//grapichs::Renderer::DrawSkeletalMeshEntity(_cascadedDirectionalShadowMap.RenderPass, cmd, meshSource, skeletalMesh, entity->GetTransformMatrix());
+					grapichs::Renderer::DrawSkeletalMeshEntity(_cascadedDirectionalShadowMap.RenderPass, cmd, meshSource, skeletalMesh, entity->GetTransformMatrix());
 				}
 				else {
 					memory::Ref<grapichs::StaticMesh> staticMesh = AssetManager::GetAsset<grapichs::StaticMesh>(drawable.MeshHandle);

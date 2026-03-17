@@ -2,6 +2,8 @@
 #include "Scene.h"
 #include "ArchEngine/Core/Application.h"
 
+#include "ArchEngine/Objects/Entity_Camera.h"
+
 namespace ae {
 	Scene::Scene(const std::string& name) : _name(name) {
 		_sceneRenderer = memory::MakeScope<SceneRenderer>(this);
@@ -55,13 +57,27 @@ namespace ae {
 	}
 
 	void Scene::OnEditorUpdate(const memory::Ref<grapichs::Camera>& cam, float deltaTime) {
-		for (auto& [handle, entity] : _entities)
-			entity->OnUpdate(deltaTime);
-		_scenePhysics->Step(deltaTime, _entities);
 		_sceneRenderer->RenderScene(cam, _entities);
 	}
 
 	void Scene::OnRuntimeUpdate(float deltaTime) {
-		
+		for (auto& [handle, entity] : _entities) {
+			entity->OnUpdate(deltaTime);
+		}
+		_scenePhysics->Step(deltaTime, _entities);
+
+		memory::Ref<grapichs::Camera> mainCamera = nullptr;
+		auto cameraEntities = Group<Entity_Camera>();
+		if (!cameraEntities.empty()) {
+			if (Entity_Camera* camEntity = dynamic_cast<Entity_Camera*>(GetEntity(cameraEntities[0]))) {
+				mainCamera = camEntity->GetCamera();
+			}
+		}
+		if (mainCamera) {
+			_sceneRenderer->RenderScene(mainCamera, _entities);
+		}
+		else {
+			Logger_app::warn("No active camera found in the scene!");
+		}
 	}
 }

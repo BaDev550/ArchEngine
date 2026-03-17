@@ -15,12 +15,17 @@ namespace ae::grapichs {
 
 		void Orbit(float pitchOffset, float yawOffset);
 		void SetFirstMouse() { _FirstMouse = true; }
+		void SetPosition(const glm::vec3& pos) { _Position = pos; }
+		void SetRotation(const glm::vec3& rot) { _Direction = rot; }
+		void SetForward(const glm::vec3& forward) { _Forward = forward; }
 		glm::mat4 GetView() const { return _ViewMatrix; }
 		glm::mat4 GetViewProjection() const { return _ViewMatrix * _ProjectionMatrix; }
 		glm::mat4 GetProjection() const { return _ProjectionMatrix; }
 		glm::vec3 GetPosition() const { return _Position; }
-	protected:
+		glm::vec3 GetForward() const { return _Forward; }
+		glm::vec3 GetRight() const { return _Right; }
 		void CalculateCameraMatrixes();
+	protected:
 		void AddPitch(float value);
 		void AddYaw(float value);
 

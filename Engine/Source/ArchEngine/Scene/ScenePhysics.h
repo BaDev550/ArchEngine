@@ -45,6 +45,7 @@ namespace ae {
 		void SetAngularVelocity(const glm::vec3& velocity);
 		glm::vec3 GetVelocity() const;
 		glm::vec3 GetOffset() const { return _shapeOffset; }
+		void SetPhysicsRotation(const glm::quat& rotation);
 	private:
 		JPH::Body* _rgBody;
 		JPH::Ref<JPH::Shape> _shape;
